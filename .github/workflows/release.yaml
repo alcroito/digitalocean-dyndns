@@ -1,0 +1,144 @@
+name: release
+on:
+  push:
+    # Uncomment when testing release infrastructure on a branch.
+    # branches:
+    #   - docker
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+jobs:
+  create-release:
+    name: Create release
+    runs-on: ubuntu-latest
+    # Uncomment to do test releases from a branch
+    # env:
+    #   RELEASE_VERSION: docker
+    steps:
+      - name: Create artifacts directory
+        run: mkdir artifacts
+      
+      - name: Get the release version from the tag
+        if: env.RELEASE_VERSION == ''
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "tag is: ${{ env.RELEASE_VERSION }}"
+      
+      - name: Create GitHub release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: ${{ env.RELEASE_VERSION }}
+      
+      - name: Save release upload URL to artifact
+        run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
+      
+      - name: Save version number to artifact
+        run: echo "${{ env.RELEASE_VERSION }}" > artifacts/release-version
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+  
+  build-release:
+    name: Build release
+    needs: ['create-release']
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [linux_x64, linux_armv7, linux_aarch64, mac_x64]
+        include:
+          - build: linux_x64
+            # building x86_64-unknown-linux-musl fails with not finding musl-gcc
+            rust_target_arch: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+          - build: linux_armv7
+            rust_target_arch: armv7-unknown-linux-musleabihf
+            os: ubuntu-latest
+            cross: true
+          - build: linux_aarch64
+            rust_target_arch: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+          - build: mac_x64
+            rust_target_arch: x86_64-apple-darwin
+            os: macos-latest
+            cross: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Cache cargo registry
+        uses: actions/cache@v2
+        if: matrix.cross == true
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
+
+      - name: Cache target folder
+        uses: actions/cache@v2
+        if: matrix.cross == true
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-builds-${{ matrix.build }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.rust_target_arch }}
+          override: true
+
+      - name: Use smart rust cache
+        uses: Swatinem/rust-cache@v1
+        if: matrix.cross == false
+        with:
+          key: ${{ matrix.build }}
+
+      - name: Build with cargo
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --release --target=${{ matrix.rust_target_arch }}
+
+      - name: Get release download URL
+        uses: actions/download-artifact@v1
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: Set release upload URL and release version
+        shell: bash
+        run: |
+          release_upload_url="$(cat artifacts/release-upload-url)"
+          echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
+          echo "release upload url: $RELEASE_UPLOAD_URL"
+
+          release_version="$(cat artifacts/release-version)"
+          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+          echo "release version: $RELEASE_VERSION"
+
+      - name: Create staging archive
+        id: create_staging_archive
+        uses: ./.github/actions/create_archive
+        with:
+          rust_target_arch: ${{ matrix.rust_target_arch }}
+
+      - name: Upload release archive
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: ${{ steps.create_staging_archive.outputs.archive_name }}
+          asset_name: ${{ steps.create_staging_archive.outputs.archive_name }}
+          asset_content_type: application/octet-stream

@@ -1,0 +1,5 @@
+domain_root = "foo.net"
+subdomain_to_update = "home"
+update_interval = "30mins"
+digital_ocean_token = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
+dry_run = "false"
