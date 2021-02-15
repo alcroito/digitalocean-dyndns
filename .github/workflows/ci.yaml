@@ -1,0 +1,211 @@
+# Further CI inspiration
+# https://gist.github.com/PurpleBooth/84b3d7d6669f77d5a53801a258ed269a
+# https://github.com/qt-creator/qt-creator/blob/master/.github/workflows/build_cmake.yml
+
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+     
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
+      - uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        continue-on-error: true
+        with:
+          command: check
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
+      - uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-test-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        continue-on-error: true
+        with:
+          command: test
+
+  lints:
+    name: Lints
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
+      - uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        continue-on-error: true
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+  build:
+    needs:
+      - check
+      - test
+      - lints
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build:
+          - linux_x64
+          - linux_armv7
+          - linux_aarch64
+          - mac_x64
+        include:
+          - build: linux_x64
+            # building x86_64-unknown-linux-musl fails with not finding musl-gcc
+            rust_target_arch: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+          - build: linux_armv7
+            rust_target_arch: armv7-unknown-linux-musleabihf
+            os: ubuntu-latest
+            cross: true
+          - build: linux_aarch64
+            rust_target_arch: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+          - build: mac_x64
+            rust_target_arch: x86_64-apple-darwin
+            os: macos-latest
+            cross: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Cache cargo registry
+        uses: actions/cache@v2
+        if: matrix.cross == true
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
+      - name: Cache target folder
+        uses: actions/cache@v2
+        if: matrix.cross == true
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-builds-${{ matrix.build }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.rust_target_arch }}
+          override: true
+
+      - name: Use smart rust cache
+        uses: Swatinem/rust-cache@v1
+        if: matrix.cross == false
+        with:
+          key: ${{ matrix.build }}
+
+      - name: Show project dependency graph
+        uses: actions-rs/cargo@v1
+        with:
+          command: tree
+      - name: Build with cargo
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: build
+          args: --release --target=${{ matrix.rust_target_arch }}
+      - name: Set built artifact name
+        run: |
+          echo "ARTIFACT_NAME=do_ddns" >> $GITHUB_ENV
+      - name: Get built artifact path
+        run: |
+          echo "ARTIFACT_PATH=$(cargo metadata --format-version 1 | jq -r '.target_directory')/${{ matrix.rust_target_arch }}/release/${{ env.ARTIFACT_NAME }}" >> $GITHUB_ENV
+      - name: Get release version
+        run: |
+          echo "RELEASE_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)" >> $GITHUB_ENV     
+      - name: Build archive
+        shell: bash
+        run: |
+          staging="${{ env.ARTIFACT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.rust_target_arch }}-${{ github.run_id }}"
+          mkdir -p "$staging"
+          cp {README.md,LICENSE} "$staging/"
+          cp "${{ env.ARTIFACT_PATH }}" "$staging/"
+          tar czf "$staging.tar.gz" "$staging"
+          echo "ASSET=$staging.tar.gz" >> $GITHUB_ENV
+      - name: Upload archive
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ env.ARTIFACT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.rust_target_arch }}-${{ github.run_id }}.tar.gz
+          path: ${{ env.ASSET }}

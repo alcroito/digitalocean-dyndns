@@ -1,0 +1,37 @@
+[package]
+name = "digitalocean-dyndns"
+version = "0.0.1"
+edition = "2018"
+description = "Dynamic DNS using DigitalOcean's DNS API"
+readme = "README.md"
+repository = "https://github.com/alcroito/digitalocean-dyndns"
+license = "MIT"
+keywords = ["dyndns", "digitalocean"]
+exclude = ["/ci/*", "/.github/*"]
+publish = false
+
+[[bin]]
+name = "do_ddns" 
+path = "src/main.rs"
+
+[lib]
+name = "do_ddns" 
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.38"
+chrono = "0.4.19"
+clap = "2.33.3"
+fern = "0.6"
+humantime = "2.1.0"
+log = { version = "0.4.14", features = ["std", "serde"] }
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+serde = { version = "1.0.123", features = ["derive"] }
+serde_json = { version = "1.0.62" }
+signal-hook = { version = "0.3.4", features = ["extended-siginfo"] }
+toml = "0.5.8"
+trust-dns-resolver = "0.20.0"
+native-tls = { version = "0.2.7", features = ["vendored"]}
+
+[dev-dependencies]
+tempfile = "3.2.0"

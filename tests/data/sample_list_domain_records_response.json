@@ -1,0 +1,1 @@
+{"domain_records":[{"id":1,"type":"A","name":"home","data":"1.2.3.4","priority":null,"port":null,"ttl":3600,"weight":null,"flags":null,"tag":null}],"links":{},"meta":{"total":1}}

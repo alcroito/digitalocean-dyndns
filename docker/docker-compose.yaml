@@ -1,0 +1,15 @@
+# Sample compose service.
+# Adapt environment variables as needed.
+
+version: "3"
+services:
+  do_ddns:
+    image: alcroito/digitalocean-dyndns
+    container_name: do_ddns
+    environment:
+      - DO_DYNDNS_DOMAIN_ROOT=mydomain.com
+      - DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home
+      - DO_DYNDNS_UPDATE_INTERVAL=30mins
+      - DO_DYNDNS_DIGITAL_OCEAN_TOKEN=<token>
+      - DO_DYNDNS_LOG_LEVEL=info
+    restart: unless-stopped
