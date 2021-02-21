@@ -2,6 +2,7 @@ use anyhow::{anyhow, bail, Context, Result};
 use humantime::format_duration;
 use log::{error, info, trace, warn};
 use reqwest::blocking::Client;
+use secrecy::ExposeSecret;
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -142,7 +143,7 @@ impl DomainRecordUpdater for DigitalOceanUpdater {
         let response = self
             .request_client
             .get(&request_url)
-            .bearer_auth(access_token)
+            .bearer_auth(access_token.expose_secret().as_str())
             .query(&[("name", &subdomain_filter)])
             .send()
             .context("Failed to query DO for domain records")?;
@@ -169,7 +170,7 @@ impl DomainRecordUpdater for DigitalOceanUpdater {
         body.insert("data", new_ip.to_string());
         let response = client
             .put(&request_url)
-            .bearer_auth(access_token)
+            .bearer_auth(access_token.expose_secret().as_str())
             .json(&body)
             .send()
             .context(format!(
@@ -287,12 +288,14 @@ mod tests {
 
     #[test]
     fn test_basic() {
+        use crate::types::ValueFromStr;
+
         let mut config_builder =
             crate::config_builder::Builder::new(None, Err(anyhow!("No config")));
         config_builder
             .set_subdomain_to_update("home".to_owned())
             .set_domain_root("site.com".to_owned())
-            .set_digital_ocean_token("123".to_owned())
+            .set_digital_ocean_token(ValueFromStr::from_str("123").unwrap())
             .set_log_level(log::LevelFilter::Info)
             .set_update_interval(crate::config::UpdateInterval(
                 std::time::Duration::from_secs(5).into(),

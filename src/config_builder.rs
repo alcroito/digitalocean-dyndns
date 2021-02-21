@@ -1,5 +1,7 @@
 use crate::config::{Config, UpdateInterval};
 use crate::config_consts::*;
+use crate::token::SecretDigitalOceanToken;
+use crate::types::ValueFromStr;
 use anyhow::{anyhow, bail, Context, Result};
 use clap::ArgMatches;
 
@@ -75,7 +77,7 @@ pub struct ValueBuilder<'clap, 'toml, T> {
     default_value: Option<T>,
 }
 
-impl<'clap, 'toml, T: std::str::FromStr> ValueBuilder<'clap, 'toml, T> {
+impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
     pub fn new(key: &str) -> Self {
         ValueBuilder {
             key: key.to_owned(),
@@ -143,7 +145,7 @@ impl<'clap, 'toml, T: std::str::FromStr> ValueBuilder<'clap, 'toml, T> {
         if let Some(ref env_var_name) = self.env_var_name {
             let env_res = std::env::var(env_var_name);
             if let Ok(value) = env_res {
-                let parsed_res = value.parse::<T>();
+                let parsed_res = ValueFromStr::from_str(value.as_ref());
                 if let Ok(value) = parsed_res {
                     self.value = Some(value);
                 }
@@ -161,7 +163,7 @@ impl<'clap, 'toml, T: std::str::FromStr> ValueBuilder<'clap, 'toml, T> {
         if let Some((arg_matches, ref option_name)) = self.clap_option {
             let clap_value = arg_matches.value_of(option_name);
             if let Some(value) = clap_value {
-                let parsed_res = value.parse::<T>();
+                let parsed_res = ValueFromStr::from_str(value);
                 if let Ok(value) = parsed_res {
                     self.value = Some(value);
                 }
@@ -194,7 +196,7 @@ impl<'clap, 'toml, T: std::str::FromStr> ValueBuilder<'clap, 'toml, T> {
             let line = std::fs::read_to_string(file_path);
             if let Ok(line) = line {
                 let value = line.trim_end();
-                let parsed_res = value.parse::<T>();
+                let parsed_res = ValueFromStr::from_str(value);
                 if let Ok(value) = parsed_res {
                     self.value = Some(value);
                 }
@@ -214,7 +216,7 @@ impl<'clap, 'toml, T: std::str::FromStr> ValueBuilder<'clap, 'toml, T> {
             if let Some(toml_value) = toml_value {
                 if let Some(toml_str) = toml_value.as_str() {
                     let value = toml_str;
-                    let parsed_res = value.parse::<T>();
+                    let parsed_res = ValueFromStr::from_str(value);
                     if let Ok(value) = parsed_res {
                         self.value = Some(value);
                     }
@@ -256,7 +258,7 @@ pub struct Builder<'clap> {
     domain_root: Option<String>,
     subdomain_to_update: Option<String>,
     update_interval: Option<UpdateInterval>,
-    digital_ocean_token: Option<String>,
+    digital_ocean_token: Option<SecretDigitalOceanToken>,
     log_level: Option<log::LevelFilter>,
     dry_run: Option<bool>,
 }
@@ -314,7 +316,7 @@ impl<'clap> Builder<'clap> {
         self
     }
 
-    pub fn set_digital_ocean_token(&mut self, value: String) -> &mut Self {
+    pub fn set_digital_ocean_token(&mut self, value: SecretDigitalOceanToken) -> &mut Self {
         self.digital_ocean_token = Some(value);
         self
     }
@@ -365,7 +367,7 @@ impl<'clap> Builder<'clap> {
             }
         }
 
-        let digital_ocean_token: String = builder.build()?;
+        let digital_ocean_token: SecretDigitalOceanToken = builder.build()?;
 
         let log_level = ValueBuilder::new(SERVICE_LOG_LEVEL)
             .with_value(self.log_level)

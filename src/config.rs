@@ -1,3 +1,4 @@
+use crate::token::SecretDigitalOceanToken;
 use anyhow::Result;
 use humantime::Duration;
 use std::time::Duration as StdDuration;
@@ -8,7 +9,7 @@ pub struct Config {
     pub domain_root: String,
     pub subdomain_to_update: String,
     pub update_interval: UpdateInterval,
-    pub digital_ocean_token: String,
+    pub digital_ocean_token: SecretDigitalOceanToken,
     pub log_level: log::LevelFilter,
     pub dry_run: bool,
 }

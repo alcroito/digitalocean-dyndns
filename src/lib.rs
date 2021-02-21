@@ -7,4 +7,5 @@ pub mod humantime_wrapper_serde;
 pub mod ip_fetcher;
 pub mod logger;
 pub mod signal_handlers;
+pub mod token;
 pub mod types;
