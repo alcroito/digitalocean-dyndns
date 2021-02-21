@@ -63,7 +63,7 @@ pub fn config_with_args(clap_matches: &ArgMatches<'static>) -> Result<Config> {
     Ok(config)
 }
 
-type OccurencesFn<T> = Box<dyn FnMut(u64) -> T>;
+type OccurencesFn<T> = Box<dyn FnMut(u64) -> Option<T>>;
 pub struct ValueBuilder<'clap, 'toml, T> {
     key: String,
     value: Option<T>,
@@ -179,7 +179,7 @@ impl<'clap, 'toml, T: std::str::FromStr> ValueBuilder<'clap, 'toml, T> {
         if let Some((arg_matches, ref option_name, ref mut clap_fn)) = self.clap_occurrences_option
         {
             let occurences_value = arg_matches.occurrences_of(option_name);
-            self.value = Some(clap_fn(occurences_value));
+            self.value = clap_fn(occurences_value);
         }
 
         self
@@ -374,10 +374,10 @@ impl<'clap> Builder<'clap> {
                 self.clap_matches,
                 LOG_LEVEL_VERBOSITY_SHORT,
                 Box::new(|count| match count {
-                    0 => log::LevelFilter::Info,
-                    1 => log::LevelFilter::Debug,
-                    2 => log::LevelFilter::Trace,
-                    _ => log::LevelFilter::Trace,
+                    0 => None,
+                    1 => Some(log::LevelFilter::Debug),
+                    2 => Some(log::LevelFilter::Trace),
+                    _ => Some(log::LevelFilter::Trace),
                 }),
             )
             .with_config_value(self.toml_table.as_ref())

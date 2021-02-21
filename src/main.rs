@@ -18,7 +18,6 @@ fn main() -> Result<()> {
 fn start_daemon(config: Config) -> Result<()> {
     setup_logger(&config.log_level)?;
     setup_forceful_term_signal_handling()?;
-
     let updater = DigitalOceanUpdater::new(config);
     let exit_flag = updater.exit_flag();
     let app_thread = updater.start_update_loop_detached();

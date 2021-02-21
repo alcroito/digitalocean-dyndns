@@ -4,6 +4,9 @@ pub fn setup_early_logger() -> Result<()> {
     log_reroute::init()?;
     let early_logger = create_fern_dispatch(&log::LevelFilter::Trace);
     log_reroute::reroute_boxed(early_logger);
+    // This is needed to activate all the log::log!() macro calls, otherwise
+    // all the calls are no-ops.
+    log::set_max_level(log::LevelFilter::Trace);
     Ok(())
 }
 
