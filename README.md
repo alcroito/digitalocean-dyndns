@@ -41,7 +41,7 @@ Docker images (built using Github Actions) for the following platforms `linux/am
 are published to [DockerHub](https://hub.docker.com/r/alcroito/digitalocean-dyndns)
 and the [Github Container registry](https://github.com/users/alcroito/packages/container/package/digitalocean-dyndns).
 
-A sample [docker-compose.yaml](./doker/docker-compose.yaml) file to run the daemon as a docker container is provided.
+A sample [docker-compose.yaml](./docker/docker-compose.yaml) file to run the daemon as a docker container is provided.
 
 ## LICENSE
 
