@@ -75,7 +75,8 @@ Env var: DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home",
                     "\
 If true, the provided domain root 'A' record will be updated (instead of a subdomain).
 Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true",
-                ),
+                )
+                .conflicts_with(SUBDOMAIN_TO_UPDATE),
         )
         .arg(
             Arg::with_name(DIGITAL_OCEAN_TOKEN)
@@ -101,7 +102,7 @@ Path to file containing the digital ocean token on its first line.
 Example: '/config/secret_token.txt'",
                 )
                 .takes_value(true)
-                .conflicts_with("digital_ocean_token"),
+                .conflicts_with(DIGITAL_OCEAN_TOKEN),
         )
         .arg(
             Arg::with_name(UPDATE_INTERVAL)
