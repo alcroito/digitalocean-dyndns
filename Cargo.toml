@@ -1,6 +1,6 @@
 [package]
 name = "digitalocean-dyndns"
-version = "0.0.1"
+version = "0.0.3"
 edition = "2018"
 description = "Dynamic DNS using DigitalOcean's DNS API"
 readme = "README.md"
@@ -11,11 +11,11 @@ exclude = ["/ci/*", "/.github/*"]
 publish = false
 
 [[bin]]
-name = "do_ddns" 
+name = "do_ddns"
 path = "src/main.rs"
 
 [lib]
-name = "do_ddns" 
+name = "do_ddns"
 path = "src/lib.rs"
 
 [dependencies]
