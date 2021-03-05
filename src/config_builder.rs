@@ -257,6 +257,7 @@ pub struct Builder<'clap> {
     toml_table: Option<toml::value::Table>,
     domain_root: Option<String>,
     subdomain_to_update: Option<String>,
+    update_domain_root: Option<bool>,
     update_interval: Option<UpdateInterval>,
     digital_ocean_token: Option<SecretDigitalOceanToken>,
     log_level: Option<log::LevelFilter>,
@@ -293,6 +294,7 @@ impl<'clap> Builder<'clap> {
             clap_matches,
             toml_table,
             domain_root: None,
+            update_domain_root: None,
             subdomain_to_update: None,
             update_interval: None,
             digital_ocean_token: None,
@@ -308,6 +310,11 @@ impl<'clap> Builder<'clap> {
 
     pub fn set_subdomain_to_update(&mut self, value: String) -> &mut Self {
         self.subdomain_to_update = Some(value);
+        self
+    }
+
+    pub fn set_update_domain_root(&mut self, value: bool) -> &mut Self {
+        self.update_domain_root = Some(value);
         self
     }
 
@@ -344,7 +351,29 @@ impl<'clap> Builder<'clap> {
             .with_env_var_name()
             .with_clap(self.clap_matches)
             .with_config_value(self.toml_table.as_ref())
-            .build()?;
+            .build();
+
+        let update_domain_root = ValueBuilder::new(UPDATE_DOMAIN_ROOT)
+            .with_value(self.update_domain_root)
+            .with_env_var_name()
+            .with_clap(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .build();
+
+        let hostname_part = match (subdomain_to_update, update_domain_root) {
+            (Ok(subdomain_to_update), Err(_)) => subdomain_to_update,
+            (Err(_), Ok(update_domain_root)) => {
+                if update_domain_root {
+                    "@".to_owned()
+                } else {
+                    bail!("Please provide a subdomain to update.")
+                }
+            }
+            (Err(e), Err(_)) => return Err(e),
+            (Ok(_), Ok(_)) => {
+                bail!("Both 'subdomain to update' and 'update domain root' options were set. Please provide only one of them.")
+            }
+        };
 
         let update_interval = ValueBuilder::new(UPDATE_INTERVAL)
             .with_value(self.update_interval.clone())
@@ -396,7 +425,7 @@ impl<'clap> Builder<'clap> {
 
         let config = Config {
             domain_root,
-            subdomain_to_update,
+            hostname_part,
             update_interval,
             digital_ocean_token,
             log_level,

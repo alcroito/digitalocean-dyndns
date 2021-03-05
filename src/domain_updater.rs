@@ -11,7 +11,7 @@ use std::time::Instant;
 
 use crate::config::Config;
 use crate::ip_fetcher::{DnsIpFetcher, PublicIpFetcher};
-use crate::types::{DomainRecord, DomainRecords, UpdateDomainRecordResponse};
+use crate::types::{DomainFilter, DomainRecord, DomainRecords, UpdateDomainRecordResponse};
 
 const DIGITAL_OCEAN_API_HOST_NAME: &str = "https://api.digitalocean.com";
 
@@ -21,7 +21,6 @@ trait DomainRecordUpdater {
         &self,
         domain_record_id: u64,
         domain_root: &str,
-        subdomain: &str,
         new_ip: &IpAddr,
     ) -> Result<()>;
 }
@@ -52,16 +51,18 @@ impl DigitalOceanUpdater {
 
         info!("Attempting domain record update");
         let records = self.get_domain_records()?;
-        let domain_record =
-            get_subdomain_record_to_update(&records, &self.config.subdomain_to_update)?;
+        let domain_record = get_record_to_update(&records, &self.config.hostname_part)?;
         if should_update_domain_ip(&public_ip, &domain_record) {
             info!(
                 "Existing domain record IP does not match current public IP: '{}'; domain record IP: '{}'. Updating record",
                 public_ip, domain_record.data
             );
             let domain_root = &self.config.domain_root;
-            let subdomain = &self.config.subdomain_to_update;
-            self.update_domain_ip(domain_record.id, domain_root, subdomain, &public_ip)?;
+            if !self.config.dry_run {
+                self.update_domain_ip(domain_record.id, domain_root, &public_ip)?;
+            } else {
+                info!("Skipping updating IP due to dry run")
+            }
         } else {
             info!("Correct IP already set, nothing to do");
         }
@@ -75,24 +76,25 @@ impl DigitalOceanUpdater {
     pub fn start_update_loop(&mut self) -> Result<()> {
         let ip_fetcher = DnsIpFetcher::default();
 
-        let fqdn = build_subdomain_fqdn(&self.config.domain_root, &self.config.subdomain_to_update);
+        let domain_filter = DomainFilter::new(&self.config.domain_root, &self.config.hostname_part);
+        let fqdn = domain_filter.fqdn();
         let duration_formatted = format_duration(*self.config.update_interval.0);
         info!(
-            "Starting updater: domain record '{}' will be updated every {}",
-            fqdn, duration_formatted
+            "Starting updater: domain record '{}' of type '{}' will be updated every {}",
+            fqdn,
+            domain_filter.record_type(),
+            duration_formatted
         );
 
         loop {
-            if !self.config.dry_run {
-                let attempt_result = self.attempt_update(&ip_fetcher);
-                if let Err(e) = attempt_result {
-                    error!("Domain record update attempt failed: {}", e);
-                    self.failed_attempts += 1;
-                }
-                if self.failed_attempts > 10 {
-                    warn!("Too many failed domain record update attempts. Shutting down updater");
-                    break;
-                }
+            let attempt_result = self.attempt_update(&ip_fetcher);
+            if let Err(e) = attempt_result {
+                error!("Domain record update attempt failed: {}", e);
+                self.failed_attempts += 1;
+            }
+            if self.failed_attempts > 10 {
+                warn!("Too many failed domain record update attempts. Shutting down updater");
+                break;
             }
 
             let duration_formatted = format_duration(*self.config.update_interval.0);
@@ -130,21 +132,29 @@ impl DigitalOceanUpdater {
     fn should_exit(&self) -> bool {
         self.should_exit.load(Ordering::SeqCst)
     }
+
+    fn build_query_filter(&self) -> Vec<(&'static str, String)> {
+        let domain_filter = DomainFilter::new(&self.config.domain_root, &self.config.hostname_part);
+        let record_type = match domain_filter {
+            DomainFilter::Root(_) => domain_filter.record_type().to_owned(),
+            DomainFilter::Subdomain(_) => domain_filter.record_type().to_owned(),
+        };
+        vec![("type", record_type), ("name", domain_filter.fqdn())]
+    }
 }
 
 impl DomainRecordUpdater for DigitalOceanUpdater {
     fn get_domain_records(&self) -> Result<DomainRecords> {
         let domain_root = &self.config.domain_root;
-        let subdomain = &self.config.subdomain_to_update;
         let endpoint = format!("/v2/domains/{}/records", domain_root);
         let request_url = format!("{}{}", DIGITAL_OCEAN_API_HOST_NAME, endpoint);
         let access_token = &self.config.digital_ocean_token;
-        let subdomain_filter = build_subdomain_fqdn(&domain_root, &subdomain);
+        let query_filter = self.build_query_filter();
         let response = self
             .request_client
             .get(&request_url)
             .bearer_auth(access_token.expose_secret().as_str())
-            .query(&[("name", &subdomain_filter)])
+            .query(&query_filter)
             .send()
             .context("Failed to query DO for domain records")?;
 
@@ -158,10 +168,10 @@ impl DomainRecordUpdater for DigitalOceanUpdater {
         &self,
         domain_record_id: u64,
         domain_root: &str,
-        subdomain: &str,
         new_ip: &IpAddr,
     ) -> Result<()> {
-        let subdomain = build_subdomain_fqdn(&domain_root, &subdomain);
+        let domain_filter = DomainFilter::new(&self.config.domain_root, &self.config.hostname_part);
+        let fqdn = domain_filter.fqdn();
         let endpoint = format!("/v2/domains/{}/records/{}", domain_root, domain_record_id);
         let request_url = format!("{}{}", DIGITAL_OCEAN_API_HOST_NAME, endpoint);
         let access_token = &self.config.digital_ocean_token;
@@ -173,10 +183,7 @@ impl DomainRecordUpdater for DigitalOceanUpdater {
             .bearer_auth(access_token.expose_secret().as_str())
             .json(&body)
             .send()
-            .context(format!(
-                "Failed to update domain record for subdomain: {}",
-                subdomain
-            ))?;
+            .context(format!("Failed to update domain record for: {}", fqdn))?;
 
         let record: UpdateDomainRecordResponse = response
             .json()
@@ -187,12 +194,9 @@ impl DomainRecordUpdater for DigitalOceanUpdater {
             .parse::<IpAddr>()
             .expect("Failed to parse IP from response");
         if &response_ip != new_ip {
-            bail!(format!("Failed to update IP for subdomain: {}", subdomain))
+            bail!(format!("Failed to update IP for: {}", fqdn))
         } else {
-            info!(
-                "Successfully updated public IP for subdomain: {}",
-                subdomain
-            );
+            info!("Successfully updated public IP for: {}", fqdn);
         }
         Ok(())
     }
@@ -204,22 +208,18 @@ impl Drop for DigitalOceanUpdater {
     }
 }
 
-fn build_subdomain_fqdn(domain_root: &str, subdomain: &str) -> String {
-    format!("{}.{}", subdomain, domain_root)
-}
-
-fn get_subdomain_record_to_update<'a>(
+fn get_record_to_update<'a>(
     records: &'a DomainRecords,
-    subdomain: &str,
+    hostname_part: &str,
 ) -> Result<&'a DomainRecord> {
     if records.domain_records.is_empty() {
-        bail!("Failed to find subdomain update, domain records are empty");
+        bail!("Failed to find hostname to update, retreived domain records are empty");
     }
     records
         .domain_records
         .iter()
-        .find(|&record| record.name.eq(subdomain))
-        .ok_or_else(|| anyhow!("Failed to find subdomain to update"))
+        .find(|&record| record.name.eq(hostname_part))
+        .ok_or_else(|| anyhow!("Failed to find hostname to update in the retrieved domain records"))
 }
 
 fn should_update_domain_ip(public_ip: &IpAddr, domain_record: &DomainRecord) -> bool {
@@ -275,7 +275,6 @@ mod tests {
             &self,
             domain_record_id: u64,
             domain_root: &str,
-            subdomain: &str,
             new_ip: &IpAddr,
         ) -> Result<()> {
             if self.return_success {
@@ -305,18 +304,12 @@ mod tests {
         let public_ip = ip_fetcher.fetch_public_ip().unwrap();
         let updater = MockUpdater::new();
         let records = updater.get_domain_records().unwrap();
-        let domain_record =
-            get_subdomain_record_to_update(&records, &config.subdomain_to_update).unwrap();
+        let domain_record = get_record_to_update(&records, &config.hostname_part).unwrap();
         let should_update = should_update_domain_ip(&public_ip, domain_record);
 
         assert_eq!(should_update, true);
 
-        let result = updater.update_domain_ip(
-            domain_record.id,
-            &config.domain_root,
-            &config.subdomain_to_update,
-            &public_ip,
-        );
+        let result = updater.update_domain_ip(domain_record.id, &config.domain_root, &public_ip);
         assert!(result.is_err());
     }
 }
