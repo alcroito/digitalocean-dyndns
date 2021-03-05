@@ -3,9 +3,9 @@ use clap::{crate_version, App, Arg, ArgMatches};
 use crate::config_consts::*;
 
 pub fn get_clap_matches() -> ArgMatches<'static> {
-    let matches = App::new("Digital ocean dynamic dns updater")
+    let matches = App::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
-        .about("Updates a digital ocean domain record to point to the current machine's public IP")
+        .about("Updates a DigitalOcean domain record to point to the current machine's public IP")
         .setting(clap::AppSettings::NextLineHelp)
         .usage(
             "\
