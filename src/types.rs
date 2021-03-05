@@ -18,6 +18,52 @@ pub struct DomainRecords {
 pub struct UpdateDomainRecordResponse {
     pub domain_record: DomainRecord,
 }
+
+pub struct SubdomainFilter {
+    domain_root: String,
+    subdomain: String,
+}
+
+impl SubdomainFilter {
+    pub fn new(domain_root: &str, subdomain: &str) -> Self {
+        SubdomainFilter {
+            domain_root: domain_root.to_owned(),
+            subdomain: subdomain.to_owned(),
+        }
+    }
+}
+
+pub enum DomainFilter {
+    Root(String),
+    Subdomain(SubdomainFilter),
+}
+
+impl DomainFilter {
+    pub fn new(domain_root: &str, hostname_part: &str) -> Self {
+        if hostname_part == "@" {
+            DomainFilter::Root(domain_root.to_owned())
+        } else {
+            DomainFilter::Subdomain(SubdomainFilter::new(domain_root, hostname_part))
+        }
+    }
+
+    pub fn fqdn(&self) -> String {
+        match self {
+            DomainFilter::Root(domain_root) => domain_root.to_string(),
+            DomainFilter::Subdomain(filter) => {
+                format!("{}.{}", filter.subdomain, filter.domain_root)
+            }
+        }
+    }
+
+    pub fn record_type(&self) -> &str {
+        match self {
+            DomainFilter::Root(_) => "A",
+            DomainFilter::Subdomain(_) => "A",
+        }
+    }
+}
+
 pub trait ValueFromStr: Sized {
     type Err;
     fn from_str(s: &str) -> Result<Self, Self::Err>;

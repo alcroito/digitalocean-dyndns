@@ -11,6 +11,7 @@ pub fn get_clap_matches() -> ArgMatches<'static> {
             "\
     do_dyndns [FLAGS] [OPTIONS]
     do_dyndns -c <CONFIG_PATH> -d <DOMAIN> -s <SUBDOMAIN> -t <TOKEN> -p <TOKEN_PATH>
+    do_dyndns -d <DOMAIN> -r -t <TOKEN>
     do_dyndns -c /config/ddns.toml -t <TOKEN>
     do_dyndns -vvv -d foo.net -s home -i '10 mins' -p <TOKEN_PATH>
 ",
@@ -67,6 +68,16 @@ Env var: DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home",
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name(UPDATE_DOMAIN_ROOT)
+                .short("r")
+                .long("update-domain-root")
+                .help(
+                    "\
+If true, the provided domain root 'A' record will be updated (instead of a subdomain).
+Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true",
+                ),
+        )
+        .arg(
             Arg::with_name(DIGITAL_OCEAN_TOKEN)
                 .short("t")
                 .long("token")
@@ -110,7 +121,7 @@ Env var: DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins",
         .arg(Arg::with_name(DRY_RUN).short("n").long("dry-run").help(
             "\
 Show what would have been updated.
-Env var: DO_DYNDNS_DRY_RUN",
+Env var: DO_DYNDNS_DRY_RUN=true",
         ))
         .get_matches();
     matches

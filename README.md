@@ -15,14 +15,14 @@ A Unix daemon that periodically updates a DigitalOcean domain record with the cu
 The daemon periodically runs the following steps:
 
 * finds the current machine's public IPv4 by sending a DNS request to an OpenDNS resolver
-* queries the domain records using DO's API to find the configured subdomain. If the subdomain IP
-  is different from the current public API, it updates the subdomain record to point to the new IP
+* queries the domain records using DO's API to find the hostname to update. If the queried IP
+  is different from the current public API, it updates the domain record to point to the new IP
 
 ## Setup
 
 * A Unix (Linux / macOS) server to run the daemon
 * A DigitalOcean account with your domain associated to it
-* An existing `A` record for the subdomain to be updated
+* An existing `A` record for the subdomain or domain root to be updated
 
 ## Usage
 

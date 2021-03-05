@@ -9,6 +9,8 @@ services:
     environment:
       - DO_DYNDNS_DOMAIN_ROOT=mydomain.com
       - DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home
+      # to update the domain root 'A' record
+      # - DO_DYNDNS_UPDATE_DOMAIN_ROOT=true
       - DO_DYNDNS_UPDATE_INTERVAL=30mins
       - DO_DYNDNS_DIGITAL_OCEAN_TOKEN=<token>
       - DO_DYNDNS_LOG_LEVEL=info
