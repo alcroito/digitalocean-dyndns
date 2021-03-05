@@ -40,7 +40,7 @@ Build using `cargo build`. The executable will be placed into `$PWD/target[/targ
 
 ## Docker images and docker-compose
 
-Docker images based on Alpine Linux (~7MB) are available for your server-y needs. 
+Docker images based on Alpine Linux (~7MB) are available for your server-y needs.
 
 They are regularly built using Github Actions for the following platforms:
 
