@@ -1,4 +1,4 @@
-# Sample compose service.
+# Sample docker-compose service
 # Adapt environment variables as needed.
 
 version: "3"

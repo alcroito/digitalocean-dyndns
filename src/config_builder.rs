@@ -1,4 +1,4 @@
-use crate::config::{Config, UpdateInterval};
+use crate::config::{Config, Domains, UpdateInterval};
 use crate::config_consts::*;
 use crate::token::SecretDigitalOceanToken;
 use crate::types::ValueFromStr;
@@ -38,12 +38,12 @@ fn get_config_path_candidates(clap_matches: &ArgMatches<'static>) -> Vec<String>
         candidates.push(v.to_owned());
     }
 
-    // Finally check default.
+    // Finally check the default path.
     candidates.push(get_default_config_path().to_owned());
     candidates
 }
 
-fn get_config_path_from_candidates(candidates: &[String]) -> Result<&str> {
+fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
     candidates
         .iter()
         .find(|path| file_is_readable(path))
@@ -54,15 +54,32 @@ fn get_config_path_from_candidates(candidates: &[String]) -> Result<&str> {
                 candidates_str
             ))
         })
-        .map(|path| path.as_str())
+        .map(|path| path.to_owned())
+}
+
+fn get_config_path(clap_matches: &ArgMatches<'static>) -> Result<String> {
+    let candidates = get_config_path_candidates(&clap_matches);
+    get_config_path_from_candidates(&candidates)
 }
 
 pub fn config_with_args(clap_matches: &ArgMatches<'static>) -> Result<Config> {
-    let candidates = get_config_path_candidates(&clap_matches);
-    let config_file_path = get_config_path_from_candidates(&candidates);
+    let config_file_path = get_config_path(&clap_matches);
     let config_builder = Builder::new(Some(&clap_matches), config_file_path);
     let config = config_builder.build()?;
     Ok(config)
+}
+
+fn get_advanced_mode_domains(table: Option<&toml::value::Table>) -> Result<Domains> {
+    let domains = table
+        .ok_or_else(|| {
+            anyhow!("No config contents found while retrieving 'advanced mode' domains section")
+        })?
+        .get(DOMAINS_CONFIG_KEY)
+        .ok_or_else(|| anyhow!("No 'advanced mode' domains section found in config"))?
+        .clone()
+        .try_into::<Domains>()
+        .map_err(|e| anyhow!(e).context("Failed to parse 'advanced mode' domain section"))?;
+    Ok(domains)
 }
 
 type OccurencesFn<T> = Box<dyn FnMut(u64) -> Option<T>>;
@@ -267,7 +284,7 @@ pub struct Builder<'clap> {
 impl<'clap> Builder<'clap> {
     pub fn new(
         clap_matches: Option<&'clap ArgMatches<'clap>>,
-        config_file_path: Result<&str>,
+        config_file_path: Result<String>,
     ) -> Self {
         fn get_config(config_file_path: &str) -> Result<toml::value::Table> {
             let toml_value = read_config_map(config_file_path)?;
@@ -282,7 +299,7 @@ impl<'clap> Builder<'clap> {
         // but rather log it with the debug! category (or some other category).
         let mut toml_table = None;
         if let Ok(config_file_path) = config_file_path {
-            toml_table = get_config(config_file_path)
+            toml_table = get_config(&config_file_path)
                 .map_err(|e| {
                     eprintln!("{}", e);
                     e
@@ -338,7 +355,7 @@ impl<'clap> Builder<'clap> {
         self
     }
 
-    pub fn build(&self) -> Result<Config> {
+    fn build_simple_mode_domain_config_values(&self) -> Result<(String, String)> {
         let domain_root = ValueBuilder::new(DOMAIN_ROOT)
             .with_value(self.domain_root.clone())
             .with_env_var_name()
@@ -366,15 +383,62 @@ impl<'clap> Builder<'clap> {
                 if update_domain_root {
                     "@".to_owned()
                 } else {
-                    bail!("Please provide a subdomain to update.")
+                    bail!("Please provide a subdomain to update")
                 }
             }
-            (Err(e), Err(_)) => return Err(e),
+            (Err(e1), Err(e2)) => {
+                let e = format!("{:#}\n{:#}", e1, e2);
+                return Err(anyhow!(e).context("No valid domain to update found"));
+            }
             (Ok(_), Ok(_)) => {
-                bail!("Both 'subdomain to update' and 'update domain root' options were set. Please provide only one of them.")
+                bail!("Both 'subdomain to update' and 'update domain root' options were set. Please provide only one option")
             }
         };
+        Ok((domain_root, hostname_part))
+    }
 
+    fn simple_mode_domains_as_records(
+        config: Result<(String, String)>,
+    ) -> Result<crate::config::Domains> {
+        let config = config?;
+        let domains = crate::config::Domains {
+            domains: vec![crate::config::Domain {
+                name: config.0,
+                records: vec![crate::config::DomainRecord {
+                    record_type: "A".to_owned(),
+                    name: config.1,
+                }],
+            }],
+        };
+        Ok(domains)
+    }
+
+    fn build_domains(&self) -> Result<Domains> {
+        let simple_mode_domains =
+            Builder::simple_mode_domains_as_records(self.build_simple_mode_domain_config_values());
+        let advanced_mode_domains = get_advanced_mode_domains(self.toml_table.as_ref());
+        let domains = match (simple_mode_domains, advanced_mode_domains) {
+            (Ok(simple_mode_domains), Err(_)) => simple_mode_domains,
+            (Err(_), Ok(advanced_mode_domains)) => advanced_mode_domains,
+            (Err(e1), Err(e2)) => {
+                let e = format!("{:#}\n{:#}", e1, e2);
+                return Err(anyhow!(e).context("No valid domain configuration found"));
+            }
+            (Ok(_), Ok(_)) => {
+                bail!("Both simple and advance config modes provided. Please use only one mode")
+            }
+        };
+        Ok(domains)
+    }
+
+    fn build_general_options(
+        &self,
+    ) -> Result<(
+        UpdateInterval,
+        SecretDigitalOceanToken,
+        log::LevelFilter,
+        bool,
+    )> {
         let update_interval = ValueBuilder::new(UPDATE_INTERVAL)
             .with_value(self.update_interval.clone())
             .with_env_var_name()
@@ -423,11 +487,18 @@ impl<'clap> Builder<'clap> {
             .with_default(false)
             .build()?;
 
+        Ok((update_interval, digital_ocean_token, log_level, dry_run))
+    }
+
+    pub fn build(&self) -> Result<Config> {
+        let (update_interval, digital_ocean_token, log_level, dry_run) =
+            self.build_general_options()?;
+        let domains = self.build_domains()?;
+
         let config = Config {
-            domain_root,
-            hostname_part,
+            domains,
             update_interval,
-            digital_ocean_token,
+            digital_ocean_token: Some(digital_ocean_token),
             log_level,
             dry_run,
         };
