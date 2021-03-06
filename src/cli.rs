@@ -5,18 +5,62 @@ use crate::config_consts::*;
 pub fn get_clap_matches() -> ArgMatches<'static> {
     let matches = App::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
-        .about("Updates a DigitalOcean domain record to point to the current machine's public IP")
+        .about("Updates a DigitalOcean domain records to point to the current machine's public IP")
         .setting(clap::AppSettings::NextLineHelp)
         .usage(
             "\
+    Simple config mode:
     do_dyndns [FLAGS] [OPTIONS]
     do_dyndns -c <CONFIG_PATH> -d <DOMAIN> -s <SUBDOMAIN> -t <TOKEN> -p <TOKEN_PATH>
     do_dyndns -d <DOMAIN> -r -t <TOKEN>
     do_dyndns -c /config/ddns.toml -t <TOKEN>
     do_dyndns -vvv -d foo.net -s home -i '10 mins' -p <TOKEN_PATH>
+
+    Advanced config mode:
+    do_dyndns -c /config/ddns.toml -t <TOKEN>
 ",
         )
-        .after_help("Instead of using command line options you can also set environment variables.")
+        .after_help(
+            "\
+In simple config mode you can specify only one single domain record to update.
+The domain record details can be provided either via command line options,
+environment variables, or the config file.
+
+In advanced config mode you can specify multiple domains and records to update.
+The details can only be provided via the config file.
+
+Below is a sample config file which updates multiple domains:
+update_interval = \"10 minutes\"
+digital_ocean_token = \"abcd\"
+log_level = \"info\"
+
+[[domains]]
+name = \"mysite.com\"
+
+# Updates home.mysite.com
+[[domains.records]]
+type = \"A\"
+name = \"home\"
+
+# Updates home-backup.mysite.com
+[[domains.records]]
+type = \"A\"
+name = \"home-backup\"
+
+[[domains]]
+name = \"mysecondsite.com\"
+
+# Updates mysecondsite.com
+[[domains.records]]
+type = \"A\"
+name = \"@\"
+
+# Updates crib.mysecondsite.com
+[[domains.records]]
+type = \"A\"
+name = \"crib\"
+",
+        )
         .arg(
             Arg::with_name(CONFIG_KEY)
                 .short("c")

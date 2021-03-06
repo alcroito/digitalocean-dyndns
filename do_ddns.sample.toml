@@ -1,7 +1,52 @@
-domain_root = "foo.net"
-subdomain_to_update = "home"
-# to update the root A record
-#update_domain_root = "true"
+## Common options
+
+# How often should the domains be updated. Uses rust's humantime parsing rules.
 update_interval = "30mins"
+
+# Access token to use for DigitalOcean API calls.
 digital_ocean_token = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
+
+# Setting this option to true will cause the final IP updates to be skipped.
 dry_run = "false"
+
+
+## Simple config mode sample
+
+# Updates the IP of the 'home.mysite.com' A record.
+domain_root = "mysite.com"
+subdomain_to_update = "home"
+
+
+## Simple config mode sample
+
+# Updates the IP of the 'mysite.com' A record.
+# domain_root = "mysite.com"
+# update_domain_root = "true"
+
+
+## Advanced config mode sample
+[[domains]]
+name = "mysite.com"
+
+# Updates home.mysite.com
+[[domains.records]]
+type = "A"
+name = "home"
+
+# Updates home-backup.mysite.com
+[[domains.records]]
+type = "A"
+name = "home-backup"
+
+[[domains]]
+name = "mysecondsite.com"
+
+# Updates mysecondsite.com
+[[domains.records]]
+type = "A"
+name = "@"
+
+# Updates crib.mysecondsite.com
+[[domains.records]]
+type = "A"
+name = "crib"

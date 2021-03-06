@@ -1,65 +1,49 @@
 use anyhow::Error;
-use serde::Deserialize;
-#[derive(Deserialize, Debug)]
-pub struct DomainRecord {
-    pub id: u64,
-    #[serde(rename = "type")]
-    pub domain_type: String,
-    pub name: String,
-    pub data: String,
-}
 
-#[derive(Deserialize, Debug)]
-pub struct DomainRecords {
-    pub domain_records: Vec<DomainRecord>,
-}
+pub mod api {
+    use serde::Deserialize;
+    #[derive(Deserialize, Debug)]
+    pub struct DomainRecord {
+        pub id: u64,
+        #[serde(rename = "type")]
+        pub record_type: String,
+        pub name: String,
+        pub data: String,
+    }
 
-#[derive(Deserialize, Debug)]
-pub struct UpdateDomainRecordResponse {
-    pub domain_record: DomainRecord,
-}
+    #[derive(Deserialize, Debug)]
+    pub struct DomainRecords {
+        pub domain_records: Vec<DomainRecord>,
+    }
 
-pub struct SubdomainFilter {
-    domain_root: String,
-    subdomain: String,
-}
-
-impl SubdomainFilter {
-    pub fn new(domain_root: &str, subdomain: &str) -> Self {
-        SubdomainFilter {
-            domain_root: domain_root.to_owned(),
-            subdomain: subdomain.to_owned(),
-        }
+    pub type DomainRecordCache = std::collections::HashMap<String, DomainRecords>;
+    #[derive(Deserialize, Debug)]
+    pub struct UpdateDomainRecordResponse {
+        pub domain_record: DomainRecord,
     }
 }
 
-pub enum DomainFilter {
-    Root(String),
-    Subdomain(SubdomainFilter),
+#[derive(Debug)]
+pub struct DomainRecordToUpdate<'d, 'h, 'r> {
+    pub domain_name: &'d str,
+    pub hostname_part: &'h str,
+    pub record_type: &'r str,
 }
 
-impl DomainFilter {
-    pub fn new(domain_root: &str, hostname_part: &str) -> Self {
-        if hostname_part == "@" {
-            DomainFilter::Root(domain_root.to_owned())
-        } else {
-            DomainFilter::Subdomain(SubdomainFilter::new(domain_root, hostname_part))
+impl<'d, 'h, 'r> DomainRecordToUpdate<'d, 'h, 'r> {
+    pub fn new(domain_name: &'d str, hostname_part: &'h str, record_type: &'r str) -> Self {
+        DomainRecordToUpdate {
+            domain_name,
+            hostname_part,
+            record_type,
         }
     }
 
     pub fn fqdn(&self) -> String {
-        match self {
-            DomainFilter::Root(domain_root) => domain_root.to_string(),
-            DomainFilter::Subdomain(filter) => {
-                format!("{}.{}", filter.subdomain, filter.domain_root)
-            }
-        }
-    }
-
-    pub fn record_type(&self) -> &str {
-        match self {
-            DomainFilter::Root(_) => "A",
-            DomainFilter::Subdomain(_) => "A",
+        if self.hostname_part == "@" {
+            self.domain_name.to_owned()
+        } else {
+            format!("{}.{}", self.hostname_part, self.domain_name)
         }
     }
 }

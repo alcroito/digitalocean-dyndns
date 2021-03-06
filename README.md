@@ -8,30 +8,35 @@
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/alcroito/digitalocean-dyndns/ci?style=flat-square&logo=github&logoColor=white&labelColor=757575)](https://github.com/alcroito/digitalocean-dyndns/actions)
 [![License](https://img.shields.io/github/license/alcroito/digitalocean-dyndns)](https://github.com/alcroito/digitalocean-dyndns/blob/master/LICENSE)
 
-A Unix daemon that periodically updates a DigitalOcean domain record with the current machine's public IP address.
+A Unix daemon that periodically updates DigitalOcean domain records with the current machine's public IP address.
 
 ## How it works
 
 The daemon periodically runs the following steps:
 
 * finds the current machine's public IPv4 by sending a DNS request to an OpenDNS resolver
-* queries the domain records using DO's API to find the hostname to update. If the queried IP
-  is different from the current public API, it updates the domain record to point to the new IP
+* queries the configured domain records using DO's API. If the queried IPs
+  are different from the current public API, the domain records are updated to point to the new IP
 
 ## Setup
 
 * A Unix (Linux / macOS) server to run the daemon
 * A DigitalOcean account with your domain associated to it
-* An existing `A` record for the subdomain or domain root to be updated
+* An existing `A` record for each domain to be updated
 
 ## Usage
 
-The daemon can be configured via command line arguments, environment variables or a config file.
+There are 2 configuration modes: simple and advanced.
+
+Simple mode allows updating only a single domain record.
+Simple mode can be configured via command line arguments, environment variables or a config file.
+
+Advanced mode allows updating multiple domains and records.
+Advanced mode can only be configured via the config file.
 
 See [do_ddns.sample.toml](./do_ddns.sample.toml) for a sample configuration file.
 
-Run `do_ddns -h` to see the available command line options as well as available
-environment variables.
+Run `do_ddns -h` to see the available command line options and environment variables.
 
 ## Build requirements
 
