@@ -26,12 +26,12 @@ The daemon periodically runs the following steps:
 
 ## Usage
 
-There are 2 configuration modes: simple and advanced.
+There are 2 configuration modes: **simple** and **advanced**.
 
-Simple mode allows updating only a single domain record.
+**Simple** mode allows updating only one *single* domain record.
 Simple mode can be configured via command line arguments, environment variables or a config file.
 
-Advanced mode allows updating multiple domains and records.
+**Advanced** mode allows updating *multiple* domains and records.
 Advanced mode can only be configured via the config file.
 
 See [do_ddns.sample.toml](./do_ddns.sample.toml) for a sample configuration file.
