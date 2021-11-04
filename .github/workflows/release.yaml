@@ -16,13 +16,13 @@ jobs:
     steps:
       - name: Create artifacts directory
         run: mkdir artifacts
-      
+
       - name: Get the release version from the tag
         if: env.RELEASE_VERSION == ''
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           echo "tag is: ${{ env.RELEASE_VERSION }}"
-      
+
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
@@ -31,19 +31,19 @@ jobs:
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           release_name: ${{ env.RELEASE_VERSION }}
-      
+
       - name: Save release upload URL to artifact
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
-      
+
       - name: Save version number to artifact
         run: echo "${{ env.RELEASE_VERSION }}" > artifacts/release-version
-      
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v1
         with:
           name: artifacts
           path: artifacts
-  
+
   build-release:
     name: Build release
     needs: ['create-release']

@@ -66,7 +66,7 @@ jobs:
         echo ::set-output name=version::${VERSION}
 
         BASE_RUNTIME_IMAGE=alpine
-        
+
         # Keep branch name as is except for master.
         if [[ $GITHUB_REF == "refs/heads/"* ]]; then
           GITHUB_BRANCH=${GITHUB_REF#refs/heads/}
@@ -85,12 +85,12 @@ jobs:
           echo "Using GITHUB_TAG=GITHUB_TAG"
           REPO_REF="${GITHUB_TAG:1}"
 
-        # If not branch or tag, try to extract whatever it is. 
+        # If not branch or tag, try to extract whatever it is.
         else
           REPO_REF="${GITHUB_REF#refs/*/}"
           echo "Using REPO_REF=${REPO_REF}"
         fi
-        
+
         DOCKER_TAG_PREFIX=${REPO_REF}
         echo ::set-output name=tag::${GITHUB_REPOSITORY}:${DOCKER_TAG_PREFIX}-${{ matrix.rust_target_arch }}-${BASE_RUNTIME_IMAGE}
     - name: Build and push
@@ -166,7 +166,7 @@ jobs:
             echo "Using GITHUB_TAG=GITHUB_TAG"
             REPO_REF="${GITHUB_TAG:1}"
 
-          # If not branch or tag, try to extract whatever it is. 
+          # If not branch or tag, try to extract whatever it is.
           else
             REPO_REF="${GITHUB_REF#refs/*/}"
             echo "Using REPO_REF=${REPO_REF}"
@@ -176,12 +176,12 @@ jobs:
 
           PROJECT_NAME=${{ matrix.registry }}/${GITHUB_REPOSITORY}
           BASE_RUNTIME_IMAGE=alpine
-          
+
           SOURCE=${PROJECT_NAME}:${TAG_PREFIX}
           AMD64=${SOURCE}-x86_64-unknown-linux-musl-${BASE_RUNTIME_IMAGE}
           ARM64=${SOURCE}-aarch64-unknown-linux-musl-${BASE_RUNTIME_IMAGE}
           ARMV7=${SOURCE}-armv7-unknown-linux-musleabihf-${BASE_RUNTIME_IMAGE}
-          
+
           MAIN_TAG_BASE_RUNTIME_IMAGE=${TAG_PREFIX}-${BASE_RUNTIME_IMAGE}
 
           # Push '[branch/tag]-alpine' tag.
