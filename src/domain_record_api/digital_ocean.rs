@@ -167,8 +167,7 @@ mod tests {
         let domain_name = &config.domains.domains[0].name;
         let hostname_part = &config.domains.domains[0].records[0].name;
         let record_type = "A";
-        let record_to_update =
-            DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
+        let record_to_update = DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
 
         let records = updater.get_domain_records(domain_name).unwrap();
         let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
