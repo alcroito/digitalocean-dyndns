@@ -119,7 +119,7 @@ mod tests {
 
         fn parse_domain_records(s: &str) -> Result<api::DomainRecords> {
             let records: api::DomainRecords =
-                serde_json::from_str(&s).context("Failed to parse domain records JSON data")?;
+                serde_json::from_str(s).context("Failed to parse domain records JSON data")?;
             Ok(records)
         }
     }
@@ -168,13 +168,13 @@ mod tests {
         let hostname_part = &config.domains.domains[0].records[0].name;
         let record_type = "A";
         let record_to_update =
-            DomainRecordToUpdate::new(&domain_name, &hostname_part, &record_type);
+            DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
 
         let records = updater.get_domain_records(domain_name).unwrap();
         let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
         let should_update = should_update_domain_ip(&public_ip, domain_record);
 
-        assert_eq!(should_update, true);
+        assert!(should_update);
 
         let result = updater.update_domain_ip(domain_record.id, &record_to_update, &public_ip);
         assert!(result.is_err());

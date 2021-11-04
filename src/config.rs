@@ -30,8 +30,8 @@ pub struct Domain {
 }
 
 #[non_exhaustive]
-#[serde(transparent)]
 #[derive(Debug, Deserialize)]
+#[serde(transparent)]
 pub struct Domains {
     pub domains: Vec<Domain>,
 }

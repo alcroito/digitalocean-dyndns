@@ -58,13 +58,13 @@ fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
 }
 
 fn get_config_path(clap_matches: &ArgMatches<'static>) -> Result<String> {
-    let candidates = get_config_path_candidates(&clap_matches);
+    let candidates = get_config_path_candidates(clap_matches);
     get_config_path_from_candidates(&candidates)
 }
 
 pub fn config_with_args(clap_matches: &ArgMatches<'static>) -> Result<Config> {
-    let config_file_path = get_config_path(&clap_matches);
-    let config_builder = Builder::new(Some(&clap_matches), config_file_path);
+    let config_file_path = get_config_path(clap_matches);
+    let config_builder = Builder::new(Some(clap_matches), config_file_path);
     let config = config_builder.build()?;
     Ok(config)
 }

@@ -58,15 +58,15 @@ impl Updater {
                 o.into_mut()
             }
         };
-        let api_domain_record = get_record_to_update(&records, &record_to_update)?;
-        if should_update_domain_ip(&public_ip, &api_domain_record) {
+        let api_domain_record = get_record_to_update(records, record_to_update)?;
+        if should_update_domain_ip(public_ip, api_domain_record) {
             info!(
                 "Existing domain record IP does not match current public IP: '{}'; domain record IP: '{}'. Updating record",
                 public_ip, api_domain_record.data
             );
             if !self.config.dry_run {
                 self.api
-                    .update_domain_ip(api_domain_record.id, &record_to_update, &public_ip)?;
+                    .update_domain_ip(api_domain_record.id, record_to_update, public_ip)?;
             } else {
                 info!("Skipping updating IP due to dry run")
             }
@@ -89,7 +89,7 @@ impl Updater {
         for record_to_update in records_to_update {
             if let Err(e) = self.attempt_update_for_record(
                 &public_ip,
-                &record_to_update,
+                record_to_update,
                 &mut domain_record_cache,
             ) {
                 error!("{}", e);
