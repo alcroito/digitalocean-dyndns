@@ -19,21 +19,21 @@ name = "do_ddns"
 path = "src/lib.rs"
 
 [dependencies]
-anyhow = "1.0.38"
+anyhow = "1.0"
 chrono = { version = "0.4.19", default-features = false, features = ["alloc", "serde", "clock"] }
 clap = "2.33.3"
 fern = "0.6"
 humantime = "2.1.0"
 log = { version = "0.4.14", features = ["std", "serde"] }
-log-reroute = { version = "0.1.6" }
-native-tls = { version = "0.2.7", features = ["vendored"]}
+log-reroute = { version = "0.1" }
+native-tls = { version = "0.2", features = ["vendored"]}
 reqwest = { version = "0.11", features = ["blocking", "json"] }
-secrecy = "0.7.0"
-serde = { version = "1.0.123", features = ["derive"] }
-serde_json = { version = "1.0.62" }
-signal-hook = { version = "0.3.4", features = ["extended-siginfo"] }
-toml = "0.5.8"
-trust-dns-resolver = "0.20.0"
+secrecy = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+signal-hook = { version = "0.3", features = ["extended-siginfo"] }
+toml = "0.5"
+trust-dns-resolver = "0.20"
 
 [dev-dependencies]
-tempfile = "3.2.0"
+tempfile = "3"
