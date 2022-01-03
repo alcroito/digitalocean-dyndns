@@ -4,6 +4,7 @@ use crate::token::SecretDigitalOceanToken;
 use crate::types::ValueFromStr;
 use anyhow::{anyhow, bail, Context, Result};
 use clap::ArgMatches;
+use log::trace;
 
 fn get_default_config_path() -> &'static str {
     "./config/do_ddns.toml"
@@ -44,9 +45,21 @@ fn get_config_path_candidates(clap_matches: &ArgMatches<'static>) -> Vec<String>
 }
 
 fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
-    candidates
+    trace!("Config file candidates are: {:#?}", candidates);
+    let config_file_result = candidates
         .iter()
-        .find(|path| file_is_readable(path))
+        .find(|path| {
+            let readable = file_is_readable(path);
+            let canonical_path = std::fs::canonicalize(path);
+            trace!(
+                "Checking if config file exists and is readable:\n\
+                    file: {}\n readable: {}\n canonical path: {:?}",
+                path,
+                readable,
+                canonical_path
+            );
+            readable
+        })
         .ok_or_else(|| {
             let candidates_str = candidates.join("\n");
             anyhow!(format!(
@@ -54,7 +67,13 @@ fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
                 candidates_str
             ))
         })
-        .map(|path| path.to_owned())
+        .map(|path| path.to_owned());
+
+    match &config_file_result {
+        Ok(path) => trace!("Final config file chosen: {}", path),
+        Err(_) => trace!("No valid config file found."),
+    };
+    config_file_result
 }
 
 fn get_config_path(clap_matches: &ArgMatches<'static>) -> Result<String> {
