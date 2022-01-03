@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use do_ddns::build_info::print_build_info_if_requested;
 use do_ddns::cli::get_clap_matches;
 use do_ddns::config::Config;
 use do_ddns::config_builder::config_with_args;
@@ -20,6 +21,11 @@ fn main() -> Result<()> {
 
 fn main_impl() -> Result<()> {
     let clap_matches = get_clap_matches();
+
+    if print_build_info_if_requested(&clap_matches) {
+        return Ok(());
+    }
+
     let config = config_with_args(&clap_matches)?;
     start_daemon(config)?;
     Ok(())

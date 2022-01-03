@@ -9,6 +9,7 @@ license = "MIT"
 keywords = ["dyndns", "digitalocean"]
 exclude = ["/ci/*", "/.github/*"]
 publish = false
+build = "build.rs"
 
 [[bin]]
 name = "do_ddns"
@@ -34,6 +35,10 @@ serde_json = { version = "1.0" }
 signal-hook = { version = "0.3", features = ["extended-siginfo"] }
 toml = "0.5"
 trust-dns-resolver = "0.20"
+
+[build-dependencies]
+anyhow = "1.0"
+vergen = "6"
 
 [dev-dependencies]
 tempfile = "3"

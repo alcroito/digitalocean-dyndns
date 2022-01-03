@@ -190,6 +190,14 @@ jobs:
           command: build
           args: --release --target=${{ matrix.rust_target_arch }}
 
+      - name: Run app with --build-info
+        uses: actions-rs/cargo@v1
+        if: matrix.cross == false
+        with:
+          use-cross: ${{ matrix.cross }}
+          command: run
+          args: --release --target=${{ matrix.rust_target_arch }} -- --build-info
+
       - name: Create staging archive
         id: create_staging_archive
         uses: ./.github/actions/create_archive
