@@ -168,6 +168,10 @@ Env var: DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins",
 Show what would have been updated.
 Env var: DO_DYNDNS_DRY_RUN=true",
         ))
+        .arg(Arg::with_name(BUILD_INFO).long("build-info").help(
+            "\
+Output build info like git commit sha, rustc version, etc",
+        ))
         .get_matches();
     matches
 }
