@@ -1,5 +1,6 @@
 use crate::config::{Config, Domains, UpdateInterval};
 use crate::config_consts::*;
+use crate::config_early::EarlyConfig;
 use crate::token::SecretDigitalOceanToken;
 use crate::types::ValueFromStr;
 use anyhow::{anyhow, bail, Context, Result};
@@ -81,7 +82,8 @@ fn get_config_path(clap_matches: &ArgMatches<'static>) -> Result<String> {
     get_config_path_from_candidates(&candidates)
 }
 
-pub fn config_with_args(clap_matches: &ArgMatches<'static>) -> Result<Config> {
+pub fn config_with_args(early_config: &EarlyConfig) -> Result<Config> {
+    let clap_matches = early_config.get_clap_matches();
     let config_file_path = get_config_path(clap_matches);
     let config_builder = Builder::new(Some(clap_matches), config_file_path);
     let config = config_builder.build()?;

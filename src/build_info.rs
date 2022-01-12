@@ -1,7 +1,4 @@
-use crate::config_consts::BUILD_INFO;
-use clap::ArgMatches;
-
-fn print_build_info() {
+pub fn print_build_info() {
     println!(
         "
 Build date:          {}
@@ -50,13 +47,4 @@ Host CPU brand:      {}
         env!("VERGEN_SYSINFO_CPU_CORE_COUNT"),
         env!("VERGEN_SYSINFO_CPU_BRAND"),
     );
-}
-
-pub fn print_build_info_if_requested(clap_matches: &ArgMatches<'static>) -> bool {
-    if clap_matches.is_present(BUILD_INFO) {
-        print_build_info();
-        true
-    } else {
-        false
-    }
 }

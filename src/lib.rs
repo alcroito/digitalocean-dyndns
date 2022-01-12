@@ -1,8 +1,11 @@
 pub mod build_info;
 pub mod cli;
+pub mod commands;
 pub mod config;
 pub mod config_builder;
 pub mod config_consts;
+pub mod config_early;
+pub mod daemon;
 pub mod domain_record_api;
 pub mod humantime_wrapper_serde;
 pub mod ip_fetcher;
