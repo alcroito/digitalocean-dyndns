@@ -27,7 +27,7 @@ fn file_is_readable(path: &str) -> bool {
     std::fs::File::open(path).is_ok()
 }
 
-fn get_config_path_candidates(clap_matches: &ArgMatches<'static>) -> Vec<String> {
+fn get_config_path_candidates(clap_matches: &ArgMatches) -> Vec<String> {
     let mut candidates = vec![];
 
     // First check env.
@@ -77,7 +77,7 @@ fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
     config_file_result
 }
 
-fn get_config_path(clap_matches: &ArgMatches<'static>) -> Result<String> {
+fn get_config_path(clap_matches: &ArgMatches) -> Result<String> {
     let candidates = get_config_path_candidates(clap_matches);
     get_config_path_from_candidates(&candidates)
 }
@@ -108,8 +108,8 @@ pub struct ValueBuilder<'clap, 'toml, T> {
     key: String,
     value: Option<T>,
     env_var_name: Option<String>,
-    clap_option: Option<(&'clap ArgMatches<'clap>, String)>,
-    clap_occurrences_option: Option<(&'clap ArgMatches<'clap>, String, OccurencesFn<T>)>,
+    clap_option: Option<(&'clap ArgMatches, String)>,
+    clap_occurrences_option: Option<(&'clap ArgMatches, String, OccurencesFn<T>)>,
     file_path: Option<String>,
     config_value: Option<(&'toml toml::value::Table, String)>,
     default_value: Option<T>,
@@ -135,7 +135,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    pub fn with_clap(&mut self, arg_matches: Option<&'clap ArgMatches<'clap>>) -> &mut Self {
+    pub fn with_clap(&mut self, arg_matches: Option<&'clap ArgMatches>) -> &mut Self {
         if let Some(arg_matches) = arg_matches {
             self.clap_option = Some((arg_matches, self.key.to_owned()));
         }
@@ -144,7 +144,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
 
     pub fn with_clap_occurences(
         &mut self,
-        arg_matches: Option<&'clap ArgMatches<'clap>>,
+        arg_matches: Option<&'clap ArgMatches>,
         key: &str,
         clap_fn: OccurencesFn<T>,
     ) -> &mut Self {
@@ -291,7 +291,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
 }
 
 pub struct Builder<'clap> {
-    clap_matches: Option<&'clap ArgMatches<'clap>>,
+    clap_matches: Option<&'clap ArgMatches>,
     toml_table: Option<toml::value::Table>,
     domain_root: Option<String>,
     subdomain_to_update: Option<String>,
@@ -303,10 +303,7 @@ pub struct Builder<'clap> {
 }
 
 impl<'clap> Builder<'clap> {
-    pub fn new(
-        clap_matches: Option<&'clap ArgMatches<'clap>>,
-        config_file_path: Result<String>,
-    ) -> Self {
+    pub fn new(clap_matches: Option<&'clap ArgMatches>, config_file_path: Result<String>) -> Self {
         fn get_config(config_file_path: &str) -> Result<toml::value::Table> {
             let toml_value = read_config_map(config_file_path)?;
             let toml_table = match toml_value {
@@ -543,8 +540,8 @@ mod tests {
         let arg_vec = vec!["my_prog", "--foo", "some_val"];
         let matches = clap::App::new("test")
             .arg(
-                clap::Arg::with_name("foo")
-                    .short("f")
+                clap::Arg::new("foo")
+                    .short('f')
                     .long("foo")
                     .takes_value(true),
             )

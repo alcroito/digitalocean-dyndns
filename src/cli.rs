@@ -2,12 +2,12 @@ use clap::{crate_version, App, Arg, ArgMatches};
 
 use crate::config_consts::*;
 
-pub fn get_clap_matches() -> ArgMatches<'static> {
+pub fn get_clap_matches() -> ArgMatches {
     let matches = App::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
         .about("Updates a DigitalOcean domain records to point to the current machine's public IP")
         .setting(clap::AppSettings::NextLineHelp)
-        .usage(
+        .override_usage(
             "\
     Simple config mode:
     do_dyndns [FLAGS] [OPTIONS]
@@ -62,8 +62,8 @@ name = \"crib\"
 ",
         )
         .arg(
-            Arg::with_name(CONFIG_KEY)
-                .short("c")
+            Arg::new(CONFIG_KEY)
+                .short('c')
                 .long(CONFIG_KEY)
                 .value_name("FILE")
                 .help(
@@ -75,9 +75,9 @@ Env var: DO_DYNDNS_CONFIG=/config/do_ddns.toml",
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(LOG_LEVEL_VERBOSITY_SHORT)
-                .short(LOG_LEVEL_VERBOSITY_SHORT)
-                .multiple(true)
+            Arg::new(LOG_LEVEL_VERBOSITY_SHORT)
+                .short(LOG_LEVEL_VERBOSITY_SHORT_CHAR)
+                .multiple_occurrences(true)
                 .help(
                     "\
 Increases the level of verbosity. Repeat for more verbosity.
@@ -86,8 +86,8 @@ Env var: DO_DYNDNS_LOG_LEVEL=info [error|warn|info|debug|trace]
                 ),
         )
         .arg(
-            Arg::with_name(DOMAIN_ROOT)
-                .short("d")
+            Arg::new(DOMAIN_ROOT)
+                .short('d')
                 .long("domain-root")
                 .value_name("DOMAIN")
                 .help(
@@ -99,8 +99,8 @@ Env var: DO_DYNDNS_DOMAIN_ROOT=foo.net",
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(SUBDOMAIN_TO_UPDATE)
-                .short("s")
+            Arg::new(SUBDOMAIN_TO_UPDATE)
+                .short('s')
                 .long("subdomain-to-update")
                 .value_name("SUBDOMAIN")
                 .help(
@@ -112,8 +112,8 @@ Env var: DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home",
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(UPDATE_DOMAIN_ROOT)
-                .short("r")
+            Arg::new(UPDATE_DOMAIN_ROOT)
+                .short('r')
                 .long("update-domain-root")
                 .help(
                     "\
@@ -123,8 +123,8 @@ Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true",
                 .conflicts_with(SUBDOMAIN_TO_UPDATE),
         )
         .arg(
-            Arg::with_name(DIGITAL_OCEAN_TOKEN)
-                .short("t")
+            Arg::new(DIGITAL_OCEAN_TOKEN)
+                .short('t')
                 .long("token")
                 .value_name("TOKEN")
                 .help(
@@ -136,8 +136,8 @@ Env var: DO_DYNDNS_DIGITAL_OCEAN_TOKEN=abcdefghijklmnopqrstuvwxyz",
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(DIGITAL_OCEAN_TOKEN_PATH)
-                .short("p")
+            Arg::new(DIGITAL_OCEAN_TOKEN_PATH)
+                .short('p')
                 .long("token-file-path")
                 .value_name("FILE_PATH")
                 .help(
@@ -149,8 +149,8 @@ Example: '/config/secret_token.txt'",
                 .conflicts_with(DIGITAL_OCEAN_TOKEN),
         )
         .arg(
-            Arg::with_name(UPDATE_INTERVAL)
-                .short("i")
+            Arg::new(UPDATE_INTERVAL)
+                .short('i')
                 .long("update-interval")
                 .value_name("INTERVAL")
                 .help(
@@ -163,12 +163,12 @@ Env var: DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins",
                 )
                 .takes_value(true),
         )
-        .arg(Arg::with_name(DRY_RUN).short("n").long("dry-run").help(
+        .arg(Arg::new(DRY_RUN).short('n').long("dry-run").help(
             "\
 Show what would have been updated.
 Env var: DO_DYNDNS_DRY_RUN=true",
         ))
-        .arg(Arg::with_name(BUILD_INFO).long("build-info").help(
+        .arg(Arg::new(BUILD_INFO).long("build-info").help(
             "\
 Output build info like git commit sha, rustc version, etc",
         ))

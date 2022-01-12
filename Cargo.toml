@@ -22,7 +22,7 @@ path = "src/lib.rs"
 [dependencies]
 anyhow = "1.0"
 chrono = { version = "0.4.19", default-features = false, features = ["alloc", "serde", "clock"] }
-clap = "2.33.3"
+clap = { version = "3", features = ["cargo"] }
 fern = "0.6"
 humantime = "2.1.0"
 log = { version = "0.4.14", features = ["std", "serde"] }

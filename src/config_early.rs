@@ -4,7 +4,7 @@ use crate::cli::get_clap_matches;
 use crate::config_consts::BUILD_INFO;
 
 pub struct EarlyConfig {
-    clap_matches: ArgMatches<'static>,
+    clap_matches: ArgMatches,
 }
 
 impl EarlyConfig {
@@ -17,7 +17,7 @@ impl EarlyConfig {
         self.clap_matches.is_present(BUILD_INFO)
     }
 
-    pub fn get_clap_matches(&self) -> &ArgMatches<'static> {
+    pub fn get_clap_matches(&self) -> &ArgMatches {
         &self.clap_matches
     }
 }

@@ -8,6 +8,8 @@ pub static DIGITAL_OCEAN_TOKEN_PATH: &str = "token_file_path";
 pub static SERVICE_LOG_LEVEL: &str = "log_level";
 pub static DRY_RUN: &str = "dry_run";
 pub static LOG_LEVEL_VERBOSITY_SHORT: &str = "v";
+pub static LOG_LEVEL_VERBOSITY_SHORT_CHAR: char = 'v';
+
 pub static ENV_VAR_PREFIX: &str = "DO_DYNDNS_";
 pub static BUILD_INFO: &str = "build_info";
 
