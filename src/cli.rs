@@ -1,12 +1,12 @@
-use clap::{crate_version, App, Arg, ArgMatches};
+use clap::{crate_version, Arg, ArgMatches, Command};
 
 use crate::config_consts::*;
 
 pub fn get_clap_matches() -> ArgMatches {
-    let matches = App::new("DigitalOcean dynamic dns updater")
+    let matches = Command::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
         .about("Updates a DigitalOcean domain records to point to the current machine's public IP")
-        .setting(clap::AppSettings::NextLineHelp)
+        .next_line_help(true)
         .override_usage(
             "\
     Simple config mode:
