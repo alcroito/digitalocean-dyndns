@@ -25,20 +25,20 @@ chrono = { version = "0.4.19", default-features = false, features = ["alloc", "s
 clap = { version = "3", features = ["cargo"] }
 fern = "0.6"
 humantime = "2.1.0"
-log = { version = "0.4.14", features = ["std", "serde"] }
-log-reroute = { version = "0.1" }
-native-tls = { version = "0.2", features = ["vendored"]}
+log = { version = "0.4", features = ["std", "serde"] }
+log-reroute = "0.1"
+native-tls = { version = "0.2", features = ["vendored"] }
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 secrecy = "0.8"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0" }
+serde_json = "1.0"
 signal-hook = { version = "0.3", features = ["extended-siginfo"] }
 toml = "0.5"
 trust-dns-resolver = "0.20"
 
 [build-dependencies]
 anyhow = "1.0"
-vergen = "6"
+vergen = "7"
 
 [dev-dependencies]
 tempfile = "3"
