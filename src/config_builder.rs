@@ -176,7 +176,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    fn from_env(&mut self) -> &mut Self {
+    fn try_from_env(&mut self) -> &mut Self {
         if self.value.is_some() {
             return self;
         }
@@ -193,7 +193,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    fn from_clap(&mut self) -> &mut Self {
+    fn try_from_clap(&mut self) -> &mut Self {
         if self.value.is_some() {
             return self;
         }
@@ -211,7 +211,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    fn from_clap_occurences(&mut self) -> &mut Self {
+    fn try_from_clap_occurences(&mut self) -> &mut Self {
         if self.value.is_some() {
             return self;
         }
@@ -225,7 +225,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    fn from_file_line(&mut self) -> &mut Self {
+    fn try_from_file_line(&mut self) -> &mut Self {
         if self.value.is_some() {
             return self;
         }
@@ -244,7 +244,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    fn from_config_value(&mut self) -> &mut Self {
+    fn try_from_config_value(&mut self) -> &mut Self {
         if self.value.is_some() {
             return self;
         }
@@ -265,7 +265,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self
     }
 
-    fn from_default_value(&mut self) -> &mut Self {
+    fn try_from_default_value(&mut self) -> &mut Self {
         if self.value.is_some() {
             return self;
         }
@@ -278,12 +278,12 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
     }
 
     pub fn build(&mut self) -> Result<T> {
-        self.from_env();
-        self.from_clap();
-        self.from_clap_occurences();
-        self.from_file_line();
-        self.from_config_value();
-        self.from_default_value();
+        self.try_from_env();
+        self.try_from_clap();
+        self.try_from_clap_occurences();
+        self.try_from_file_line();
+        self.try_from_config_value();
+        self.try_from_default_value();
         self.value
             .take()
             .ok_or_else(|| anyhow!(format!("Missing value for config option {}", self.key)))
