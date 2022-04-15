@@ -5,7 +5,7 @@ use crate::config_consts::*;
 pub fn get_clap_matches() -> ArgMatches {
     let matches = Command::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
-        .about("Updates a DigitalOcean domain records to point to the current machine's public IP")
+        .about("Updates DigitalOcean domain records to point to the current machine's public IP")
         .next_line_help(true)
         .override_usage(
             "\
