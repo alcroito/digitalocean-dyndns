@@ -31,10 +31,9 @@ impl PublicIpFetcher for DnsIpFetcher {
             vec![],
             NameServerConfigGroup::from_ips_clear(OPEN_DNS_IPS, 53, true),
         );
-        let resolver_options = ResolverOpts {
-            use_hosts_file: false,
-            ..Default::default()
-        };
+        let mut resolver_options = ResolverOpts::default();
+        resolver_options.use_hosts_file = false;
+        let resolver_options = resolver_options;
         let resolver = Resolver::new(resolver_config, resolver_options)?;
         let response = resolver
             .lookup_ip(hostname_to_lookup)
