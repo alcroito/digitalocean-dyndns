@@ -538,7 +538,7 @@ mod tests {
         assert_eq!(value, "some_val");
 
         let arg_vec = vec!["my_prog", "--foo", "some_val"];
-        let matches = clap::App::new("test")
+        let matches = clap::Command::new("test")
             .arg(
                 clap::Arg::new("foo")
                     .short('f')
