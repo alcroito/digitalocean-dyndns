@@ -34,7 +34,7 @@ Simple mode can be configured via command line arguments, environment variables 
 **Advanced** mode allows updating *multiple* domains and records.
 Advanced mode can only be configured via the config file.
 
-See [do_ddns.sample.toml](./do_ddns.sample.toml) for a sample configuration file.
+See [do_ddns.sample.toml](./config/do_ddns.sample.toml) for a sample configuration file.
 
 Run `do_ddns -h` to see the available command line options and environment variables.
 
