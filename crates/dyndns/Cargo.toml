@@ -7,7 +7,6 @@ readme = "README.md"
 repository = "https://github.com/alcroito/digitalocean-dyndns"
 license = "MIT"
 keywords = ["dyndns", "digitalocean"]
-exclude = ["/ci/*", "/.github/*"]
 publish = false
 build = "build.rs"
 
