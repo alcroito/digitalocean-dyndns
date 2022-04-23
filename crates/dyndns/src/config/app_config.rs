@@ -8,6 +8,12 @@ use std::time::Duration as StdDuration;
 #[derive(Debug)]
 pub struct AppConfig {
     pub domains: Domains,
+    pub general_options: GeneralOptions,
+}
+
+#[non_exhaustive]
+#[derive(Debug)]
+pub struct GeneralOptions {
     pub update_interval: UpdateInterval,
     // TODO: Is there a better type to use here instead of Option?
     pub digital_ocean_token: Option<SecretDigitalOceanToken>,
