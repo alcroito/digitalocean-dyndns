@@ -66,7 +66,7 @@ impl Updater {
                     "Old domain record IP does not match current IP\n  current public IP:    '{}'\n  old domain record IP: '{}'.\nUpdating domain record",
                     curr_ip, api_domain_record.data
                 );
-                if !self.config.dry_run {
+                if !self.config.general_options.dry_run {
                     self.api
                         .update_domain_ip(api_domain_record.id, record_to_update, &curr_ip)?;
                 } else {
@@ -85,7 +85,10 @@ impl Updater {
         ip_fetcher: &DnsIpFetcher,
         records_to_update: &[DomainRecordToUpdate],
     ) -> Result<()> {
-        let current_public_ips = ip_fetcher.fetch_public_ips(self.config.ipv4, self.config.ipv6)?;
+        let current_public_ips = ip_fetcher.fetch_public_ips(
+            self.config.general_options.ipv4,
+            self.config.general_options.ipv6,
+        )?;
 
         let mut first_error = None;
         let mut domain_record_cache = api::DomainRecordCache::new();
@@ -152,7 +155,7 @@ impl Updater {
         let records_to_update = Updater::build_records_to_update(&self.config);
 
         let starting_message = Updater::build_starting_updater_mesage(
-            &self.config.update_interval,
+            &self.config.general_options.update_interval,
             &records_to_update,
         );
         info!("{}", starting_message);
@@ -168,7 +171,8 @@ impl Updater {
                 break;
             }
 
-            let duration_formatted = format_duration(*self.config.update_interval.0);
+            let duration_formatted =
+                format_duration(*self.config.general_options.update_interval.0);
             trace!("Sleeping for {}", duration_formatted);
 
             // Exit if interrupted.
@@ -183,7 +187,7 @@ impl Updater {
 
     fn was_interrupted_while_sleeping(&self) -> bool {
         let beginning_park = Instant::now();
-        let timeout = self.config.update_interval.0;
+        let timeout = self.config.general_options.update_interval.0;
         let mut sleep_time_left = timeout;
         loop {
             park_timeout(*sleep_time_left);

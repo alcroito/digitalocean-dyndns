@@ -1,4 +1,4 @@
-use super::app_config::{AppConfig, Domain, DomainRecord, Domains, UpdateInterval};
+use super::app_config::{AppConfig, Domain, DomainRecord, Domains, GeneralOptions, UpdateInterval};
 use super::config_builder::{make_env_var_from_key, ValueBuilder};
 use super::consts::*;
 use super::early::EarlyConfig;
@@ -271,16 +271,7 @@ impl<'clap> AppConfigBuilder<'clap> {
         Ok(domains)
     }
 
-    fn build_general_options(
-        &self,
-    ) -> Result<(
-        UpdateInterval,
-        SecretDigitalOceanToken,
-        tracing::Level,
-        bool,
-        bool,
-        bool,
-    )> {
+    fn build_general_options(&self) -> Result<GeneralOptions> {
         let update_interval = ValueBuilder::new(UPDATE_INTERVAL)
             .with_value(self.update_interval.clone())
             .with_env_var_name()
@@ -347,29 +338,25 @@ impl<'clap> AppConfigBuilder<'clap> {
             bail!("At least one kind of ip family support needs to be enabled, both are disabled.");
         }
 
-        Ok((
-            update_interval,
-            digital_ocean_token,
-            log_level,
-            dry_run,
-            ipv4,
-            ipv6,
-        ))
-    }
-
-    pub fn build(&self) -> Result<AppConfig> {
-        let (update_interval, digital_ocean_token, log_level, dry_run, ipv4, ipv6) =
-            self.build_general_options()?;
-        let domains = self.build_domains()?;
-
-        let config = AppConfig {
-            domains,
+        let general_options = GeneralOptions {
             update_interval,
             digital_ocean_token: Some(digital_ocean_token),
             log_level,
             dry_run,
             ipv4,
             ipv6,
+        };
+        Ok(general_options)
+    }
+
+    pub fn build(&self) -> Result<AppConfig> {
+        let general_options = self.build_general_options()?;
+
+        let domains = self.build_domains()?;
+
+        let config = AppConfig {
+            domains,
+            general_options,
         };
         Ok(config)
     }

@@ -7,10 +7,11 @@ use crate::updater::Updater;
 use color_eyre::eyre::Result;
 
 pub fn start_daemon(mut config: AppConfig) -> Result<()> {
-    setup_logger(&config.log_level)?;
+    setup_logger(&config.general_options.log_level)?;
     setup_forceful_term_signal_handling()?;
 
     let token = config
+        .general_options
         .digital_ocean_token
         .take()
         .expect("No digital ocean token in config");
