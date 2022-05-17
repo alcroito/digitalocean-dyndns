@@ -16,6 +16,31 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+          - default
+          - no_features
+          - stats
+          - all_features
+        include:
+          - build: default
+            features: ""
+            no_default_features: false
+            all_features: false
+          - build: no_features
+            features: ""
+            no_default_features: true
+            all_features: false
+          - build: stats
+            features: stats
+            no_default_features: true
+            all_features: false
+          - build: all_features
+            features: ""
+            no_default_features: false
+            all_features: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -35,12 +60,36 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Run cargo check
-        run: cargo check
-        continue-on-error: true
+        run: cargo check ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
 
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+          - default
+          - no_features
+          - stats
+          - all_features
+        include:
+          - build: default
+            features: ""
+            no_default_features: false
+            all_features: false
+          - build: no_features
+            features: ""
+            no_default_features: true
+            all_features: false
+          - build: stats
+            features: stats
+            no_default_features: true
+            all_features: false
+          - build: all_features
+            features: ""
+            no_default_features: false
+            all_features: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -60,12 +109,36 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Run cargo test
-        run: cargo test
-        continue-on-error: true
+        run: cargo test ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
 
   lints:
     name: Lints
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+          - default
+          - no_features
+          - stats
+          - all_features
+        include:
+          - build: default
+            features: ""
+            no_default_features: false
+            all_features: false
+          - build: no_features
+            features: ""
+            no_default_features: true
+            all_features: false
+          - build: stats
+            features: stats
+            no_default_features: true
+            all_features: false
+          - build: all_features
+            features: ""
+            no_default_features: false
+            all_features: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -91,7 +164,7 @@ jobs:
         continue-on-error: true
 
       - name: Run cargo clippy
-        run: cargo clippy -- -D warnings
+        run: cargo clippy ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }} -- -D warnings
   build:
     needs:
       - check
@@ -100,30 +173,54 @@ jobs:
     name: Build
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         build:
           - linux_x64
+          - linux_x64_stats
           - linux_armv7
           - linux_aarch64
+          - linux_aarch64_stats
           - mac_x64
+          - mac_x64_stats
         include:
           - build: linux_x64
             # building x86_64-unknown-linux-musl fails with not finding musl-gcc
             rust_target_arch: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             cross: false
+            features: ""
+          - build: linux_x64_stats
+            # building x86_64-unknown-linux-musl fails with not finding musl-gcc
+            rust_target_arch: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+            features: stats
           - build: linux_armv7
             rust_target_arch: armv7-unknown-linux-musleabihf
             os: ubuntu-latest
             cross: true
+            features: ""
           - build: linux_aarch64
             rust_target_arch: aarch64-unknown-linux-musl
             os: ubuntu-latest
             cross: true
+            features: ""
+          - build: linux_aarch64_stats
+            rust_target_arch: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+            features: stats
           - build: mac_x64
             rust_target_arch: x86_64-apple-darwin
             os: macos-latest
             cross: false
+            features: ""
+          - build: mac_x64_stats
+            rust_target_arch: x86_64-apple-darwin
+            os: macos-latest
+            cross: false
+            features: stats
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -163,15 +260,15 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Build with cargo
-        run: cargo build --release --target=${{ matrix.rust_target_arch }}
+        run: cargo build --release --target=${{ matrix.rust_target_arch }} ${{ matrix.features && '--features' }} ${{ matrix.features }} --no-default-features
         if: matrix.cross == false
 
       - name: Build with cross
-        run: cross build --release --target=${{ matrix.rust_target_arch }}
+        run: cross build --release --target=${{ matrix.rust_target_arch }} ${{ matrix.features && '--features' }} ${{ matrix.features }} --no-default-features
         if: matrix.cross == true
 
       - name: Run app with --build-info
-        run: cargo run --release --target=${{ matrix.rust_target_arch }} -- --build-info
+        run: cargo run --release --target=${{ matrix.rust_target_arch }} ${{ matrix.features && '--features' }} ${{ matrix.features }} --no-default-features -- --build-info
         if: matrix.cross == false
 
       - name: Create staging archive
