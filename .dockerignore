@@ -1,0 +1,13 @@
+.dockerignore
+.github
+.gitignore
+.vscode
+/ARCHITECTURE.md
+/LICENSE
+/README.md
+/TODO.md
+/config
+diesel.toml
+/docker
+/docs
+/target
