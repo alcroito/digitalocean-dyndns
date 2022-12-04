@@ -23,24 +23,46 @@ jobs:
           - default
           - no_features
           - stats
+          - web
+          - web_debug
+          - web_debug_static_embedded
           - all_features
         include:
           - build: default
             features: ""
             no_default_features: false
             all_features: false
+            release: true
           - build: no_features
             features: ""
             no_default_features: true
             all_features: false
+            release: true
           - build: stats
             features: stats
             no_default_features: true
             all_features: false
+            release: true
+          - build: web
+            features: web
+            no_default_features: true
+            all_features: false
+            release: true
+          - build: web_debug
+            features: web
+            no_default_features: true
+            all_features: false
+            release: false
+          - build: web_debug_static_embedded
+            features: debug_static_embedded
+            no_default_features: true
+            all_features: false
+            release: true
           - build: all_features
             features: ""
             no_default_features: false
             all_features: true
+            release: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -59,8 +81,11 @@ jobs:
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Create dummy web artifacts
+        run: mkdir -p webclients/svelte/build
+
       - name: Run cargo check
-        run: cargo check ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
+        run: cargo check ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
 
   test:
     name: Test Suite
@@ -72,24 +97,46 @@ jobs:
           - default
           - no_features
           - stats
+          - web
+          - web_debug
+          - web_debug_static_embedded
           - all_features
         include:
           - build: default
             features: ""
             no_default_features: false
             all_features: false
+            release: true
           - build: no_features
             features: ""
             no_default_features: true
             all_features: false
+            release: true
           - build: stats
             features: stats
             no_default_features: true
             all_features: false
+            release: true
+          - build: web
+            features: web
+            no_default_features: true
+            all_features: false
+            release: true
+          - build: web_debug
+            features: web
+            no_default_features: true
+            all_features: false
+            release: false
+          - build: web_debug_static_embedded
+            features: debug_static_embedded
+            no_default_features: true
+            all_features: false
+            release: true
           - build: all_features
             features: ""
             no_default_features: false
             all_features: true
+            release: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -108,8 +155,11 @@ jobs:
       - name: Install stable toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Create dummy web artifacts
+        run: mkdir -p webclients/svelte/build
+
       - name: Run cargo test
-        run: cargo test ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
+        run: cargo test ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
 
   lints:
     name: Lints
@@ -121,24 +171,46 @@ jobs:
           - default
           - no_features
           - stats
+          - web
+          - web_debug
+          - web_debug_static_embedded
           - all_features
         include:
           - build: default
             features: ""
             no_default_features: false
             all_features: false
+            release: true
           - build: no_features
             features: ""
             no_default_features: true
             all_features: false
+            release: true
           - build: stats
             features: stats
             no_default_features: true
             all_features: false
+            release: true
+          - build: web
+            features: web
+            no_default_features: true
+            all_features: false
+            release: true
+          - build: web_debug
+            features: web
+            no_default_features: true
+            all_features: false
+            release: false
+          - build: web_debug_static_embedded
+            features: debug_static_embedded
+            no_default_features: true
+            all_features: false
+            release: true
           - build: all_features
             features: ""
             no_default_features: false
             all_features: true
+            release: true
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -159,17 +231,71 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Create dummy web artifacts
+        run: mkdir -p webclients/svelte/build
+
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
         continue-on-error: true
 
       - name: Run cargo clippy
-        run: cargo clippy ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }} -- -D warnings
+        run: cargo clippy ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }} -- -D warnings
+
+  web_check:
+    name: Web Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: npm
+          cache-dependency-path: 'webclients/svelte/package-lock.json'
+
+      - name: Install node packages
+        run: npm ci
+        working-directory: webclients/svelte
+
+      - name: Run npm check
+        run: npm run check
+        working-directory: webclients/svelte
+
+  web_lints:
+    name: Web Lints
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: npm
+          cache-dependency-path: 'webclients/svelte/package-lock.json'
+
+      - name: Install node packages
+        run: npm ci
+        working-directory: webclients/svelte
+
+      - name: Run web linters
+        uses: wearerequired/lint-action@v2
+        with:
+          eslint: true
+          prettier: true
+          eslint_dir: webclients/svelte
+          prettier_dir: webclients/svelte
+
   build:
     needs:
       - check
       - test
       - lints
+      - web_check
+      - web_lints
     name: Build
     runs-on: ${{ matrix.os }}
     strategy:
@@ -178,11 +304,14 @@ jobs:
         build:
           - linux_x64
           - linux_x64_stats
+          - linux_x64_web
           - linux_armv7
           - linux_aarch64
           - linux_aarch64_stats
+          - linux_aarch64_web
           - mac_x64
           - mac_x64_stats
+          - mac_x64_web
         include:
           - build: linux_x64
             # building x86_64-unknown-linux-musl fails with not finding musl-gcc
@@ -196,6 +325,12 @@ jobs:
             os: ubuntu-latest
             cross: false
             features: stats
+          - build: linux_x64_web
+            # building x86_64-unknown-linux-musl fails with not finding musl-gcc
+            rust_target_arch: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: false
+            features: web
           - build: linux_armv7
             rust_target_arch: armv7-unknown-linux-musleabihf
             os: ubuntu-latest
@@ -211,6 +346,11 @@ jobs:
             os: ubuntu-latest
             cross: true
             features: stats
+          - build: linux_aarch64_web
+            rust_target_arch: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            cross: true
+            features: web
           - build: mac_x64
             rust_target_arch: x86_64-apple-darwin
             os: macos-latest
@@ -221,6 +361,11 @@ jobs:
             os: macos-latest
             cross: false
             features: stats
+          - build: mac_x64_web
+            rust_target_arch: x86_64-apple-darwin
+            os: macos-latest
+            cross: false
+            features: web
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -258,6 +403,33 @@ jobs:
       - name: Install cross
         if: matrix.cross == true
         run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        if: matrix.features == 'web'
+        with:
+          node-version: 19
+          cache: npm
+          cache-dependency-path: 'webclients/svelte/package-lock.json'
+
+      - name: Install node packages
+        run: npm ci
+        working-directory: webclients/svelte
+        if: matrix.features == 'web'
+
+      - name: Generate types from the rust generated openapi schema
+        run: npm run apigen
+        working-directory: webclients/svelte
+        if: matrix.features == 'web'
+
+      - name: Build web app
+        run: npm run build
+        working-directory: webclients/svelte
+        if: matrix.features == 'web'
+
+      - name: Create dummy web artifacts
+        run: mkdir -p webclients/svelte/build
+        if: matrix.features != 'web'
 
       - name: Build with cargo
         run: cargo build --release --target=${{ matrix.rust_target_arch }} ${{ matrix.features && '--features' }} ${{ matrix.features }} --no-default-features

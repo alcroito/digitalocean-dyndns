@@ -104,12 +104,27 @@ jobs:
         if: matrix.cross == true
         run: cargo install cross --git https://github.com/cross-rs/cross
 
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: npm
+          cache-dependency-path: 'webclients/svelte/package-lock.json'
+
+      - name: Install node packages
+        run: npm ci
+        working-directory: webclients/svelte
+
+      - name: Build web app
+        run: npm run build
+        working-directory: webclients/svelte
+
       - name: Build with cargo
-        run: cargo build --release --target=${{ matrix.rust_target_arch }}
+        run: cargo build --release --target=${{ matrix.rust_target_arch }} --features web
         if: matrix.cross == false
 
       - name: Build with cross
-        run: cross build --release --target=${{ matrix.rust_target_arch }}
+        run: cross build --release --target=${{ matrix.rust_target_arch }} --features web
         if: matrix.cross == true
 
       - name: Get release download URL
