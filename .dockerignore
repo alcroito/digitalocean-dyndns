@@ -11,3 +11,5 @@ diesel.toml
 /docker
 /docs
 /target
+**/node_modules
+**/npm-debug.log
