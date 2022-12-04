@@ -36,4 +36,4 @@ runs:
         cp "${ARTIFACT_PATH}" "$staging/"
         tar czf "$staging.tar.gz" "$staging"
         ASSET="$staging.tar.gz"
-        echo "::set-output name=asset::$(echo $ASSET)"
+        echo "asset=$(echo $ASSET)" >> $GITHUB_OUTPUT

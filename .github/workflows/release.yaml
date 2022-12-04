@@ -91,11 +91,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-builds-${{ matrix.build }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: ${{ matrix.rust_target_arch }}
-          override: true
+          targets: ${{ matrix.rust_target_arch }}
 
       - name: Use smart rust cache
         uses: Swatinem/rust-cache@v2
@@ -103,12 +101,17 @@ jobs:
         with:
           key: ${{ matrix.build }}
 
+      - name: Install cross
+        if: matrix.cross == true
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
       - name: Build with cargo
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: ${{ matrix.cross }}
-          command: build
-          args: --release --target=${{ matrix.rust_target_arch }}
+        run: cargo build --release --target=${{ matrix.rust_target_arch }}
+        if: matrix.cross == false
+
+      - name: Build with cross
+        run: cross build --release --target=${{ matrix.rust_target_arch }}
+        if: matrix.cross == true
 
       - name: Get release download URL
         uses: actions/download-artifact@v1
