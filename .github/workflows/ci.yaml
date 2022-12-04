@@ -32,17 +32,11 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Run cargo check
-        uses: actions-rs/cargo@v1
+        run: cargo check
         continue-on-error: true
-        with:
-          command: check
 
   test:
     name: Test Suite
@@ -63,17 +57,11 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-test-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Run cargo test
-        uses: actions-rs/cargo@v1
+        run: cargo test
         continue-on-error: true
-        with:
-          command: test
 
   lints:
     name: Lints
@@ -94,25 +82,16 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: rustfmt, clippy
 
       - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
+        run: cargo fmt --all -- --check
         continue-on-error: true
-        with:
-          command: fmt
-          args: --all -- --check
 
       - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+        run: cargo clippy -- -D warnings
   build:
     needs:
       - check
@@ -166,11 +145,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-builds-${{ matrix.build }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: ${{ matrix.rust_target_arch }}
-          override: true
+          targets: ${{ matrix.rust_target_arch }}
 
       - name: Use smart rust cache
         uses: Swatinem/rust-cache@v2
@@ -179,24 +156,23 @@ jobs:
           key: ${{ matrix.build }}
 
       - name: Show project dependency graph
-        uses: actions-rs/cargo@v1
-        with:
-          command: tree
+        run: cargo tree
+
+      - name: Install cross
+        if: matrix.cross == true
+        run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Build with cargo
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: ${{ matrix.cross }}
-          command: build
-          args: --release --target=${{ matrix.rust_target_arch }}
+        run: cargo build --release --target=${{ matrix.rust_target_arch }}
+        if: matrix.cross == false
+
+      - name: Build with cross
+        run: cross build --release --target=${{ matrix.rust_target_arch }}
+        if: matrix.cross == true
 
       - name: Run app with --build-info
-        uses: actions-rs/cargo@v1
+        run: cargo run --release --target=${{ matrix.rust_target_arch }} -- --build-info
         if: matrix.cross == false
-        with:
-          use-cross: ${{ matrix.cross }}
-          command: run
-          args: --release --target=${{ matrix.rust_target_arch }} -- --build-info
 
       - name: Create staging archive
         id: create_staging_archive
