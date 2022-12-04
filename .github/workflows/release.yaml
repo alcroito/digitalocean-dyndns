@@ -72,10 +72,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache cargo registry
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         if: matrix.cross == true
         with:
           path: |
@@ -84,7 +84,7 @@ jobs:
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
 
       - name: Cache target folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         if: matrix.cross == true
         with:
           path: target
@@ -98,7 +98,7 @@ jobs:
           override: true
 
       - name: Use smart rust cache
-        uses: Swatinem/rust-cache@v1
+        uses: Swatinem/rust-cache@v2
         if: matrix.cross == false
         with:
           key: ${{ matrix.build }}
