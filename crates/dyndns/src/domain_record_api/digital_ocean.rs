@@ -26,7 +26,7 @@ impl DigitalOceanApi {
 
 impl DomainRecordApi for DigitalOceanApi {
     fn get_domain_records(&self, domain_name: &str) -> Result<api::DomainRecords> {
-        let endpoint = format!("/v2/domains/{}/records", domain_name);
+        let endpoint = format!("/v2/domains/{}/records?per_page=200", domain_name);
         let request_url = format!("{}{}", DIGITAL_OCEAN_API_HOST_NAME, endpoint);
         let access_token = &self.digital_ocean_token;
         let response = self
