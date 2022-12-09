@@ -35,10 +35,13 @@ impl DomainRecordApi for DigitalOceanApi {
             .bearer_auth(access_token.expose_secret().as_str())
             .send()
             .context("Failed to query DO for domain records")?;
-
-        let records: api::DomainRecords = response
-            .json()
-            .context("Failed to parse domain records JSON data")?;
+        let response_text = response
+            .text()
+            .context("Failed to retrieve domain records response text")?;
+        let records: api::DomainRecords = serde_json::from_str(&response_text).context(format!(
+            "Failed to parse domain records JSON data. Response text: {}",
+            &response_text
+        ))?;
         Ok(records)
     }
 
