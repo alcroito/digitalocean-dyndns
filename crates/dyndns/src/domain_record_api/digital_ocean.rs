@@ -31,7 +31,7 @@ impl DomainRecordApi for DigitalOceanApi {
         let access_token = &self.digital_ocean_token;
         let response = self
             .request_client
-            .get(&request_url)
+            .get(request_url)
             .bearer_auth(access_token.expose_secret().as_str())
             .send()
             .context("Failed to query DO for domain records")?;
@@ -63,7 +63,7 @@ impl DomainRecordApi for DigitalOceanApi {
         let mut body = std::collections::HashMap::new();
         body.insert("data", new_ip.to_string());
         let response = client
-            .put(&request_url)
+            .put(request_url)
             .bearer_auth(access_token.expose_secret().as_str())
             .json(&body)
             .send()
