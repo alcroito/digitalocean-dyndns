@@ -36,7 +36,10 @@ fn get_config_path_candidates(clap_matches: &ArgMatches) -> Vec<String> {
     }
 
     // Then check command line.
-    if let Some(v) = clap_matches.value_of(CONFIG_KEY) {
+    if let Some(v) = clap_matches
+        .get_one::<String>(CONFIG_KEY)
+        .map(|s| s.as_str())
+    {
         candidates.push(v.to_owned());
     }
 
@@ -109,6 +112,7 @@ pub struct ValueBuilder<'clap, 'toml, T> {
     value: Option<T>,
     env_var_name: Option<String>,
     clap_option: Option<(&'clap ArgMatches, String)>,
+    clap_option_bool: Option<(&'clap ArgMatches, String)>,
     clap_occurrences_option: Option<(&'clap ArgMatches, String, OccurencesFn<T>)>,
     file_path: Option<String>,
     config_value: Option<(&'toml toml::value::Table, String)>,
@@ -122,6 +126,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
             value: None,
             env_var_name: None,
             clap_option: None,
+            clap_option_bool: None,
             clap_occurrences_option: None,
             file_path: None,
             config_value: None,
@@ -138,6 +143,13 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
     pub fn with_clap(&mut self, arg_matches: Option<&'clap ArgMatches>) -> &mut Self {
         if let Some(arg_matches) = arg_matches {
             self.clap_option = Some((arg_matches, self.key.to_owned()));
+        }
+        self
+    }
+
+    pub fn with_clap_bool(&mut self, arg_matches: Option<&'clap ArgMatches>) -> &mut Self {
+        if let Some(arg_matches) = arg_matches {
+            self.clap_option_bool = Some((arg_matches, self.key.to_owned()));
         }
         self
     }
@@ -199,11 +211,38 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         }
 
         if let Some((arg_matches, ref option_name)) = self.clap_option {
-            let clap_value = arg_matches.value_of(option_name);
+            let clap_value = arg_matches
+                .get_one::<String>(option_name)
+                .map(|s| s.as_str());
             if let Some(value) = clap_value {
                 let parsed_res = ValueFromStr::from_str(value);
                 if let Ok(value) = parsed_res {
                     self.value = Some(value);
+                }
+            }
+        }
+
+        self
+    }
+
+    fn try_from_clap_bool(&mut self) -> &mut Self {
+        if self.value.is_some() {
+            return self;
+        }
+
+        if let Some((arg_matches, ref option_name)) = self.clap_option_bool {
+            let clap_value = arg_matches
+                .get_one::<String>(option_name)
+                .map(|s| s.as_str());
+            if let Some(value) = clap_value {
+                // FIXME: Ugly workaround to avoid generic type errors trying to assign bool
+                // directly. Should rethink.
+                let manually_parsed_res = value.parse::<bool>();
+                let parsed_res = ValueFromStr::from_str(value);
+                if let (Ok(value), Ok(bool_value)) = (parsed_res, manually_parsed_res) {
+                    if bool_value {
+                        self.value = Some(value);
+                    }
                 }
             }
         }
@@ -218,8 +257,8 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
 
         if let Some((arg_matches, ref option_name, ref mut clap_fn)) = self.clap_occurrences_option
         {
-            let occurences_value = arg_matches.occurrences_of(option_name);
-            self.value = clap_fn(occurences_value);
+            let occurences_value = arg_matches.get_count(option_name);
+            self.value = clap_fn(occurences_value as u64);
         }
 
         self
@@ -280,6 +319,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
     pub fn build(&mut self) -> Result<T> {
         self.try_from_env();
         self.try_from_clap();
+        self.try_from_clap_bool();
         self.try_from_clap_occurences();
         self.try_from_file_line();
         self.try_from_config_value();
@@ -391,7 +431,7 @@ impl<'clap> Builder<'clap> {
         let update_domain_root = ValueBuilder::new(UPDATE_DOMAIN_ROOT)
             .with_value(self.update_domain_root)
             .with_env_var_name()
-            .with_clap(self.clap_matches)
+            .with_clap_bool(self.clap_matches)
             .with_config_value(self.toml_table.as_ref())
             .build();
 
@@ -472,7 +512,9 @@ impl<'clap> Builder<'clap> {
             .with_clap(self.clap_matches)
             .with_config_value(self.toml_table.as_ref());
         if let Some(clap_matches) = self.clap_matches {
-            let from_file = clap_matches.value_of(DIGITAL_OCEAN_TOKEN_PATH);
+            let from_file = clap_matches
+                .get_one::<String>(DIGITAL_OCEAN_TOKEN_PATH)
+                .map(|s| s.as_str());
             if let Some(from_file) = from_file {
                 builder.with_single_line_from_file(from_file);
             }
@@ -500,7 +542,7 @@ impl<'clap> Builder<'clap> {
         let dry_run = ValueBuilder::new(DRY_RUN)
             .with_value(self.dry_run)
             .with_env_var_name()
-            .with_clap(self.clap_matches)
+            .with_clap_bool(self.clap_matches)
             .with_config_value(self.toml_table.as_ref())
             .with_default(false)
             .build()?;
@@ -527,6 +569,7 @@ impl<'clap> Builder<'clap> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cli::get_cli_command_definition;
     use tempfile::NamedTempFile;
 
     #[test]
@@ -539,12 +582,7 @@ mod tests {
 
         let arg_vec = vec!["my_prog", "--foo", "some_val"];
         let matches = clap::Command::new("test")
-            .arg(
-                clap::Arg::new("foo")
-                    .short('f')
-                    .long("foo")
-                    .takes_value(true),
-            )
+            .arg(clap::Arg::new("foo").short('f').long("foo"))
             .get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<String>::new("foo");
         builder.with_clap(Some(&matches));
@@ -578,5 +616,10 @@ mod tests {
         builder.with_default("some_val".to_owned());
         let value = builder.build().unwrap();
         assert_eq!(value, "some_val");
+    }
+
+    #[test]
+    fn verify_cli() {
+        get_cli_command_definition().debug_assert()
     }
 }

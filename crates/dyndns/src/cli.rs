@@ -1,9 +1,30 @@
-use clap::{crate_version, Arg, ArgMatches, Command};
+use clap::{
+    builder::{BoolishValueParser, TypedValueParser},
+    crate_version, Arg, ArgMatches, Command,
+};
 
 use crate::config_consts::*;
 
-pub fn get_clap_matches() -> ArgMatches {
-    let matches = Command::new("DigitalOcean dynamic dns updater")
+fn bool_to_string(b: bool) -> String {
+    match b {
+        true => "true",
+        false => "false",
+    }
+    .to_owned()
+}
+
+// FIXME: Remove this when ConfigBuilder has new API to distinguish between clap strings and bools.
+fn bool_to_string_value_parser(
+) -> clap::builder::MapValueParser<clap::builder::BoolishValueParser, fn(bool) -> String> {
+    BoolishValueParser::new().map(bool_to_string)
+}
+
+pub fn get_cli_args() -> ArgMatches {
+    get_cli_command_definition().get_matches()
+}
+
+pub fn get_cli_command_definition() -> Command {
+    Command::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
         .about("Updates DigitalOcean domain records to point to the current machine's public IP")
         .next_line_help(true)
@@ -71,13 +92,12 @@ name = \"crib\"
 Path to TOML config file.
 Default config path when none specified: '$PWD/config/do_ddns.toml'
 Env var: DO_DYNDNS_CONFIG=/config/do_ddns.toml",
-                )
-                .takes_value(true),
+                ),
         )
         .arg(
             Arg::new(LOG_LEVEL_VERBOSITY_SHORT)
                 .short(LOG_LEVEL_VERBOSITY_SHORT_CHAR)
-                .multiple_occurrences(true)
+                .action(clap::ArgAction::Count)
                 .help(
                     "\
 Increases the level of verbosity. Repeat for more verbosity.
@@ -95,8 +115,7 @@ Env var: DO_DYNDNS_LOG_LEVEL=info [error|warn|info|debug|trace]
 The domain root for which the domain record will be changed.
 Example: 'foo.net'
 Env var: DO_DYNDNS_DOMAIN_ROOT=foo.net",
-                )
-                .takes_value(true),
+                ),
         )
         .arg(
             Arg::new(SUBDOMAIN_TO_UPDATE)
@@ -108,8 +127,7 @@ Env var: DO_DYNDNS_DOMAIN_ROOT=foo.net",
 The subdomain for which the public IP will be updated.
 Example: 'home'
 Env var: DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home",
-                )
-                .takes_value(true),
+                ),
         )
         .arg(
             Arg::new(UPDATE_DOMAIN_ROOT)
@@ -120,6 +138,8 @@ Env var: DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home",
 If true, the provided domain root 'A' record will be updated (instead of a subdomain).
 Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true",
                 )
+                .action(clap::ArgAction::SetTrue)
+                .value_parser(bool_to_string_value_parser())
                 .conflicts_with(SUBDOMAIN_TO_UPDATE),
         )
         .arg(
@@ -132,8 +152,7 @@ Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true",
 The digital ocean access token.
 Example: 'abcdefghijklmnopqrstuvwxyz'
 Env var: DO_DYNDNS_DIGITAL_OCEAN_TOKEN=abcdefghijklmnopqrstuvwxyz",
-                )
-                .takes_value(true),
+                ),
         )
         .arg(
             Arg::new(DIGITAL_OCEAN_TOKEN_PATH)
@@ -145,7 +164,6 @@ Env var: DO_DYNDNS_DIGITAL_OCEAN_TOKEN=abcdefghijklmnopqrstuvwxyz",
 Path to file containing the digital ocean token on its first line.
 Example: '/config/secret_token.txt'",
                 )
-                .takes_value(true)
                 .conflicts_with(DIGITAL_OCEAN_TOKEN),
         )
         .arg(
@@ -160,18 +178,27 @@ Default is every 10 minutes.
 Uses rust's humantime format.
 Example: '15 mins 30 secs'
 Env var: DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins",
-                )
-                .takes_value(true),
+                ),
         )
-        .arg(Arg::new(DRY_RUN).short('n').long("dry-run").help(
-            "\
+        .arg(
+            Arg::new(DRY_RUN)
+                .short('n')
+                .long("dry-run")
+                .action(clap::ArgAction::SetTrue)
+                .value_parser(bool_to_string_value_parser())
+                .help(
+                    "\
 Show what would have been updated.
 Env var: DO_DYNDNS_DRY_RUN=true",
-        ))
-        .arg(Arg::new(BUILD_INFO).long("build-info").help(
-            "\
+                ),
+        )
+        .arg(
+            Arg::new(BUILD_INFO)
+                .long("build-info")
+                .help(
+                    "\
 Output build info like git commit sha, rustc version, etc",
-        ))
-        .get_matches();
-    matches
+                )
+                .action(clap::ArgAction::SetTrue),
+        )
 }
