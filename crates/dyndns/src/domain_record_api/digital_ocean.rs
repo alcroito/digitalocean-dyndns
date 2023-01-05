@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use color_eyre::eyre::{bail, Result, WrapErr};
 use reqwest::blocking::Client;
 use secrecy::ExposeSecret;
 use std::net::IpAddr;
@@ -34,14 +34,15 @@ impl DomainRecordApi for DigitalOceanApi {
             .get(request_url)
             .bearer_auth(access_token.expose_secret().as_str())
             .send()
-            .context("Failed to query DO for domain records")?;
+            .wrap_err("Failed to query DO for domain records")?;
         let response_text = response
             .text()
-            .context("Failed to retrieve domain records response text")?;
-        let records: api::DomainRecords = serde_json::from_str(&response_text).context(format!(
-            "Failed to parse domain records JSON data. Response text: {}",
-            &response_text
-        ))?;
+            .wrap_err("Failed to retrieve domain records response text")?;
+        let records: api::DomainRecords =
+            serde_json::from_str(&response_text).wrap_err(format!(
+                "Failed to parse domain records JSON data. Response text: {}",
+                &response_text
+            ))?;
         Ok(records)
     }
 
@@ -67,11 +68,11 @@ impl DomainRecordApi for DigitalOceanApi {
             .bearer_auth(access_token.expose_secret().as_str())
             .json(&body)
             .send()
-            .context(format!("Failed to update domain record for: {}", fqdn))?;
+            .wrap_err(format!("Failed to update domain record for: {}", fqdn))?;
 
         let record: api::UpdateDomainRecordResponse = response
             .json()
-            .context("Failed to parse domain record response JSON data")?;
+            .wrap_err("Failed to parse domain record response JSON data")?;
         let response_ip = record
             .domain_record
             .data
@@ -97,7 +98,7 @@ mod tests {
     use super::*;
     use crate::ip_fetcher::tests::MockIpFetcher;
     use crate::ip_fetcher::PublicIpFetcher;
-    use anyhow::anyhow;
+    use color_eyre::eyre::eyre;
     use std::net::Ipv4Addr;
     struct MockApi {
         return_success: bool,
@@ -122,7 +123,7 @@ mod tests {
 
         fn parse_domain_records(s: &str) -> Result<api::DomainRecords> {
             let records: api::DomainRecords =
-                serde_json::from_str(s).context("Failed to parse domain records JSON data")?;
+                serde_json::from_str(s).wrap_err("Failed to parse domain records JSON data")?;
             Ok(records)
         }
     }
@@ -153,8 +154,7 @@ mod tests {
         use crate::types::ValueFromStr;
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        let mut config_builder =
-            crate::config_builder::Builder::new(None, Err(anyhow!("No config")));
+        let mut config_builder = crate::config_builder::Builder::new(None, Err(eyre!("No config")));
         config_builder
             .set_subdomain_to_update("home".to_owned())
             .set_domain_root("site.com".to_owned())

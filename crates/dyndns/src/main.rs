@@ -1,14 +1,18 @@
-use anyhow::{anyhow, Result};
+use color_eyre::eyre::Result;
 use do_ddns::commands::{decide_command, handle_command};
 use do_ddns::config_early::EarlyConfig;
-use do_ddns::logger::setup_early_logger;
-use tracing::error;
-fn main() -> Result<()> {
-    setup_early_logger()?;
+use do_ddns::logger::{setup_early_logger, EyreSpanTraceWorkaroundGuard};
 
-    main_impl().map_err(|e| {
-        error!("{:?}", e);
-        anyhow!("something failed")
+fn main() -> Result<()> {
+    setup_error_reporting_and_logger()?;
+    main_impl()
+}
+
+fn setup_error_reporting_and_logger() -> Result<()> {
+    EyreSpanTraceWorkaroundGuard::run(|| {
+        color_eyre::install()?;
+        setup_early_logger()?;
+        Ok(())
     })
 }
 

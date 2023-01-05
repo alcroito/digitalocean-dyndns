@@ -3,7 +3,7 @@ use crate::domain_record_api::digital_ocean::DigitalOceanApi;
 use crate::logger::setup_logger;
 use crate::signal_handlers::{handle_term_signals_gracefully, setup_forceful_term_signal_handling};
 use crate::updater::Updater;
-use anyhow::Result;
+use color_eyre::eyre::Result;
 
 pub fn start_daemon(mut config: Config) -> Result<()> {
     setup_logger(&config.log_level)?;

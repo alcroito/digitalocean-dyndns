@@ -1,5 +1,5 @@
 use crate::types::ValueFromStr;
-use anyhow::Error;
+use color_eyre::eyre::Error;
 use secrecy::Secret;
 
 #[derive(Clone)]
