@@ -98,7 +98,6 @@ mod tests {
     use super::*;
     use crate::ip_fetcher::tests::MockIpFetcher;
     use crate::ip_fetcher::PublicIpFetcher;
-    use color_eyre::eyre::eyre;
     use std::net::Ipv4Addr;
     struct MockApi {
         return_success: bool,
@@ -154,7 +153,7 @@ mod tests {
         use crate::types::ValueFromStr;
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        let mut config_builder = crate::config_builder::Builder::new(None, Err(eyre!("No config")));
+        let mut config_builder = crate::config_builder::Builder::new(None, None);
         config_builder
             .set_subdomain_to_update("home".to_owned())
             .set_domain_root("site.com".to_owned())
