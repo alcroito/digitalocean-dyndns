@@ -1,8 +1,8 @@
 use anyhow::{bail, Context, Result};
-use log::info;
 use reqwest::blocking::Client;
 use secrecy::ExposeSecret;
 use std::net::IpAddr;
+use tracing::info;
 
 use crate::domain_record_api::DomainRecordApi;
 use crate::token::SecretDigitalOceanToken;
@@ -159,7 +159,7 @@ mod tests {
             .set_subdomain_to_update("home".to_owned())
             .set_domain_root("site.com".to_owned())
             .set_digital_ocean_token(ValueFromStr::from_str("123").unwrap())
-            .set_log_level(log::LevelFilter::Info)
+            .set_log_level(tracing::Level::INFO)
             .set_update_interval(crate::config::UpdateInterval(
                 std::time::Duration::from_secs(5).into(),
             ));

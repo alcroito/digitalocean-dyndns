@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Result};
-use log::info;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use tracing::info;
 use trust_dns_resolver::config::{NameServerConfigGroup, ResolverConfig, ResolverOpts};
 use trust_dns_resolver::Resolver;
 

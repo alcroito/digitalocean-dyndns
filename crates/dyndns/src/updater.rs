@@ -1,11 +1,11 @@
 use anyhow::{anyhow, bail, Result};
 use humantime::format_duration;
-use log::{error, info, trace, warn};
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread::{park_timeout, JoinHandle};
 use std::time::Instant;
+use tracing::{error, info, trace, warn};
 
 use crate::config;
 use crate::config::Config;

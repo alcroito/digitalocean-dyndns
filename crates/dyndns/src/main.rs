@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 use do_ddns::commands::{decide_command, handle_command};
 use do_ddns::config_early::EarlyConfig;
 use do_ddns::logger::setup_early_logger;
-use log::error;
+use tracing::error;
 fn main() -> Result<()> {
     setup_early_logger()?;
 
