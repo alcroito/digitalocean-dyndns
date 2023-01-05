@@ -49,39 +49,38 @@ fn get_config_path_candidates(clap_matches: &ArgMatches) -> Vec<String> {
     candidates
 }
 
-fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
-    trace!("Config file candidates are: {:#?}", candidates);
-    let config_file_result = candidates
+fn get_config_path_from_candidates(candidates: &[String]) -> Option<String> {
+    trace!(
+        "Looking for config file. Checking following paths: {:#?}",
+        candidates
+    );
+    let config_file = candidates
         .iter()
         .find(|path| {
             let readable = file_is_readable(path);
             let canonical_path = std::fs::canonicalize(path);
+            let canonical_path = match canonical_path {
+                Ok(path) => format!("{}", path.display()),
+                Err(e) => format!("Error: {}", eyre!(e)),
+            };
             trace!(
-                "Checking if config file exists and is readable:\n\
-                    file: {}\n readable: {}\n canonical path: {:?}",
-                path,
-                readable,
-                canonical_path
+                "Checking if config file exists and is readable:
+  file: {path}
+  canonical path: {canonical_path}
+  readable: {readable}"
             );
             readable
         })
-        .ok_or_else(|| {
-            let candidates_str = candidates.join("\n");
-            eyre!(format!(
-                "Failed to find any readable config file. Candidates were:\n {}",
-                candidates_str
-            ))
-        })
         .map(|path| path.to_owned());
 
-    match &config_file_result {
-        Ok(path) => trace!("Final config file chosen: {}", path),
-        Err(_) => trace!("No valid config file found."),
+    match &config_file {
+        Some(path) => trace!("Final config file chosen: {}", path),
+        None => trace!("No valid config file found. Make sure required options are set via command line options or environment variables."),
     };
-    config_file_result
+    config_file
 }
 
-fn get_config_path(clap_matches: &ArgMatches) -> Result<String> {
+fn get_config_path(clap_matches: &ArgMatches) -> Option<String> {
     let candidates = get_config_path_candidates(clap_matches);
     get_config_path_from_candidates(&candidates)
 }
@@ -90,7 +89,15 @@ pub fn config_with_args(early_config: &EarlyConfig) -> Result<Config> {
     let clap_matches = early_config.get_clap_matches();
     let config_file_path = get_config_path(clap_matches);
     let config_builder = Builder::new(Some(clap_matches), config_file_path);
-    let config = config_builder.build()?;
+    let config = config_builder
+        .build()
+        .map_err(|e| {
+            tracing::error!(
+                "Failed to configure the application. Will exit shortly with error details."
+            );
+            e
+        })
+        .wrap_err(eyre!("Failed to configure the application"))?;
     Ok(config)
 }
 
@@ -327,7 +334,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self.try_from_default_value();
         self.value
             .take()
-            .ok_or_else(|| eyre!(format!("Missing value for config option {}", self.key)))
+            .ok_or_else(|| eyre!(format!("Missing value for config option: '{}'", self.key)))
     }
 }
 
@@ -344,7 +351,7 @@ pub struct Builder<'clap> {
 }
 
 impl<'clap> Builder<'clap> {
-    pub fn new(clap_matches: Option<&'clap ArgMatches>, config_file_path: Result<String>) -> Self {
+    pub fn new(clap_matches: Option<&'clap ArgMatches>, config_file_path: Option<String>) -> Self {
         fn get_config(config_file_path: &str) -> Result<toml::value::Table> {
             let toml_value = read_config_map(config_file_path)?;
             let toml_table = match toml_value {
@@ -354,13 +361,11 @@ impl<'clap> Builder<'clap> {
             Ok(toml_table)
         }
 
-        // TODO: Once early logging is set up, don't ignore the Err variant
-        // but rather log it with the debug! category (or some other category).
         let mut toml_table = None;
-        if let Ok(config_file_path) = config_file_path {
+        if let Some(config_file_path) = config_file_path {
             toml_table = get_config(&config_file_path)
                 .map_err(|e| {
-                    eprintln!("{}", e);
+                    tracing::error!("{:#}", e);
                     e
                 })
                 .ok();
@@ -480,11 +485,14 @@ impl<'clap> Builder<'clap> {
             (Ok(simple_mode_domains), Err(_)) => simple_mode_domains,
             (Err(_), Ok(advanced_mode_domains)) => advanced_mode_domains,
             (Err(e1), Err(e2)) => {
+                let e1 = e1.wrap_err("Simple mode configuration error");
+                let e2 = e2.wrap_err("Advanced mode configuration error");
                 let e = format!("{:#}\n{:#}", e1, e2);
-                return Err(eyre!(e).wrap_err("No valid domain configuration found"));
+                return Err(eyre!(e)
+                    .wrap_err("No valid domain configuration found with either supported modes"));
             }
             (Ok(_), Ok(_)) => {
-                bail!("Both simple and advance config modes provided. Please use only one mode")
+                bail!("Both simple and advanced config modes settings were specified. Please use only one mode")
             }
         };
         Ok(domains)
