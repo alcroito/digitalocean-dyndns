@@ -11,7 +11,7 @@ pub struct Config {
     pub update_interval: UpdateInterval,
     // TODO: Is there a better type to use here instead of Option?
     pub digital_ocean_token: Option<SecretDigitalOceanToken>,
-    pub log_level: log::LevelFilter,
+    pub log_level: tracing::Level,
     pub dry_run: bool,
 }
 

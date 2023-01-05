@@ -5,7 +5,7 @@ use crate::token::SecretDigitalOceanToken;
 use crate::types::ValueFromStr;
 use anyhow::{anyhow, bail, Context, Result};
 use clap::ArgMatches;
-use log::trace;
+use tracing::trace;
 
 fn get_default_config_path() -> &'static str {
     "./config/do_ddns.toml"
@@ -338,7 +338,7 @@ pub struct Builder<'clap> {
     update_domain_root: Option<bool>,
     update_interval: Option<UpdateInterval>,
     digital_ocean_token: Option<SecretDigitalOceanToken>,
-    log_level: Option<log::LevelFilter>,
+    log_level: Option<tracing::Level>,
     dry_run: Option<bool>,
 }
 
@@ -403,7 +403,7 @@ impl<'clap> Builder<'clap> {
         self
     }
 
-    pub fn set_log_level(&mut self, value: log::LevelFilter) -> &mut Self {
+    pub fn set_log_level(&mut self, value: tracing::Level) -> &mut Self {
         self.log_level = Some(value);
         self
     }
@@ -494,7 +494,7 @@ impl<'clap> Builder<'clap> {
     ) -> Result<(
         UpdateInterval,
         SecretDigitalOceanToken,
-        log::LevelFilter,
+        tracing::Level,
         bool,
     )> {
         let update_interval = ValueBuilder::new(UPDATE_INTERVAL)
@@ -530,13 +530,13 @@ impl<'clap> Builder<'clap> {
                 LOG_LEVEL_VERBOSITY_SHORT,
                 Box::new(|count| match count {
                     0 => None,
-                    1 => Some(log::LevelFilter::Debug),
-                    2 => Some(log::LevelFilter::Trace),
-                    _ => Some(log::LevelFilter::Trace),
+                    1 => Some(tracing::Level::DEBUG),
+                    2 => Some(tracing::Level::TRACE),
+                    _ => Some(tracing::Level::TRACE),
                 }),
             )
             .with_config_value(self.toml_table.as_ref())
-            .with_default(log::LevelFilter::Info)
+            .with_default(tracing::Level::INFO)
             .build()?;
 
         let dry_run = ValueBuilder::new(DRY_RUN)

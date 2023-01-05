@@ -1,39 +1,33 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
+use once_cell::sync::OnceCell;
+use tracing::level_filters::LevelFilter;
+use tracing_subscriber::{filter, fmt, prelude::*, reload, Registry};
+
+static TRACING_FILTER_RELOAD_HANDLE: OnceCell<reload::Handle<filter::LevelFilter, Registry>> =
+    OnceCell::new();
 
 pub fn setup_early_logger() -> Result<()> {
-    log_reroute::init()?;
-    let early_logger = create_fern_dispatch(&log::LevelFilter::Trace);
-    log_reroute::reroute_boxed(early_logger);
-    // This is needed to activate all the log::log!() macro calls, otherwise
-    // all the calls are no-ops.
-    log::set_max_level(log::LevelFilter::Trace);
-    Ok(())
+    // Initialize tracing_suscriber with the default formatter and a runtime modifiable filter.
+    // Set the max level to TRACE, to log which log file is found.
+    // Store the reloadable filter handle in a static variable, which will be used to set the
+    // final logging level after the config file is loded.
+    let filter = filter::LevelFilter::TRACE;
+    let (filter, reload_handle) = reload::Layer::new(filter);
+    tracing_subscriber::registry()
+        .with(filter)
+        .with(fmt::Layer::default())
+        .init();
+    TRACING_FILTER_RELOAD_HANDLE
+        .set(reload_handle)
+        .map_err(|_| anyhow::anyhow!("Could not save tracing filter reload handle"))
 }
 
-pub fn setup_logger(log_level: &log::LevelFilter) -> Result<()> {
-    let main_logger = create_fern_dispatch(log_level);
-    log_reroute::reroute_boxed(main_logger);
-    Ok(())
-}
-
-fn create_fern_dispatch(log_level: &log::LevelFilter) -> Box<dyn log::Log> {
-    fern::Dispatch::new()
-        .format(format_callback)
-        .level(*log_level)
-        .chain(std::io::stdout())
-        .into_log()
-        .1
-}
-
-fn format_callback(
-    out: fern::FormatCallback,
-    message: &core::fmt::Arguments,
-    record: &log::Record,
-) {
-    out.finish(format_args!(
-        "{} [{}] {}",
-        chrono::Local::now().format("%b %d %H:%M:%S"),
-        record.level(),
-        message
-    ))
+pub fn setup_logger(log_level: &tracing::Level) -> Result<()> {
+    // Set the logging level that was read from the config file.
+    TRACING_FILTER_RELOAD_HANDLE
+        .get()
+        .ok_or_else(|| anyhow::anyhow!("Could not load tracing filtering reload handle"))?
+        .modify(|filter| *filter = LevelFilter::from_level(*log_level))
+        .map_err(|e| anyhow::anyhow!(e))
+        .context("Could not modify the global tracing filter")
 }

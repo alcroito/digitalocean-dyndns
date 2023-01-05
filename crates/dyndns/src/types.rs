@@ -85,4 +85,4 @@ macro_rules! impl_value_from_str {
     }
 }
 
-impl_value_from_str! { String, bool, crate::config::UpdateInterval, log::LevelFilter }
+impl_value_from_str! { String, bool, crate::config::UpdateInterval, tracing::Level }

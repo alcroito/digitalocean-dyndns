@@ -1,5 +1,4 @@
 use anyhow::Result;
-use log::info;
 use signal_hook::consts::signal::{SIGINT, SIGQUIT, SIGTERM};
 use signal_hook::flag;
 use signal_hook::iterator::exfiltrator::WithOrigin;
@@ -7,6 +6,7 @@ use signal_hook::iterator::SignalsInfo;
 use signal_hook::{consts::TERM_SIGNALS, low_level::signal_name};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use tracing::info;
 
 pub fn handle_term_signals_gracefully(
     app_thread: std::thread::JoinHandle<Result<()>>,
