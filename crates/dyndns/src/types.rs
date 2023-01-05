@@ -1,4 +1,4 @@
-use anyhow::Error;
+use color_eyre::eyre::Error;
 
 pub mod api {
     use serde::Deserialize;

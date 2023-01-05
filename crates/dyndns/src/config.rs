@@ -1,5 +1,5 @@
 use crate::token::SecretDigitalOceanToken;
-use anyhow::Result;
+use color_eyre::eyre::Result;
 use humantime::Duration;
 use serde::Deserialize;
 use std::time::Duration as StdDuration;

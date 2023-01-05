@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context, Result};
+use color_eyre::eyre::{eyre, Result, WrapErr};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use tracing::info;
 use trust_dns_resolver::config::{NameServerConfigGroup, ResolverConfig, ResolverOpts};
@@ -37,9 +37,9 @@ impl PublicIpFetcher for DnsIpFetcher {
         let resolver = Resolver::new(resolver_config, resolver_options)?;
         let response = resolver
             .lookup_ip(hostname_to_lookup)
-            .context("Failed to resolve public IP address")?;
+            .wrap_err("Failed to resolve public IP address")?;
         let address = response.iter().next().ok_or_else(|| {
-            anyhow!("Failed to find public IP address: no addresses returned from DNS resolution")
+            eyre!("Failed to find public IP address: no addresses returned from DNS resolution")
         })?;
         info!("Public IP is: {}", address);
         Ok(address)

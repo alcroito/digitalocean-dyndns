@@ -3,7 +3,8 @@ use crate::config_consts::*;
 use crate::config_early::EarlyConfig;
 use crate::token::SecretDigitalOceanToken;
 use crate::types::ValueFromStr;
-use anyhow::{anyhow, bail, Context, Result};
+use color_eyre::eyre::{bail, eyre, Result, WrapErr};
+
 use clap::ArgMatches;
 use tracing::trace;
 
@@ -13,9 +14,9 @@ fn get_default_config_path() -> &'static str {
 
 fn read_config_map(config_path: &str) -> Result<toml::Value> {
     let config = std::fs::read_to_string(config_path)
-        .context(format!("Failed to read config file: {}", config_path))?;
-    let config =
-        toml::from_str(&config).context(format!("Failed to parse config file: {}", config_path))?;
+        .wrap_err(format!("Failed to read config file: {}", config_path))?;
+    let config = toml::from_str(&config)
+        .wrap_err(format!("Failed to parse config file: {}", config_path))?;
     Ok(config)
 }
 
@@ -66,7 +67,7 @@ fn get_config_path_from_candidates(candidates: &[String]) -> Result<String> {
         })
         .ok_or_else(|| {
             let candidates_str = candidates.join("\n");
-            anyhow!(format!(
+            eyre!(format!(
                 "Failed to find any readable config file. Candidates were:\n {}",
                 candidates_str
             ))
@@ -96,13 +97,13 @@ pub fn config_with_args(early_config: &EarlyConfig) -> Result<Config> {
 fn get_advanced_mode_domains(table: Option<&toml::value::Table>) -> Result<Domains> {
     let domains = table
         .ok_or_else(|| {
-            anyhow!("No config contents found while retrieving 'advanced mode' domains section")
+            eyre!("No config contents found while retrieving 'advanced mode' domains section")
         })?
         .get(DOMAINS_CONFIG_KEY)
-        .ok_or_else(|| anyhow!("No 'advanced mode' domains section found in config"))?
+        .ok_or_else(|| eyre!("No 'advanced mode' domains section found in config"))?
         .clone()
         .try_into::<Domains>()
-        .map_err(|e| anyhow!(e).context("Failed to parse 'advanced mode' domain section"))?;
+        .map_err(|e| eyre!(e).wrap_err("Failed to parse 'advanced mode' domain section"))?;
     Ok(domains)
 }
 
@@ -326,7 +327,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         self.try_from_default_value();
         self.value
             .take()
-            .ok_or_else(|| anyhow!(format!("Missing value for config option {}", self.key)))
+            .ok_or_else(|| eyre!(format!("Missing value for config option {}", self.key)))
     }
 }
 
@@ -446,7 +447,7 @@ impl<'clap> Builder<'clap> {
             }
             (Err(e1), Err(e2)) => {
                 let e = format!("{:#}\n{:#}", e1, e2);
-                return Err(anyhow!(e).context("No valid domain to update found"));
+                return Err(eyre!(e).wrap_err("No valid domain to update found"));
             }
             (Ok(_), Ok(_)) => {
                 bail!("Both 'subdomain to update' and 'update domain root' options were set. Please provide only one option")
@@ -480,7 +481,7 @@ impl<'clap> Builder<'clap> {
             (Err(_), Ok(advanced_mode_domains)) => advanced_mode_domains,
             (Err(e1), Err(e2)) => {
                 let e = format!("{:#}\n{:#}", e1, e2);
-                return Err(anyhow!(e).context("No valid domain configuration found"));
+                return Err(eyre!(e).wrap_err("No valid domain configuration found"));
             }
             (Ok(_), Ok(_)) => {
                 bail!("Both simple and advance config modes provided. Please use only one mode")

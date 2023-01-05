@@ -1,4 +1,4 @@
-use anyhow::{anyhow, bail, Result};
+use color_eyre::eyre::{bail, eyre, Result};
 use humantime::format_duration;
 use std::net::IpAddr;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -220,7 +220,7 @@ pub fn get_record_to_update<'a>(
                 && record.record_type.eq(record_to_update.record_type)
         })
         .ok_or_else(|| {
-            anyhow!(format!(
+            eyre!(format!(
                 "Domain '{}' not found in the retrieved domain records",
                 record_to_update.fqdn()
             ))
