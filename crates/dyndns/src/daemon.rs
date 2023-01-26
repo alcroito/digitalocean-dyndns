@@ -1,7 +1,8 @@
 use crate::config::Config;
 use crate::domain_record_api::digital_ocean::DigitalOceanApi;
 use crate::logger::setup_logger;
-use crate::signal_handlers::{handle_term_signals_gracefully, setup_forceful_term_signal_handling};
+use crate::signal_handlers::{setup_forceful_term_signal_handling, AppTerminationHandler};
+
 use crate::updater::Updater;
 use color_eyre::eyre::Result;
 
@@ -14,10 +15,14 @@ pub fn start_daemon(mut config: Config) -> Result<()> {
         .take()
         .expect("No digital ocean token in config");
     let do_api = Box::new(DigitalOceanApi::new(token));
-    let updater = Updater::new(config, do_api);
-    let exit_flag = updater.exit_flag();
-    let app_thread = updater.start_update_loop_detached();
 
-    handle_term_signals_gracefully(app_thread, exit_flag)?;
+    let term_handler = AppTerminationHandler::new()?;
+    term_handler.setup_exit_panic_hook();
+
+    let updater = Updater::new(config, do_api, term_handler.clone());
+
+    let updater_thread_handle = updater.start_update_loop_detached();
+    term_handler.set_updater_thread(updater_thread_handle);
+    term_handler.handle_term_signals_gracefully()?;
     Ok(())
 }
