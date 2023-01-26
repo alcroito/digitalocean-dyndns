@@ -1,8 +1,6 @@
 use color_eyre::eyre::{bail, eyre, Result};
 use humantime::format_duration;
 use std::net::IpAddr;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
 use std::thread::{park_timeout, JoinHandle};
 use std::time::Instant;
 use tracing::{error, info, trace, warn};
@@ -11,27 +9,28 @@ use crate::config;
 use crate::config::Config;
 use crate::domain_record_api::DomainRecordApi;
 use crate::ip_fetcher::{DnsIpFetcher, PublicIpFetcher};
+use crate::signal_handlers::AppTerminationHandler;
 use crate::types::{api, DomainRecordToUpdate};
 
 pub struct Updater {
     config: Config,
     api: Box<dyn DomainRecordApi + Send>,
     failed_attempts: u64,
-    should_exit: Arc<AtomicBool>,
+    term_handler: AppTerminationHandler,
 }
 
 impl Updater {
-    pub fn new(config: Config, api: Box<dyn DomainRecordApi + Send>) -> Self {
+    pub fn new(
+        config: Config,
+        api: Box<dyn DomainRecordApi + Send>,
+        term_handler: AppTerminationHandler,
+    ) -> Self {
         Self {
             config,
             api,
             failed_attempts: 0,
-            should_exit: Arc::new(AtomicBool::new(false)),
+            term_handler,
         }
-    }
-
-    pub fn exit_flag(&self) -> Arc<AtomicBool> {
-        self.should_exit.clone()
     }
 
     fn attempt_update_for_record(
@@ -173,6 +172,7 @@ impl Updater {
                 return Ok(());
             }
         }
+        self.term_handler.notify_exit_and_stop_signal_handling();
         Ok(())
     }
 
@@ -197,7 +197,7 @@ impl Updater {
     }
 
     fn should_exit(&self) -> bool {
-        self.should_exit.load(Ordering::SeqCst)
+        self.term_handler.should_exit()
     }
 }
 
