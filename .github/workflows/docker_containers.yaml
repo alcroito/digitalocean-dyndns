@@ -120,6 +120,14 @@ jobs:
         file: ./docker/${{ matrix.rust_target_arch }}.Dockerfile
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
+        # Disable these, because they create additional manifests, converting the image from a 
+        # manifest into a manifest list, and this breaks creation of the multi-arch manifest list
+        # during the manifest create command with a not very useful error message
+        # 'xxx is a manifest list'.
+        # Presumably this started when this landed
+        # https://github.com/docker/build-push-action/commit/ed2672fc3300b43c2e53190c739149d7ce8b7dad
+        sbom: false
+        provenance: false
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
 
