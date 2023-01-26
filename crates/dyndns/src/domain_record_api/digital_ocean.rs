@@ -26,8 +26,8 @@ impl DigitalOceanApi {
 
 impl DomainRecordApi for DigitalOceanApi {
     fn get_domain_records(&self, domain_name: &str) -> Result<api::DomainRecords> {
-        let endpoint = format!("/v2/domains/{}/records?per_page=200", domain_name);
-        let request_url = format!("{}{}", DIGITAL_OCEAN_API_HOST_NAME, endpoint);
+        let endpoint = format!("/v2/domains/{domain_name}/records?per_page=200");
+        let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
         let access_token = &self.digital_ocean_token;
         let response = self
             .request_client
@@ -58,7 +58,7 @@ impl DomainRecordApi for DigitalOceanApi {
             "/v2/domains/{}/records/{}",
             record_to_update.domain_name, domain_record_id
         );
-        let request_url = format!("{}{}", DIGITAL_OCEAN_API_HOST_NAME, endpoint);
+        let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
         let access_token = &self.digital_ocean_token;
         let client = Client::new();
         let mut body = std::collections::HashMap::new();
@@ -68,7 +68,7 @@ impl DomainRecordApi for DigitalOceanApi {
             .bearer_auth(access_token.expose_secret().as_str())
             .json(&body)
             .send()
-            .wrap_err(format!("Failed to update domain record for: {}", fqdn))?;
+            .wrap_err(format!("Failed to update domain record for: {fqdn}"))?;
 
         let record: api::UpdateDomainRecordResponse = response
             .json()
@@ -79,7 +79,7 @@ impl DomainRecordApi for DigitalOceanApi {
             .parse::<IpAddr>()
             .expect("Failed to parse IP from response");
         if &response_ip != new_ip {
-            bail!(format!("Failed to update IP for: {}", fqdn))
+            bail!(format!("Failed to update IP for: {fqdn}"))
         } else {
             info!("Successfully updated public IP for: {}", fqdn);
         }
