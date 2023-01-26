@@ -5,7 +5,7 @@
 [![GitHub Source](https://img.shields.io/badge/github-source-ffb64c?style=flat-square&logo=github&logoColor=white&labelColor=757575)](https://github.com/alcroito/digitalocean-dyndns)
 [![GitHub Registry](https://img.shields.io/badge/github-registry-ffb64c?style=flat-square&logo=github&logoColor=white&labelColor=757575)](https://github.com/users/alcroito/packages/container/package/digitalocean-dyndns)
 [![Docker Pulls](https://img.shields.io/docker/pulls/alcroito/digitalocean-dyndns?color=ffb64c&label=pulls&logo=docker&logoColor=white&labelColor=757575)](https://hub.docker.com/r/alcroito/digitalocean-dyndns)
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/alcroito/digitalocean-dyndns/ci?style=flat-square&logo=github&logoColor=white&labelColor=757575)](https://github.com/alcroito/digitalocean-dyndns/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/alcroito/digitalocean-dyndns/ci.yaml?style=flat-square&logo=github&logoColor=white&labelColor=757575)](https://github.com/alcroito/digitalocean-dyndns/actions)
 [![License](https://img.shields.io/github/license/alcroito/digitalocean-dyndns)](https://github.com/alcroito/digitalocean-dyndns/blob/master/LICENSE)
 
 A Unix daemon that periodically updates DigitalOcean domain records with the current machine's public IP address.
