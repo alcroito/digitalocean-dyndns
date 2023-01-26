@@ -14,9 +14,9 @@ fn get_default_config_path() -> &'static str {
 
 fn read_config_map(config_path: &str) -> Result<toml::Value> {
     let config = std::fs::read_to_string(config_path)
-        .wrap_err(format!("Failed to read config file: {}", config_path))?;
-    let config = toml::from_str(&config)
-        .wrap_err(format!("Failed to parse config file: {}", config_path))?;
+        .wrap_err(format!("Failed to read config file: {config_path}"))?;
+    let config =
+        toml::from_str(&config).wrap_err(format!("Failed to parse config file: {config_path}"))?;
     Ok(config)
 }
 
@@ -451,7 +451,7 @@ impl<'clap> Builder<'clap> {
                 }
             }
             (Err(e1), Err(e2)) => {
-                let e = format!("{:#}\n{:#}", e1, e2);
+                let e = format!("{e1:#}\n{e2:#}");
                 return Err(eyre!(e).wrap_err("No valid domain to update found"));
             }
             (Ok(_), Ok(_)) => {
@@ -487,7 +487,7 @@ impl<'clap> Builder<'clap> {
             (Err(e1), Err(e2)) => {
                 let e1 = e1.wrap_err("Simple mode configuration error");
                 let e2 = e2.wrap_err("Advanced mode configuration error");
-                let e = format!("{:#}\n{:#}", e1, e2);
+                let e = format!("{e1:#}\n{e2:#}");
                 return Err(eyre!(e)
                     .wrap_err("No valid domain configuration found with either supported modes"));
             }

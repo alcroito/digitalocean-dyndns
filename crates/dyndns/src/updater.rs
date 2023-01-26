@@ -112,8 +112,7 @@ impl Updater {
     ) -> String {
         let duration_formatted = format_duration(*interval.0);
         let m = format!(
-            "Starting updater with update interval: {}. The following domains will be updated:",
-            duration_formatted
+            "Starting updater with update interval: {duration_formatted}. The following domains will be updated:"
         );
         let mut record_m = vec![];
         for record in records_to_update {
