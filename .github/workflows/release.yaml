@@ -1,45 +1,44 @@
 name: release
 on:
   push:
-    # Uncomment when testing release infrastructure on a branch.
-    # branches:
-    #   - docker
+    # Used for testing release infrastructure from a specific branch.
+    branches:
+      - test_release
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+    workflow_dispatch:
 jobs:
   create-release:
     name: Create release
     runs-on: ubuntu-latest
-    # Uncomment to do test releases from a branch
-    # env:
-    #   RELEASE_VERSION: docker
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Create artifacts directory
         run: mkdir artifacts
-
-      - name: Get the release version from the tag
-        if: env.RELEASE_VERSION == ''
-        run: |
-          echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          echo "tag is: ${{ env.RELEASE_VERSION }}"
+        
+      - name: "Build Changelog"
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v3
+        with:
+          toTag: ${{ github.ref_name }}
+          configuration: ".github/changelog_conf.json"
 
       - name: Create GitHub release
         id: release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }}
+          tag_name: ${{ github.ref_name }}
+          prerelease: ${{ github.ref_type == 'branch' }}
+          draft: ${{ github.ref_type == 'tag' }}
+          body: ${{ steps.build_changelog.outputs.changelog }}
 
       - name: Save release upload URL to artifact
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
 
-      - name: Save version number to artifact
-        run: echo "${{ env.RELEASE_VERSION }}" > artifacts/release-version
-
       - name: Upload artifacts
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -114,7 +113,7 @@ jobs:
         if: matrix.cross == true
 
       - name: Get release download URL
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
@@ -123,12 +122,9 @@ jobs:
         shell: bash
         run: |
           release_upload_url="$(cat artifacts/release-upload-url)"
+          # Only available in next step
           echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
-          echo "release upload url: $RELEASE_UPLOAD_URL"
-
-          release_version="$(cat artifacts/release-version)"
-          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
-          echo "release version: $RELEASE_VERSION"
+          echo "release upload url: $release_upload_url"
 
       - name: Create staging archive
         id: create_staging_archive
@@ -137,9 +133,7 @@ jobs:
           rust_target_arch: ${{ matrix.rust_target_arch }}
 
       - name: Upload release archive
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ steps.create_staging_archive.outputs.archive_name }}
