@@ -13,6 +13,8 @@ pub struct Config {
     pub digital_ocean_token: Option<SecretDigitalOceanToken>,
     pub log_level: tracing::Level,
     pub dry_run: bool,
+    pub ipv4: bool,
+    pub ipv6: bool,
 }
 
 #[non_exhaustive]

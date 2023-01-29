@@ -193,6 +193,17 @@ Env var: DO_DYNDNS_DRY_RUN=true",
                 ),
         )
         .arg(
+            Arg::new(IPV6_SUPPORT)
+                .long("enable-ipv6")
+                .action(clap::ArgAction::SetTrue)
+                .value_parser(bool_to_string_value_parser())
+                .help(
+                    "\
+Enable ipv6 support (disabled by default).
+Env var: DO_DYNDNS_IPV6_SUPPORT=true",
+                ),
+        )
+        .arg(
             Arg::new(BUILD_INFO)
                 .long("build-info")
                 .help(

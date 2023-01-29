@@ -164,7 +164,7 @@ mod tests {
             ));
         let config = config_builder.build().unwrap();
         let ip_fetcher = MockIpFetcher::default();
-        let public_ip = ip_fetcher.fetch_public_ip().unwrap();
+        let public_ips = ip_fetcher.fetch_public_ips(true, true).unwrap();
         let updater = MockApi::new();
         let domain_name = &config.domains.domains[0].name;
         let hostname_part = &config.domains.domains[0].records[0].name;
@@ -173,11 +173,16 @@ mod tests {
 
         let records = updater.get_domain_records(domain_name).unwrap();
         let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
-        let should_update = should_update_domain_ip(&public_ip, domain_record);
+        let should_update =
+            should_update_domain_ip(&public_ips.to_ip_addr_from_any(), domain_record);
 
         assert!(should_update);
 
-        let result = updater.update_domain_ip(domain_record.id, &record_to_update, &public_ip);
+        let result = updater.update_domain_ip(
+            domain_record.id,
+            &record_to_update,
+            &public_ips.to_ip_addr_from_any(),
+        );
         assert!(result.is_err());
     }
 }
