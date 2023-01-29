@@ -14,15 +14,16 @@ A Unix daemon that periodically updates DigitalOcean domain records with the cur
 
 The daemon periodically runs the following steps:
 
-* finds the current machine's public IPv4 by sending a DNS request to an OpenDNS resolver
+* finds the current machine's public IPv4 or IPv6 by sending a DNS request to an OpenDNS resolver
 * queries the configured domain records using DO's API. If the queried IPs
-  are different from the current public API, the domain records are updated to point to the new IP
+  are different from the current public IP, the domain records are updated to point to the new IP
 
 ## Setup
 
 * A Unix (Linux / macOS) server to run the daemon
 * A DigitalOcean account with your domain associated to it
-* An existing `A` record for each domain to be updated
+* An existing `A` or `AAAA` record for each domain to be updated
+* Configure the app either using CLI, env vars or a config file
 
 ## Usage
 
@@ -33,6 +34,7 @@ Simple mode can be configured via command line arguments, environment variables 
 
 **Advanced** mode allows updating *multiple* domains and records.
 Advanced mode can only be configured via the config file.
+It is also the (currently) only mode that supports ipv6 assignments.
 
 See [do_ddns.sample.toml](./config/do_ddns.sample.toml) for a sample configuration file.
 

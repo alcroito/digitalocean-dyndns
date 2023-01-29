@@ -9,6 +9,9 @@ digital_ocean_token = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
 # Setting this option to true will cause the final IP updates to be skipped.
 dry_run = "false"
 
+# Setting this option to true will enable resolving of ipv6 addresses and 
+# storing them in AAAA records.
+# ipv6 = "true"
 
 ## Simple config mode sample
 

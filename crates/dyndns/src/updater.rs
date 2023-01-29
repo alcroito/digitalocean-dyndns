@@ -10,7 +10,7 @@ use crate::config::Config;
 use crate::domain_record_api::DomainRecordApi;
 use crate::ip_fetcher::{DnsIpFetcher, PublicIpFetcher};
 use crate::signal_handlers::AppTerminationHandler;
-use crate::types::{api, DomainRecordToUpdate};
+use crate::types::{api, DomainRecordToUpdate, IpAddrV4AndV6};
 
 pub struct Updater {
     config: Config,
@@ -35,7 +35,7 @@ impl Updater {
 
     fn attempt_update_for_record(
         &self,
-        public_ip: &IpAddr,
+        current_public_ips: &IpAddrV4AndV6,
         record_to_update: &DomainRecordToUpdate,
         domain_record_cache: &mut api::DomainRecordCache,
     ) -> Result<()> {
@@ -58,20 +58,25 @@ impl Updater {
             }
         };
         let api_domain_record = get_record_to_update(records, record_to_update)?;
-        if should_update_domain_ip(public_ip, api_domain_record) {
-            info!(
-                "Existing domain record IP does not match current public IP: '{}'; domain record IP: '{}'. Updating record",
-                public_ip, api_domain_record.data
-            );
-            if !self.config.dry_run {
-                self.api
-                    .update_domain_ip(api_domain_record.id, record_to_update, public_ip)?;
+        if let Some(curr_ip) =
+            get_single_ip_based_on_record_type(current_public_ips, api_domain_record)
+        {
+            if should_update_domain_ip(&curr_ip, api_domain_record) {
+                info!(
+                    "Old domain record IP does not match current IP\n  current public IP:    '{}'\n  old domain record IP: '{}'.\nUpdating domain record",
+                    curr_ip, api_domain_record.data
+                );
+                if !self.config.dry_run {
+                    self.api
+                        .update_domain_ip(api_domain_record.id, record_to_update, &curr_ip)?;
+                } else {
+                    info!("Skipping updating IP due to dry run")
+                }
             } else {
-                info!("Skipping updating IP due to dry run")
+                info!("Correct IP already set, nothing to do");
             }
-        } else {
-            info!("Correct IP already set, nothing to do");
-        }
+        };
+
         Ok(())
     }
 
@@ -80,14 +85,14 @@ impl Updater {
         ip_fetcher: &DnsIpFetcher,
         records_to_update: &[DomainRecordToUpdate],
     ) -> Result<()> {
-        let public_ip = ip_fetcher.fetch_public_ip()?;
+        let current_public_ips = ip_fetcher.fetch_public_ips(self.config.ipv4, self.config.ipv6)?;
 
         let mut first_error = None;
         let mut domain_record_cache = api::DomainRecordCache::new();
 
         for record_to_update in records_to_update {
             if let Err(e) = self.attempt_update_for_record(
-                &public_ip,
+                &current_public_ips,
                 record_to_update,
                 &mut domain_record_cache,
             ) {
@@ -226,10 +231,34 @@ pub fn get_record_to_update<'a>(
         })
 }
 
-pub fn should_update_domain_ip(public_ip: &IpAddr, domain_record: &api::DomainRecord) -> bool {
-    let ip = &domain_record.data;
-    let ip = ip
+pub fn get_single_ip_based_on_record_type(
+    curr_ips: &IpAddrV4AndV6,
+    domain_record: &api::DomainRecord,
+) -> Option<IpAddr> {
+    // Choose which ip family type to compare based on the domain record type.
+    // For generic record types, use any available ip.
+    let record_type = domain_record.record_type.as_str();
+    match record_type {
+        "A" if curr_ips.has_ipv4() => Some(curr_ips.to_ip_addr_from_ipv4()),
+        "AAAA" if curr_ips.has_ipv6() => Some(curr_ips.to_ip_addr_from_ipv6()),
+        _ => {
+            if record_type != "A" && record_type != "AAAA" && curr_ips.has_any() {
+                info!("Non-standard domain record type: '{}', will use any available IP address (either ipv4 of ipv6)", record_type);
+                Some(curr_ips.to_ip_addr_from_any())
+            } else {
+                warn!("No valid IP available for record type '{}', will skip updaing this record type.", record_type);
+                None
+            }
+        }
+    }
+}
+
+pub fn should_update_domain_ip(curr_ip: &IpAddr, domain_record: &api::DomainRecord) -> bool {
+    let prev_ip = domain_record.data.as_str();
+    let prev_ip = prev_ip
         .parse::<IpAddr>()
-        .expect("Failed parsing string to IP address in domain record");
-    public_ip != &ip
+        .unwrap_or_else(|_|
+            panic!("Failed parsing string '{}' to IP address in domain record, make sure your domain record has an initial valid ip", prev_ip));
+
+    curr_ip != &prev_ip
 }

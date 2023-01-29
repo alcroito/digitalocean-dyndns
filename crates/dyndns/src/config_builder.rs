@@ -348,6 +348,7 @@ pub struct Builder<'clap> {
     digital_ocean_token: Option<SecretDigitalOceanToken>,
     log_level: Option<tracing::Level>,
     dry_run: Option<bool>,
+    ipv6: Option<bool>,
 }
 
 impl<'clap> Builder<'clap> {
@@ -381,6 +382,7 @@ impl<'clap> Builder<'clap> {
             digital_ocean_token: None,
             log_level: None,
             dry_run: None,
+            ipv6: None,
         }
     }
 
@@ -505,6 +507,8 @@ impl<'clap> Builder<'clap> {
         SecretDigitalOceanToken,
         tracing::Level,
         bool,
+        bool,
+        bool,
     )> {
         let update_interval = ValueBuilder::new(UPDATE_INTERVAL)
             .with_value(self.update_interval.clone())
@@ -556,11 +560,34 @@ impl<'clap> Builder<'clap> {
             .with_default(false)
             .build()?;
 
-        Ok((update_interval, digital_ocean_token, log_level, dry_run))
+        // TODO: Figure out the bool clap cli issue where it is always true even if it's
+        // specified as false.
+        let ipv4 = true;
+
+        let ipv6 = ValueBuilder::new(IPV6_SUPPORT)
+            .with_value(self.ipv6)
+            .with_env_var_name()
+            .with_clap_bool(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .with_default(false)
+            .build()?;
+
+        if !ipv4 && !ipv6 {
+            bail!("At least one kind of ip family support needs to be enabled, both are disabled.");
+        }
+
+        Ok((
+            update_interval,
+            digital_ocean_token,
+            log_level,
+            dry_run,
+            ipv4,
+            ipv6,
+        ))
     }
 
     pub fn build(&self) -> Result<Config> {
-        let (update_interval, digital_ocean_token, log_level, dry_run) =
+        let (update_interval, digital_ocean_token, log_level, dry_run, ipv4, ipv6) =
             self.build_general_options()?;
         let domains = self.build_domains()?;
 
@@ -570,6 +597,8 @@ impl<'clap> Builder<'clap> {
             digital_ocean_token: Some(digital_ocean_token),
             log_level,
             dry_run,
+            ipv4,
+            ipv6,
         };
         Ok(config)
     }
