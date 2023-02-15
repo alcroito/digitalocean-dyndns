@@ -1,6 +1,9 @@
+use color_eyre::eyre::{eyre, Error};
 use std::{fmt::Display, net::IpAddr};
+use tracing::Level;
 
-use color_eyre::eyre::Error;
+use crate::config::app_config::UpdateInterval;
+use crate::token::SecretDigitalOceanToken;
 
 pub mod api {
     use serde::Deserialize;
@@ -175,4 +178,30 @@ macro_rules! impl_value_from_str {
     }
 }
 
-impl_value_from_str! { String, bool, crate::config::app_config::UpdateInterval, tracing::Level }
+impl_value_from_str! { String, bool, UpdateInterval, Level }
+
+pub trait ValueFromBool: Sized {
+    type Err;
+    fn from_bool(b: bool) -> Result<Self, Self::Err>;
+}
+
+impl ValueFromBool for bool {
+    type Err = Error;
+    fn from_bool(b: bool) -> Result<Self, Self::Err> {
+        Ok(b)
+    }
+}
+
+macro_rules! impl_value_from_bool_as_error {
+    ( $($t:ty),* ) => {
+        $( impl ValueFromBool for $t {
+            type Err = Error;
+            fn from_bool(_b: bool) -> Result<Self, Self::Err>
+            {
+                 Err(eyre!("Can not convert from bool to target type"))
+            }
+        })*
+    }
+}
+
+impl_value_from_bool_as_error! { String, UpdateInterval, Level, SecretDigitalOceanToken }
