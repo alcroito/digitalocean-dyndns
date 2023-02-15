@@ -1,4 +1,4 @@
-use super::app_config::{Config, Domains, UpdateInterval};
+use super::app_config::{Config, Domain, DomainRecord, Domains, UpdateInterval};
 use super::consts::*;
 use super::early::EarlyConfig;
 use crate::token::SecretDigitalOceanToken;
@@ -463,14 +463,12 @@ impl<'clap> Builder<'clap> {
         Ok((domain_root, hostname_part))
     }
 
-    fn simple_mode_domains_as_records(
-        config: Result<(String, String)>,
-    ) -> Result<crate::config::app_config::Domains> {
+    fn simple_mode_domains_as_records(config: Result<(String, String)>) -> Result<Domains> {
         let config = config?;
-        let domains = crate::config::app_config::Domains {
-            domains: vec![crate::config::app_config::Domain {
+        let domains = Domains {
+            domains: vec![Domain {
                 name: config.0,
-                records: vec![crate::config::app_config::DomainRecord {
+                records: vec![DomainRecord {
                     record_type: "A".to_owned(),
                     name: config.1,
                 }],
