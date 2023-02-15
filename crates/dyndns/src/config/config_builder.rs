@@ -1,4 +1,4 @@
-use super::app_config::{Config, Domain, DomainRecord, Domains, UpdateInterval};
+use super::app_config::{AppConfig, Domain, DomainRecord, Domains, UpdateInterval};
 use super::consts::*;
 use super::early::EarlyConfig;
 use crate::token::SecretDigitalOceanToken;
@@ -85,10 +85,10 @@ fn get_config_path(clap_matches: &ArgMatches) -> Option<String> {
     get_config_path_from_candidates(&candidates)
 }
 
-pub fn config_with_args(early_config: &EarlyConfig) -> Result<Config> {
+pub fn config_with_args(early_config: &EarlyConfig) -> Result<AppConfig> {
     let clap_matches = early_config.get_clap_matches();
     let config_file_path = get_config_path(clap_matches);
-    let config_builder = Builder::new(Some(clap_matches), config_file_path);
+    let config_builder = AppConfigBuilder::new(Some(clap_matches), config_file_path);
     let config = config_builder
         .build()
         .map_err(|e| {
@@ -338,7 +338,7 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
     }
 }
 
-pub struct Builder<'clap> {
+pub struct AppConfigBuilder<'clap> {
     clap_matches: Option<&'clap ArgMatches>,
     toml_table: Option<toml::value::Table>,
     domain_root: Option<String>,
@@ -351,7 +351,7 @@ pub struct Builder<'clap> {
     ipv6: Option<bool>,
 }
 
-impl<'clap> Builder<'clap> {
+impl<'clap> AppConfigBuilder<'clap> {
     pub fn new(clap_matches: Option<&'clap ArgMatches>, config_file_path: Option<String>) -> Self {
         fn get_config(config_file_path: &str) -> Result<toml::value::Table> {
             let toml_value = read_config_map(config_file_path)?;
@@ -372,7 +372,7 @@ impl<'clap> Builder<'clap> {
                 .ok();
         }
 
-        Builder {
+        AppConfigBuilder {
             clap_matches,
             toml_table,
             domain_root: None,
@@ -478,8 +478,9 @@ impl<'clap> Builder<'clap> {
     }
 
     fn build_domains(&self) -> Result<Domains> {
-        let simple_mode_domains =
-            Builder::simple_mode_domains_as_records(self.build_simple_mode_domain_config_values());
+        let simple_mode_domains = AppConfigBuilder::simple_mode_domains_as_records(
+            self.build_simple_mode_domain_config_values(),
+        );
         let advanced_mode_domains = get_advanced_mode_domains(self.toml_table.as_ref());
         let domains = match (simple_mode_domains, advanced_mode_domains) {
             (Ok(simple_mode_domains), Err(_)) => simple_mode_domains,
@@ -584,12 +585,12 @@ impl<'clap> Builder<'clap> {
         ))
     }
 
-    pub fn build(&self) -> Result<Config> {
+    pub fn build(&self) -> Result<AppConfig> {
         let (update_interval, digital_ocean_token, log_level, dry_run, ipv4, ipv6) =
             self.build_general_options()?;
         let domains = self.build_domains()?;
 
-        let config = Config {
+        let config = AppConfig {
             domains,
             update_interval,
             digital_ocean_token: Some(digital_ocean_token),
