@@ -153,13 +153,13 @@ mod tests {
         use crate::types::ValueFromStr;
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        let mut config_builder = crate::config_builder::Builder::new(None, None);
+        let mut config_builder = crate::config::config_builder::Builder::new(None, None);
         config_builder
             .set_subdomain_to_update("home".to_owned())
             .set_domain_root("site.com".to_owned())
             .set_digital_ocean_token(ValueFromStr::from_str("123").unwrap())
             .set_log_level(tracing::Level::INFO)
-            .set_update_interval(crate::config::UpdateInterval(
+            .set_update_interval(crate::config::app_config::UpdateInterval(
                 std::time::Duration::from_secs(5).into(),
             ));
         let config = config_builder.build().unwrap();

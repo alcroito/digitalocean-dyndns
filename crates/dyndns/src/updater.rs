@@ -5,8 +5,8 @@ use std::thread::{park_timeout, JoinHandle};
 use std::time::Instant;
 use tracing::{error, info, trace, warn};
 
-use crate::config;
-use crate::config::Config;
+use crate::config::app_config;
+use crate::config::app_config::Config;
 use crate::domain_record_api::DomainRecordApi;
 use crate::ip_fetcher::{DnsIpFetcher, PublicIpFetcher};
 use crate::signal_handlers::AppTerminationHandler;
@@ -111,7 +111,7 @@ impl Updater {
     }
 
     fn build_starting_updater_mesage(
-        interval: &config::UpdateInterval,
+        interval: &app_config::UpdateInterval,
         records_to_update: &[DomainRecordToUpdate],
     ) -> String {
         let duration_formatted = format_duration(*interval.0);

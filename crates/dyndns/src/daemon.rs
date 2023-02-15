@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::app_config::Config;
 use crate::domain_record_api::digital_ocean::DigitalOceanApi;
 use crate::logger::setup_logger;
 use crate::signal_handlers::{setup_forceful_term_signal_handling, AppTerminationHandler};

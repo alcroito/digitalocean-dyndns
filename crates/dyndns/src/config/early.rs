@@ -1,7 +1,7 @@
 use clap::ArgMatches;
 
+use super::consts::BUILD_INFO;
 use crate::cli::get_cli_args;
-use crate::config_consts::BUILD_INFO;
 
 pub struct EarlyConfig {
     clap_matches: ArgMatches,

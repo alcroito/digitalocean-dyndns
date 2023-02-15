@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 use do_ddns::commands::{decide_command, handle_command};
-use do_ddns::config_early::EarlyConfig;
+use do_ddns::config::early::EarlyConfig;
 use do_ddns::logger::{setup_early_logger, EyreSpanTraceWorkaroundGuard};
 
 fn main() -> Result<()> {

@@ -1,6 +1,6 @@
 use crate::build_info::print_build_info;
-use crate::config_builder::config_with_args;
-use crate::config_early::EarlyConfig;
+use crate::config::config_builder::config_with_args;
+use crate::config::early::EarlyConfig;
 use crate::daemon::start_daemon;
 use color_eyre::eyre::Result;
 
