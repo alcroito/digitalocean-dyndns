@@ -1,23 +1,6 @@
-use clap::{
-    builder::{BoolishValueParser, TypedValueParser},
-    crate_version, Arg, ArgMatches, Command,
-};
+use clap::{crate_version, Arg, ArgMatches, Command};
 
 use crate::config::consts::*;
-
-fn bool_to_string(b: bool) -> String {
-    match b {
-        true => "true",
-        false => "false",
-    }
-    .to_owned()
-}
-
-// FIXME: Remove this when ConfigBuilder has new API to distinguish between clap strings and bools.
-pub fn bool_to_string_value_parser(
-) -> clap::builder::MapValueParser<clap::builder::BoolishValueParser, fn(bool) -> String> {
-    BoolishValueParser::new().map(bool_to_string)
-}
 
 pub fn get_cli_args() -> ArgMatches {
     get_cli_command_definition().get_matches()
@@ -139,7 +122,6 @@ If true, the provided domain root 'A' record will be updated (instead of a subdo
 Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true",
                 )
                 .action(clap::ArgAction::SetTrue)
-                .value_parser(bool_to_string_value_parser())
                 .conflicts_with(SUBDOMAIN_TO_UPDATE),
         )
         .arg(
@@ -185,7 +167,6 @@ Env var: DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins",
                 .short('n')
                 .long("dry-run")
                 .action(clap::ArgAction::SetTrue)
-                .value_parser(bool_to_string_value_parser())
                 .help(
                     "\
 Show what would have been updated.
@@ -196,7 +177,6 @@ Env var: DO_DYNDNS_DRY_RUN=true",
             Arg::new(IPV6_SUPPORT)
                 .long("enable-ipv6")
                 .action(clap::ArgAction::SetTrue)
-                .value_parser(bool_to_string_value_parser())
                 .help(
                     "\
 Enable ipv6 support (disabled by default).
