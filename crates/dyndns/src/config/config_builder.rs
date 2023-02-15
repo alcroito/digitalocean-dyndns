@@ -1,5 +1,5 @@
 use super::consts::*;
-use crate::types::ValueFromStr;
+use crate::types::{ValueFromBool, ValueFromStr};
 use clap::ArgMatches;
 use color_eyre::eyre::{eyre, Result};
 
@@ -20,7 +20,7 @@ pub struct ValueBuilder<'clap, 'toml, T> {
     default_value: Option<T>,
 }
 
-impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
+impl<'clap, 'toml, T: ValueFromStr + ValueFromBool> ValueBuilder<'clap, 'toml, T> {
     pub fn new(key: &str) -> Self {
         ValueBuilder {
             key: key.to_owned(),
@@ -142,13 +142,9 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
                     .expect("checked contains_id")
                     == clap::parser::ValueSource::CommandLine
             {
-                let value = arg_matches.get_flag(option_name).to_string();
-                // FIXME: Ugly workaround to avoid generic type errors trying to assign bool
-                // directly. Should rethink.
-                let parsed_res = ValueFromStr::from_str(&value);
-                if let Ok(value) = parsed_res {
-                    self.value = Some(value);
-                }
+                let value = arg_matches.get_flag(option_name);
+                let parsed_res = ValueFromBool::from_bool(value);
+                self.value = parsed_res.ok();
             }
         }
 
