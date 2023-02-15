@@ -132,18 +132,22 @@ impl<'clap, 'toml, T: ValueFromStr> ValueBuilder<'clap, 'toml, T> {
         }
 
         if let Some((arg_matches, ref option_name)) = self.clap_option_bool {
-            let clap_value = arg_matches
-                .get_one::<String>(option_name)
-                .map(|s| s.as_str());
-            if let Some(value) = clap_value {
+            // We only care about values that come from the command line, not default ones set by
+            // clap. It's not possible to configure a clap argument to return None by default when
+            // .action(clap::ArgAction::SetTrue/SetFalse) is used and no argument is specified
+            // on the command line. So we only retrieve the value if it's a non-default one.
+            if arg_matches.contains_id(option_name)
+                && arg_matches
+                    .value_source(option_name)
+                    .expect("checked contains_id")
+                    == clap::parser::ValueSource::CommandLine
+            {
+                let value = arg_matches.get_flag(option_name).to_string();
                 // FIXME: Ugly workaround to avoid generic type errors trying to assign bool
                 // directly. Should rethink.
-                let manually_parsed_res = value.parse::<bool>();
-                let parsed_res = ValueFromStr::from_str(value);
-                if let (Ok(value), Ok(bool_value)) = (parsed_res, manually_parsed_res) {
-                    if bool_value {
-                        self.value = Some(value);
-                    }
+                let parsed_res = ValueFromStr::from_str(&value);
+                if let Ok(value) = parsed_res {
+                    self.value = Some(value);
                 }
             }
         }
@@ -304,16 +308,13 @@ mod tests {
 
     #[test]
     fn test_clap_bool_value() {
-        use crate::cli::bool_to_string_value_parser;
-
         let command = clap::Command::new("test").arg(
             clap::Arg::new("foo")
                 .short('f')
-                .action(clap::ArgAction::SetTrue)
-                .value_parser(bool_to_string_value_parser()),
+                .action(clap::ArgAction::SetTrue),
         );
 
-        // False by default when unset, option set, thus true
+        // clap option is false by default when unset, option set, thus result is Some(true)
         let arg_vec = vec!["my_prog", "-f"];
         let matches = command.clone().get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<bool>::new("foo");
@@ -321,8 +322,7 @@ mod tests {
         let value = builder.build().unwrap();
         assert!(value);
 
-        // False by default when unset, option unset, thus false
-        // FIXME: Currently this returns an error instead of false.
+        // clap option is false by default when unset, option unset, thus result is None
         let arg_vec = vec!["my_prog"];
         let matches = command.get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<bool>::new("foo");
@@ -333,26 +333,24 @@ mod tests {
         let command = clap::Command::new("test").arg(
             clap::Arg::new("foo")
                 .short('f')
-                .action(clap::ArgAction::SetFalse)
-                .value_parser(bool_to_string_value_parser()),
+                .action(clap::ArgAction::SetFalse),
         );
 
-        // True by default when unset, option set, thus false
-        // FIXME: Currently this returns an error instead of false.
+        // clap option is true by default when unset, option set, thus result is Some(false)
         let arg_vec = vec!["my_prog", "-f"];
         let matches = command.clone().get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<bool>::new("foo");
         builder.with_clap_bool(Some(&matches));
-        let value = builder.build();
-        assert!(value.is_err());
+        let value = builder.build().unwrap();
+        assert!(!value);
 
-        // True by default when unset, option unset, thus true
+        // clap option is true by default when unset, option unset, thus result is None
         let arg_vec = vec!["my_prog"];
         let matches = command.get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<bool>::new("foo");
         builder.with_clap_bool(Some(&matches));
-        let value = builder.build().unwrap();
-        assert!(value);
+        let value = builder.build();
+        assert!(value.is_err());
     }
 
     #[test]
