@@ -238,24 +238,162 @@ mod tests {
     use tempfile::NamedTempFile;
 
     #[test]
-    fn test_config_value_builder() {
-        std::env::set_var(make_env_var_from_key("var1"), "some_val");
-        let mut builder = ValueBuilder::<String>::new("var1");
+    fn test_env_var() {
+        // Happy path
+        let key = "valid_env_var";
+        std::env::set_var(make_env_var_from_key(key), "some_val");
+        let mut builder = ValueBuilder::<String>::new(key);
         builder.with_env_var_name();
         let value = builder.build().unwrap();
         assert_eq!(value, "some_val");
 
+        // Empty value
+        let key = "empty_env_var";
+        std::env::set_var(make_env_var_from_key(key), "");
+        let mut builder = ValueBuilder::<String>::new(key);
+        builder.with_env_var_name();
+        let value = builder.build().unwrap();
+        assert_eq!(value, "");
+
+        // Env does not exist
+        let key = "non_existent_env_var";
+        let mut builder = ValueBuilder::<String>::new(key);
+        builder.with_env_var_name();
+        let value = builder.build();
+        assert!(value.is_err());
+    }
+
+    #[test]
+    fn test_clap_string_value() {
+        let command = clap::Command::new("test").arg(clap::Arg::new("foo").short('f').long("foo"));
+
+        // Happy path
         let arg_vec = vec!["my_prog", "--foo", "some_val"];
-        let matches = clap::Command::new("test")
-            .arg(clap::Arg::new("foo").short('f').long("foo"))
-            .get_matches_from(arg_vec);
+        let matches = command.clone().get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<String>::new("foo");
         builder.with_clap(Some(&matches));
         let value = builder.build().unwrap();
         assert_eq!(value, "some_val");
 
+        // Empty value
+        let arg_vec = vec!["my_prog", "--foo", ""];
+        let matches = command.clone().get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<String>::new("foo");
+        builder.with_clap(Some(&matches));
+        let value = builder.build().unwrap();
+        assert_eq!(value, "");
+
+        // Key not given
+        let arg_vec = vec!["my_prog"];
+        let matches = command.get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<String>::new("foo");
+        builder.with_clap(Some(&matches));
+        let value = builder.build();
+        assert!(value.is_err());
+
+        // Value not given
+        let command = clap::Command::new("test")
+            .arg(clap::Arg::new("foo").short('f').long("foo").num_args(0..=1));
+        let arg_vec = vec!["my_prog", "--foo"];
+        let matches = command.get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<String>::new("foo");
+        builder.with_clap(Some(&matches));
+        let value = builder.build();
+        assert!(value.is_err());
+    }
+
+    #[test]
+    fn test_clap_bool_value() {
+        use crate::cli::bool_to_string_value_parser;
+
+        let command = clap::Command::new("test").arg(
+            clap::Arg::new("foo")
+                .short('f')
+                .action(clap::ArgAction::SetTrue)
+                .value_parser(bool_to_string_value_parser()),
+        );
+
+        // False by default when unset, option set, thus true
+        let arg_vec = vec!["my_prog", "-f"];
+        let matches = command.clone().get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<bool>::new("foo");
+        builder.with_clap_bool(Some(&matches));
+        let value = builder.build().unwrap();
+        assert!(value);
+
+        // False by default when unset, option unset, thus false
+        // FIXME: Currently this returns an error instead of false.
+        let arg_vec = vec!["my_prog"];
+        let matches = command.get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<bool>::new("foo");
+        builder.with_clap_bool(Some(&matches));
+        let value = builder.build();
+        assert!(value.is_err());
+
+        let command = clap::Command::new("test").arg(
+            clap::Arg::new("foo")
+                .short('f')
+                .action(clap::ArgAction::SetFalse)
+                .value_parser(bool_to_string_value_parser()),
+        );
+
+        // True by default when unset, option set, thus false
+        // FIXME: Currently this returns an error instead of false.
+        let arg_vec = vec!["my_prog", "-f"];
+        let matches = command.clone().get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<bool>::new("foo");
+        builder.with_clap_bool(Some(&matches));
+        let value = builder.build();
+        assert!(value.is_err());
+
+        // True by default when unset, option unset, thus true
+        let arg_vec = vec!["my_prog"];
+        let matches = command.get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<bool>::new("foo");
+        builder.with_clap_bool(Some(&matches));
+        let value = builder.build().unwrap();
+        assert!(value);
+    }
+
+    #[test]
+    fn test_clap_occurrences_value() {
+        let command = clap::Command::new("test").arg(
+            clap::Arg::new("v")
+                .short('v')
+                .action(clap::ArgAction::Count),
+        );
+
+        // Happy path 2 values
+        let arg_vec = vec!["my_prog", "-vv"];
+        let matches = command.clone().get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<String>::new("v");
+        builder.with_clap_occurences(Some(&matches), "v", Box::new(|v| Some(v.to_string())));
+        let value = builder.build().unwrap();
+        assert_eq!(value, "2");
+
+        // Happy path 1 value
+        let arg_vec = vec!["my_prog", "-v"];
+        let matches = command.clone().get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<String>::new("v");
+        builder.with_clap_occurences(Some(&matches), "v", Box::new(|v| Some(v.to_string())));
+        let value = builder.build().unwrap();
+        assert_eq!(value, "1");
+
+        // Happy path 0 values
+        // FIXME: Check that value is empty, and not a different error
+        let arg_vec = vec!["my_prog"];
+        let matches = command.get_matches_from(arg_vec);
+        let mut builder = ValueBuilder::<String>::new("v");
+        builder.with_clap_occurences(Some(&matches), "v", Box::new(|_v| None));
+        let value = builder.build();
+        assert!(value.is_err());
+    }
+
+    #[test]
+    fn test_file_line() {
+        use std::io::Write;
+        // Happy path
         {
-            use std::io::Write;
             let mut file = NamedTempFile::new().unwrap();
             writeln!(file, "some_val").unwrap();
             let temp_file_path = file.path();
@@ -265,22 +403,76 @@ mod tests {
             assert_eq!(value, "some_val");
         }
 
+        // FIXME: Empty file is valid, but should be an error
+        {
+            let file = NamedTempFile::new().unwrap();
+            let temp_file_path = file.path();
+            let mut builder = ValueBuilder::<String>::new("some_file");
+            builder.with_single_line_from_file(temp_file_path.to_str().unwrap());
+            let value = builder.build().unwrap();
+            assert_eq!(value, "");
+        }
+
+        // Missing file
+        {
+            let temp_file_path = "/definitely_should_not_exist";
+            let mut builder = ValueBuilder::<String>::new("some_file");
+            builder.with_single_line_from_file(temp_file_path);
+            let value = builder.build();
+            assert!(value.is_err());
+        }
+    }
+
+    #[test]
+    fn test_toml_value() {
         let toml_value: toml::Value = toml::from_str(
             r#"
         some_field = 'some_val'
+        empty_field = ''
         "#,
         )
         .unwrap();
+
+        // Happy path
         let toml_map = toml_value.as_table().unwrap();
         let mut builder = ValueBuilder::<String>::new("some_field");
         builder.with_config_value(Some(toml_map));
         let value = builder.build().unwrap();
         assert_eq!(value, "some_val");
 
-        let mut builder = ValueBuilder::<String>::new("default");
+        // Empty field
+        let toml_map = toml_value.as_table().unwrap();
+        let mut builder = ValueBuilder::<String>::new("empty_field");
+        builder.with_config_value(Some(toml_map));
+        let value = builder.build().unwrap();
+        assert_eq!(value, "");
+
+        // Missing key
+        let toml_map = toml_value.as_table().unwrap();
+        let mut builder = ValueBuilder::<String>::new("missing_field");
+        builder.with_config_value(Some(toml_map));
+        let value = builder.build();
+        assert!(value.is_err());
+    }
+
+    #[test]
+    fn test_default_value() {
+        // Happy path
+        let mut builder = ValueBuilder::<String>::new("foo");
         builder.with_default("some_val".to_owned());
         let value = builder.build().unwrap();
         assert_eq!(value, "some_val");
+
+        // Empty string
+        let mut builder = ValueBuilder::<String>::new("foo");
+        builder.with_default("".to_owned());
+        let value = builder.build().unwrap();
+        assert_eq!(value, "");
+
+        // Missing key
+        let mut builder = ValueBuilder::<String>::new("foo");
+        let value = builder.build();
+        assert!(value.is_err());
     }
 
     #[test]
