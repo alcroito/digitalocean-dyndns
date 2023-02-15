@@ -1,6 +1,6 @@
-use crate::config::{Config, Domains, UpdateInterval};
-use crate::config_consts::*;
-use crate::config_early::EarlyConfig;
+use super::app_config::{Config, Domains, UpdateInterval};
+use super::consts::*;
+use super::early::EarlyConfig;
 use crate::token::SecretDigitalOceanToken;
 use crate::types::ValueFromStr;
 use color_eyre::eyre::{bail, eyre, Result, WrapErr};
@@ -465,12 +465,12 @@ impl<'clap> Builder<'clap> {
 
     fn simple_mode_domains_as_records(
         config: Result<(String, String)>,
-    ) -> Result<crate::config::Domains> {
+    ) -> Result<crate::config::app_config::Domains> {
         let config = config?;
-        let domains = crate::config::Domains {
-            domains: vec![crate::config::Domain {
+        let domains = crate::config::app_config::Domains {
+            domains: vec![crate::config::app_config::Domain {
                 name: config.0,
-                records: vec![crate::config::DomainRecord {
+                records: vec![crate::config::app_config::DomainRecord {
                     record_type: "A".to_owned(),
                     name: config.1,
                 }],

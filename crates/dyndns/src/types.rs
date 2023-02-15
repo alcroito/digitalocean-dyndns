@@ -175,4 +175,4 @@ macro_rules! impl_value_from_str {
     }
 }
 
-impl_value_from_str! { String, bool, crate::config::UpdateInterval, tracing::Level }
+impl_value_from_str! { String, bool, crate::config::app_config::UpdateInterval, tracing::Level }

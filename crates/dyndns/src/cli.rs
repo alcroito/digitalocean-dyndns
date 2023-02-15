@@ -3,7 +3,7 @@ use clap::{
     crate_version, Arg, ArgMatches, Command,
 };
 
-use crate::config_consts::*;
+use crate::config::consts::*;
 
 fn bool_to_string(b: bool) -> String {
     match b {
