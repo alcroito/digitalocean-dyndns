@@ -153,7 +153,8 @@ mod tests {
         use crate::types::ValueFromStr;
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        let mut config_builder = crate::config::config_builder::AppConfigBuilder::new(None, None);
+        let mut config_builder =
+            crate::config::app_config_builder::AppConfigBuilder::new(None, None);
         config_builder
             .set_subdomain_to_update("home".to_owned())
             .set_domain_root("site.com".to_owned())
