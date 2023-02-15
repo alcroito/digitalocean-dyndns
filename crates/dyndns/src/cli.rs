@@ -14,7 +14,7 @@ fn bool_to_string(b: bool) -> String {
 }
 
 // FIXME: Remove this when ConfigBuilder has new API to distinguish between clap strings and bools.
-fn bool_to_string_value_parser(
+pub fn bool_to_string_value_parser(
 ) -> clap::builder::MapValueParser<clap::builder::BoolishValueParser, fn(bool) -> String> {
     BoolishValueParser::new().map(bool_to_string)
 }
