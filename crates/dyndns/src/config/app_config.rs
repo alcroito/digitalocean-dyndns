@@ -6,7 +6,7 @@ use std::time::Duration as StdDuration;
 
 #[non_exhaustive]
 #[derive(Debug)]
-pub struct Config {
+pub struct AppConfig {
     pub domains: Domains,
     pub update_interval: UpdateInterval,
     // TODO: Is there a better type to use here instead of Option?

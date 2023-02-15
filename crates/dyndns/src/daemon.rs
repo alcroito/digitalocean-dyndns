@@ -1,4 +1,4 @@
-use crate::config::app_config::Config;
+use crate::config::app_config::AppConfig;
 use crate::domain_record_api::digital_ocean::DigitalOceanApi;
 use crate::logger::setup_logger;
 use crate::signal_handlers::{setup_forceful_term_signal_handling, AppTerminationHandler};
@@ -6,7 +6,7 @@ use crate::signal_handlers::{setup_forceful_term_signal_handling, AppTermination
 use crate::updater::Updater;
 use color_eyre::eyre::Result;
 
-pub fn start_daemon(mut config: Config) -> Result<()> {
+pub fn start_daemon(mut config: AppConfig) -> Result<()> {
     setup_logger(&config.log_level)?;
     setup_forceful_term_signal_handling()?;
 

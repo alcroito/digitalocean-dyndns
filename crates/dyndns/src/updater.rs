@@ -6,14 +6,14 @@ use std::time::Instant;
 use tracing::{error, info, trace, warn};
 
 use crate::config::app_config;
-use crate::config::app_config::Config;
+use crate::config::app_config::AppConfig;
 use crate::domain_record_api::DomainRecordApi;
 use crate::ip_fetcher::{DnsIpFetcher, PublicIpFetcher};
 use crate::signal_handlers::AppTerminationHandler;
 use crate::types::{api, DomainRecordToUpdate, IpAddrV4AndV6};
 
 pub struct Updater {
-    config: Config,
+    config: AppConfig,
     api: Box<dyn DomainRecordApi + Send>,
     failed_attempts: u64,
     term_handler: AppTerminationHandler,
@@ -21,7 +21,7 @@ pub struct Updater {
 
 impl Updater {
     pub fn new(
-        config: Config,
+        config: AppConfig,
         api: Box<dyn DomainRecordApi + Send>,
         term_handler: AppTerminationHandler,
     ) -> Self {
@@ -129,7 +129,7 @@ impl Updater {
         format!("{}\n{}", m, record_m.join("\n"))
     }
 
-    fn build_records_to_update(config: &Config) -> Vec<DomainRecordToUpdate> {
+    fn build_records_to_update(config: &AppConfig) -> Vec<DomainRecordToUpdate> {
         config
             .domains
             .domains
