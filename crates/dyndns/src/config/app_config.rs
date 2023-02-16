@@ -2,11 +2,32 @@ use crate::token::SecretDigitalOceanToken;
 use color_eyre::eyre::Result;
 use humantime::Duration;
 use serde::Deserialize;
-use std::time::Duration as StdDuration;
+use std::{ops::Deref, sync::Arc, time::Duration as StdDuration};
+
+#[derive(Debug, Clone)]
+pub struct AppConfig {
+    inner: Arc<AppConfigInner>,
+}
+
+impl AppConfig {
+    pub fn new(inner: AppConfigInner) -> Self {
+        Self {
+            inner: Arc::new(inner),
+        }
+    }
+}
+
+impl Deref for AppConfig {
+    type Target = AppConfigInner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
 
 #[non_exhaustive]
 #[derive(Debug)]
-pub struct AppConfig {
+pub struct AppConfigInner {
     pub domains: Domains,
     pub general_options: GeneralOptions,
 }
@@ -15,8 +36,7 @@ pub struct AppConfig {
 #[derive(Debug)]
 pub struct GeneralOptions {
     pub update_interval: UpdateInterval,
-    // TODO: Is there a better type to use here instead of Option?
-    pub digital_ocean_token: Option<SecretDigitalOceanToken>,
+    pub digital_ocean_token: SecretDigitalOceanToken,
     pub log_level: tracing::Level,
     pub dry_run: bool,
     pub ipv4: bool,

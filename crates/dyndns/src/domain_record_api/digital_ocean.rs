@@ -4,22 +4,22 @@ use secrecy::ExposeSecret;
 use std::net::IpAddr;
 use tracing::info;
 
+use crate::config::app_config::AppConfig;
 use crate::domain_record_api::DomainRecordApi;
-use crate::token::SecretDigitalOceanToken;
 use crate::types::{api, DomainRecordToUpdate};
 
 const DIGITAL_OCEAN_API_HOST_NAME: &str = "https://api.digitalocean.com";
 
 pub struct DigitalOceanApi {
     request_client: Client,
-    digital_ocean_token: SecretDigitalOceanToken,
+    config: AppConfig,
 }
 
 impl DigitalOceanApi {
-    pub fn new(digital_ocean_token: SecretDigitalOceanToken) -> Self {
+    pub fn new(config: AppConfig) -> Self {
         Self {
             request_client: Client::new(),
-            digital_ocean_token,
+            config,
         }
     }
 }
@@ -28,7 +28,7 @@ impl DomainRecordApi for DigitalOceanApi {
     fn get_domain_records(&self, domain_name: &str) -> Result<api::DomainRecords> {
         let endpoint = format!("/v2/domains/{domain_name}/records?per_page=200");
         let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
-        let access_token = &self.digital_ocean_token;
+        let access_token = &self.config.general_options.digital_ocean_token;
         let response = self
             .request_client
             .get(request_url)
@@ -59,7 +59,7 @@ impl DomainRecordApi for DigitalOceanApi {
             record_to_update.domain_name, domain_record_id
         );
         let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
-        let access_token = &self.digital_ocean_token;
+        let access_token = &self.config.general_options.digital_ocean_token;
         let client = Client::new();
         let mut body = std::collections::HashMap::new();
         body.insert("data", new_ip.to_string());
