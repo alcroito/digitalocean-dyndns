@@ -174,9 +174,11 @@ impl<'clap, 'toml, T: ValueFromStr + ValueFromBool> ValueBuilder<'clap, 'toml, T
             let line = std::fs::read_to_string(file_path);
             if let Ok(line) = line {
                 let value = line.trim_end();
-                let parsed_res = ValueFromStr::from_str(value);
-                if let Ok(value) = parsed_res {
-                    self.value = Some(value);
+                if !value.is_empty() {
+                    let parsed_res = ValueFromStr::from_str(value);
+                    if let Ok(value) = parsed_res {
+                        self.value = Some(value);
+                    }
                 }
             }
         }
@@ -396,14 +398,14 @@ mod tests {
             assert_eq!(value, "some_val");
         }
 
-        // FIXME: Empty file is valid, but should be an error
+        // Empty file
         {
             let file = NamedTempFile::new().unwrap();
             let temp_file_path = file.path();
             let mut builder = ValueBuilder::<String>::new("some_file");
             builder.with_single_line_from_file(temp_file_path.to_str().unwrap());
-            let value = builder.build().unwrap();
-            assert_eq!(value, "");
+            let value = builder.build();
+            assert!(value.is_err());
         }
 
         // Missing file
