@@ -1,4 +1,6 @@
-use super::app_config::{AppConfig, Domain, DomainRecord, Domains, GeneralOptions, UpdateInterval};
+use super::app_config::{
+    AppConfig, AppConfigInner, Domain, DomainRecord, Domains, GeneralOptions, UpdateInterval,
+};
 use super::config_builder::{make_env_var_from_key, ValueBuilder};
 use super::consts::*;
 use super::early::EarlyConfig;
@@ -340,7 +342,7 @@ impl<'clap> AppConfigBuilder<'clap> {
 
         let general_options = GeneralOptions {
             update_interval,
-            digital_ocean_token: Some(digital_ocean_token),
+            digital_ocean_token,
             log_level,
             dry_run,
             ipv4,
@@ -354,10 +356,10 @@ impl<'clap> AppConfigBuilder<'clap> {
 
         let domains = self.build_domains()?;
 
-        let config = AppConfig {
+        let config = AppConfig::new(AppConfigInner {
             domains,
             general_options,
-        };
+        });
         Ok(config)
     }
 }

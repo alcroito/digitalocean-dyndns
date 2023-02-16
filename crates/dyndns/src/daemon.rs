@@ -6,16 +6,11 @@ use crate::signal_handlers::{setup_forceful_term_signal_handling, AppTermination
 use crate::updater::Updater;
 use color_eyre::eyre::Result;
 
-pub fn start_daemon(mut config: AppConfig) -> Result<()> {
+pub fn start_daemon(config: AppConfig) -> Result<()> {
     setup_logger(&config.general_options.log_level)?;
     setup_forceful_term_signal_handling()?;
 
-    let token = config
-        .general_options
-        .digital_ocean_token
-        .take()
-        .expect("No digital ocean token in config");
-    let do_api = Box::new(DigitalOceanApi::new(token));
+    let do_api = Box::new(DigitalOceanApi::new(config.clone()));
 
     let term_handler = AppTerminationHandler::new()?;
     term_handler.setup_exit_panic_hook();
