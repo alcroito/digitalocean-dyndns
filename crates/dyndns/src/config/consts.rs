@@ -9,6 +9,8 @@ pub static SERVICE_LOG_LEVEL: &str = "log_level";
 pub static DRY_RUN: &str = "dry_run";
 pub static IPV4_SUPPORT: &str = "ipv4";
 pub static IPV6_SUPPORT: &str = "ipv6";
+pub static COLLECT_STATS: &str = "collect_stats";
+pub static DB_PATH: &str = "database_path";
 pub static LOG_LEVEL_VERBOSITY_SHORT: &str = "v";
 pub static LOG_LEVEL_VERBOSITY_SHORT_CHAR: char = 'v';
 

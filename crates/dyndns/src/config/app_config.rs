@@ -41,6 +41,8 @@ pub struct GeneralOptions {
     pub dry_run: bool,
     pub ipv4: bool,
     pub ipv6: bool,
+    pub collect_stats: bool,
+    pub db_path: Option<std::path::PathBuf>,
 }
 
 #[non_exhaustive]

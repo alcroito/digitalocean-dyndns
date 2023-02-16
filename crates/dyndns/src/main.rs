@@ -20,5 +20,6 @@ fn main_impl() -> Result<()> {
     let early_config = EarlyConfig::get();
     let command = decide_command(&early_config);
     handle_command(&early_config, &command)?;
+
     Ok(())
 }

@@ -1,7 +1,7 @@
 use crate::build_info::print_build_info;
-use crate::config::app_config_builder::config_with_args;
 use crate::config::early::EarlyConfig;
 use crate::daemon::start_daemon;
+use crate::global_state::GlobalState;
 use color_eyre::eyre::Result;
 
 pub enum Command {
@@ -23,8 +23,8 @@ pub fn handle_command(early_config: &EarlyConfig, command: &Command) -> Result<(
             print_build_info();
         }
         Command::StartDaemon => {
-            let config = config_with_args(early_config)?;
-            start_daemon(config)?;
+            let global_state = GlobalState::new(early_config)?;
+            start_daemon(global_state)?;
         }
     };
     Ok(())
