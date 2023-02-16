@@ -374,13 +374,12 @@ mod tests {
         assert_eq!(value, "1");
 
         // Happy path 0 values
-        // FIXME: Check that value is empty, and not a different error
         let arg_vec = vec!["my_prog"];
         let matches = command.get_matches_from(arg_vec);
         let mut builder = ValueBuilder::<String>::new("v");
-        builder.with_clap_occurences(Some(&matches), "v", Box::new(|_v| None));
-        let value = builder.build();
-        assert!(value.is_err());
+        builder.with_clap_occurences(Some(&matches), "v", Box::new(|v| Some(v.to_string())));
+        let value = builder.build().unwrap();
+        assert_eq!(value, "0");
     }
 
     #[test]
