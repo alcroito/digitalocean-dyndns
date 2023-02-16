@@ -6,6 +6,8 @@ use crate::db::schema::domain_records;
 use crate::db::schema::updater_attempts;
 
 use chrono::NaiveDateTime;
+#[cfg(feature = "web")]
+use schemars::JsonSchema;
 use serde::Serialize;
 
 pub type PrimaryKey = i64;
@@ -75,7 +77,8 @@ pub struct NewDomainIpLastFetch {
     pub last_successful_fetched_ipv6_change_date: NaiveDateTime,
 }
 
-#[derive(Identifiable, Queryable, Debug)]
+#[cfg_attr(feature = "web", derive(JsonSchema))]
+#[derive(Identifiable, Queryable, QueryableByName, Debug, Serialize)]
 #[diesel(table_name = domain_record_updates)]
 pub struct DomainRecordUpdate {
     pub id: PrimaryKey,

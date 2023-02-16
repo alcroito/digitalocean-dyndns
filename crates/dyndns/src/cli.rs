@@ -222,5 +222,39 @@ Env var: DO_DYNDNS_DATABASE_PATH=/tmp/dyndns_stats_db.sqlite",
     }
     command = command.arg(arg);
 
+    // Don't show web related options when building with the feature disabled.
+    let mut arg = Arg::new(ENABLE_WEB)
+        .long("enable-web")
+        .action(clap::ArgAction::SetTrue)
+        .help(
+            "\
+Enable web server to visualize collected statistics.
+Env var: DO_DYNDNS_ENABLE_WEB=true",
+        );
+    if cfg!(not(feature = "web")) {
+        arg = arg.hide(true);
+    }
+    command = command.arg(arg);
+
+    let mut arg = Arg::new(LISTEN_HOSTNAME).long("listen-hostname").help(
+        "\
+An IP address or host name where to serve HTTP pages on.
+Env var: DO_DYNDNS_LISTEN_HOSTNAME=192.168.0.1",
+    );
+    if cfg!(not(feature = "web")) {
+        arg = arg.hide(true);
+    }
+    command = command.arg(arg);
+
+    let mut arg = Arg::new(LISTEN_PORT).long("listen-port").help(
+        "\
+Port numbere where to serve HTTP pages on.
+Env var: DO_DYNDNS_LISTEN_PORT=8080",
+    );
+    if cfg!(not(feature = "web")) {
+        arg = arg.hide(true);
+    }
+    command = command.arg(arg);
+
     command
 }

@@ -2,7 +2,7 @@ use color_eyre::eyre::{bail, Result, WrapErr};
 use reqwest::blocking::Client;
 use secrecy::ExposeSecret;
 use std::net::IpAddr;
-use tracing::info;
+use tracing::{info, trace};
 
 use crate::config::app_config::AppConfig;
 use crate::domain_record_api::DomainRecordApi;
@@ -89,7 +89,7 @@ impl DomainRecordApi for DigitalOceanApi {
 
 impl Drop for DigitalOceanApi {
     fn drop(&mut self) {
-        info!("Shutting down updater")
+        trace!("DigitalOceanApi object destroyed")
     }
 }
 

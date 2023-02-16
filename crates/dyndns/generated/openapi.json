@@ -1,0 +1,147 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ddns Open API",
+        "summary": "ddns Open API",
+        "description": "ddns Open API",
+        "version": ""
+    },
+    "paths": {
+        "/api/v1/domain_record_ip_changes": {
+            "get": {
+                "description": "List all recent domain record ip changes",
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "GenericError"
+                                            ],
+                                            "properties": {
+                                                "GenericError": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "example": {
+                                    "GenericError": "generic error"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DomainRecordIpChanges"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/docs/": {
+            "get": {
+                "description": "This documentation page.",
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "required": [
+                                                "GenericError"
+                                            ],
+                                            "properties": {
+                                                "GenericError": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "example": {
+                                    "GenericError": "generic error"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "HTML content",
+                        "content": {
+                            "text/html": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "DomainRecordIpChange": {
+                "type": "object",
+                "required": [
+                    "attempt_date",
+                    "domain_record_id",
+                    "id",
+                    "name",
+                    "set_ip",
+                    "success"
+                ],
+                "properties": {
+                    "attempt_date": {
+                        "type": "string",
+                        "format": "partial-date-time"
+                    },
+                    "domain_record_id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "set_ip": {
+                        "type": "string"
+                    },
+                    "success": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "DomainRecordIpChanges": {
+                "type": "object",
+                "required": [
+                    "changes"
+                ],
+                "properties": {
+                    "changes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DomainRecordIpChange"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

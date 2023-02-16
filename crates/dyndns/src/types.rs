@@ -193,7 +193,7 @@ macro_rules! impl_value_from_str {
     }
 }
 
-impl_value_from_str! { String, bool, UpdateInterval, Level }
+impl_value_from_str! { String, bool, UpdateInterval, Level, u16 }
 
 pub trait ValueFromBool: Sized {
     type Err;
@@ -219,4 +219,4 @@ macro_rules! impl_value_from_bool_as_error {
     }
 }
 
-impl_value_from_bool_as_error! { String, UpdateInterval, Level, SecretDigitalOceanToken }
+impl_value_from_bool_as_error! { String, UpdateInterval, Level, SecretDigitalOceanToken, u16 }

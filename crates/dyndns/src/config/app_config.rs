@@ -43,6 +43,9 @@ pub struct GeneralOptions {
     pub ipv6: bool,
     pub collect_stats: bool,
     pub db_path: Option<std::path::PathBuf>,
+    pub enable_web: bool,
+    pub listen_hostname: String,
+    pub listen_port: u16,
 }
 
 #[non_exhaustive]
