@@ -358,11 +358,18 @@ impl<'clap> AppConfigBuilder<'clap> {
             .ok()
             .map(|db_path| std::path::PathBuf::from(&db_path));
 
+        let enable_web = ValueBuilder::new(ENABLE_WEB)
+            .with_env_var_name()
+            .with_clap_bool(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .with_default(false)
+            .build()?;
+
         let listen_hostname: String = ValueBuilder::new(LISTEN_HOSTNAME)
             .with_env_var_name()
             .with_clap(self.clap_matches)
             .with_config_value(self.toml_table.as_ref())
-            .with_default("0.0.0.0".to_owned())
+            .with_default("localhost".to_owned())
             .build()?;
 
         let listen_port = ValueBuilder::new(LISTEN_PORT)
@@ -381,6 +388,9 @@ impl<'clap> AppConfigBuilder<'clap> {
             ipv6,
             collect_stats,
             db_path,
+            enable_web,
+            listen_hostname,
+            listen_port,
         };
         Ok(general_options)
     }

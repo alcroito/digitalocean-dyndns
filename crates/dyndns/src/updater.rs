@@ -214,7 +214,7 @@ impl Updater {
 
             // Exit if interrupted.
             if self.was_interrupted_while_sleeping() {
-                trace!("Process was requested to exit either by system or user");
+                info!("Updater recieved signal to shut down. Shutting down");
                 return Ok(());
             }
         }
@@ -223,6 +223,10 @@ impl Updater {
     }
 
     fn was_interrupted_while_sleeping(&self) -> bool {
+        if self.should_exit() {
+            return true;
+        }
+
         let beginning_park = Instant::now();
         let timeout = self.global_state.config.general_options.update_interval.0;
         let mut sleep_time_left = timeout;

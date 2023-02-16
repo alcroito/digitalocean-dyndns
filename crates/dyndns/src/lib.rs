@@ -20,3 +20,6 @@ pub mod stats_handler_db;
 pub mod token;
 pub mod types;
 pub mod updater;
+
+#[cfg(feature = "web")]
+pub mod web;

@@ -7,6 +7,10 @@ use signal_hook::{consts::TERM_SIGNALS, low_level::signal_name};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
+
+#[cfg(feature = "web")]
+use tokio::sync::oneshot::Sender;
+
 use tracing::{info, trace};
 
 pub struct SignalsHandle {
@@ -26,6 +30,10 @@ impl SignalsHandle {
 #[derive(Default, Clone)]
 pub struct AppTerminationHandler {
     updater_thread: Arc<Mutex<Option<JoinHandle<Result<()>>>>>,
+    web_thread: Arc<Mutex<Option<JoinHandle<Result<()>>>>>,
+
+    #[cfg(feature = "web")]
+    web_exit_tx: Arc<Mutex<Option<Sender<()>>>>,
     should_exit_flag: Arc<AtomicBool>,
     signals: Arc<Mutex<Option<SignalsInfo<WithOrigin>>>>,
     signals_handle: Arc<Mutex<Option<SignalsHandle>>>,
@@ -58,6 +66,21 @@ impl AppTerminationHandler {
             .replace(updater_thread);
     }
 
+    pub fn set_web_thread(&self, web_thread: JoinHandle<Result<()>>) {
+        self.web_thread
+            .lock()
+            .expect("web_thread mutex poisoned")
+            .replace(web_thread);
+    }
+
+    #[cfg(feature = "web")]
+    pub fn set_web_exit_tx(&self, web_exit_tx: Sender<()>) {
+        self.web_exit_tx
+            .lock()
+            .expect("web_exit_tx mutex poisoned")
+            .replace(web_exit_tx);
+    }
+
     fn set_signals(&self, signals: SignalsInfo<WithOrigin>) {
         self.signals
             .lock()
@@ -88,15 +111,62 @@ impl AppTerminationHandler {
             .expect("updater thread handle mutex poisoned")
             .as_ref()
         {
-            trace!("Unparking updater thread");
+            info!("unparking updater thread");
             updater_thread.thread().unpark();
+        }
+
+        #[cfg(feature = "web")]
+        {
+            // Unpark the web thread if we have a handle to it.
+            if let Some(web_thread) = self
+                .web_thread
+                .lock()
+                .expect("web thread handle mutex poisoned")
+                .as_ref()
+            {
+                info!("unparking web thread");
+                web_thread.thread().unpark();
+            }
         }
     }
 
-    fn notify_threads_to_exit(&self) {}
+    fn notify_threads_to_exit(&self) {
+        #[cfg(feature = "web")]
+        {
+            if let Some(web_exit_tx) = self
+                .web_exit_tx
+                .lock()
+                .expect("web_exit_tx mutex poisoned")
+                .take()
+            {
+                if web_exit_tx.send(()).is_err() {
+                    info!("Failed to message the web server runtime to shutdown, the receiver dropped.");
+                }
+            }
+        }
+    }
 
     pub fn join_threads(&self) -> Result<()> {
-        trace!("Joining all thread handles");
+        trace!("Joining all threads");
+
+        #[cfg(feature = "web")]
+        {
+            if self
+                .web_thread
+                .lock()
+                .expect("web thread handle mutex poisoned")
+                .is_some()
+            {
+                self.web_thread
+                    .lock()
+                    .expect("web thread handle mutex poisoned")
+                    .take()
+                    .expect("web thread handle should exist")
+                    .join()
+                    .expect("web thread join panicked")?;
+                trace!("Web server thread successfully shut down");
+            }
+        }
 
         self.updater_thread
             .lock()
@@ -104,7 +174,7 @@ impl AppTerminationHandler {
             .take()
             .expect("updater thread handle should exist")
             .join()
-            .expect("updater thread handle join returned an error")?;
+            .expect("updater thread join panicked")?;
         trace!("Updater thread successfully shut down");
         Ok(())
     }

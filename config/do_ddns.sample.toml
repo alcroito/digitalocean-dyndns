@@ -24,6 +24,19 @@ dry_run = "false"
 # macOS: /Users/<user>/Library/Application Support/org.alcroito.digitalocean-dyndns/dyndns_db.sqlite
 # database_path = "/tmp/dyndns_stats_db.sqlite"
 
+# Enable web server to visualize collected statistics.
+# Disabled by default.
+# enable_web = "true"
+
+# An IPv4 / IPv6 address or host name where to serve HTTP pages on.
+# In case of host that has a dual IP stack, both will be used.
+# Default is localhost.
+# listen_hostname = "true"
+
+# Port number where to serve HTTP pages on.
+# Default is 8095.
+# listen_port = "8095"
+
 ## Simple config mode sample
 
 # Updates the IP of the 'home.mysite.com' A record.
