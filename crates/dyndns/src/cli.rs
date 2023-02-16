@@ -6,7 +6,7 @@ pub fn get_cli_args() -> ArgMatches {
     get_cli_command_definition().get_matches()
 }
 
-pub fn get_cli_command_definition() -> Command {
+fn get_cli_command_definition_base() -> Command {
     Command::new("DigitalOcean dynamic dns updater")
         .version(crate_version!())
         .about("Updates DigitalOcean domain records to point to the current machine's public IP")
@@ -192,4 +192,35 @@ Output build info like git commit sha, rustc version, etc",
                 )
                 .action(clap::ArgAction::SetTrue),
         )
+}
+
+pub fn get_cli_command_definition() -> Command {
+    let mut command = get_cli_command_definition_base();
+
+    // Don't show stats related options when building with the feature disabled.
+    let mut arg = Arg::new(COLLECT_STATS)
+        .long("collect-stats")
+        .action(clap::ArgAction::SetTrue)
+        .help(
+            "\
+Enable collection of statistics (how often does the public IP change).
+Env var: DO_DYNDNS_COLLECT_STATS=true",
+        );
+    if cfg!(not(feature = "stats")) {
+        arg = arg.hide(true);
+    }
+    command = command.arg(arg);
+
+    let mut arg = Arg::new(DB_PATH).long("database-path").help(
+        "\
+File path where a sqlite database with statistics will be stored.
+Env var: DO_DYNDNS_DATABASE_PATH=/tmp/dyndns_stats_db.sqlite",
+    );
+
+    if cfg!(not(feature = "stats")) {
+        arg = arg.hide(true);
+    }
+    command = command.arg(arg);
+
+    command
 }

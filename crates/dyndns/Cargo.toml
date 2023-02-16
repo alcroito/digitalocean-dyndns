@@ -18,6 +18,10 @@ path = "src/main.rs"
 name = "do_ddns"
 path = "src/lib.rs"
 
+[features]
+default = []
+stats = ["diesel", "diesel_migrations", "libsqlite3-sys"]
+
 [dependencies]
 chrono = { version = "0.4", default-features = false, features = ["alloc", "serde", "clock"] }
 clap = { version = "4", features = ["cargo"] }
@@ -35,6 +39,13 @@ tracing = "0.1"
 tracing-log = "0.1"
 tracing-subscriber = "0.3"
 trust-dns-resolver = "0.22"
+
+# Stats feature dependencies
+cfg-if = "1"
+diesel = { version = "2", features = ["sqlite", "chrono"], optional = true }
+diesel_migrations = { version = "2", features = ["sqlite"], optional = true }
+directories = "4"
+libsqlite3-sys = { version = "0.25", features = ["bundled"], optional = true }
 
 [build-dependencies]
 # Keep anyhow, because vergen depends on it.

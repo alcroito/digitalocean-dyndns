@@ -13,6 +13,17 @@ dry_run = "false"
 # storing them in AAAA records.
 # ipv6 = "true"
 
+# Enable collection of statistics (how often does the public IP change) in
+# a local sqlite database.
+# Disabled by default.
+# collect_stats = "true"
+
+# File path where the sqlite database with statistics will be stored.
+# By default stored in one of the following locations:
+# Linux: /home/<user>/.config/digitalocean-dyndns/dyndns_db.sqlite
+# macOS: /Users/<user>/Library/Application Support/org.alcroito.digitalocean-dyndns/dyndns_db.sqlite
+# database_path = "/tmp/dyndns_stats_db.sqlite"
+
 ## Simple config mode sample
 
 # Updates the IP of the 'home.mysite.com' A record.

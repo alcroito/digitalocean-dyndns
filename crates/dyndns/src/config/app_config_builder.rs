@@ -123,6 +123,7 @@ pub struct AppConfigBuilder<'clap> {
     log_level: Option<tracing::Level>,
     dry_run: Option<bool>,
     ipv6: Option<bool>,
+    db_path: Option<String>,
 }
 
 impl<'clap> AppConfigBuilder<'clap> {
@@ -157,6 +158,7 @@ impl<'clap> AppConfigBuilder<'clap> {
             log_level: None,
             dry_run: None,
             ipv6: None,
+            db_path: None,
         }
     }
 
@@ -340,6 +342,36 @@ impl<'clap> AppConfigBuilder<'clap> {
             bail!("At least one kind of ip family support needs to be enabled, both are disabled.");
         }
 
+        let collect_stats = ValueBuilder::new(COLLECT_STATS)
+            .with_env_var_name()
+            .with_clap_bool(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .with_default(false)
+            .build()?;
+
+        let db_path = ValueBuilder::new(DB_PATH)
+            .with_value(self.db_path.clone())
+            .with_env_var_name()
+            .with_clap(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .build()
+            .ok()
+            .map(|db_path| std::path::PathBuf::from(&db_path));
+
+        let listen_hostname: String = ValueBuilder::new(LISTEN_HOSTNAME)
+            .with_env_var_name()
+            .with_clap(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .with_default("0.0.0.0".to_owned())
+            .build()?;
+
+        let listen_port = ValueBuilder::new(LISTEN_PORT)
+            .with_env_var_name()
+            .with_clap(self.clap_matches)
+            .with_config_value(self.toml_table.as_ref())
+            .with_default(8095_u16)
+            .build()?;
+
         let general_options = GeneralOptions {
             update_interval,
             digital_ocean_token,
@@ -347,6 +379,8 @@ impl<'clap> AppConfigBuilder<'clap> {
             dry_run,
             ipv4,
             ipv6,
+            collect_stats,
+            db_path,
         };
         Ok(general_options)
     }

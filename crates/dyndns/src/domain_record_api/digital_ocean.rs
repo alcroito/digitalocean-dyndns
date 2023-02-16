@@ -174,16 +174,12 @@ mod tests {
 
         let records = updater.get_domain_records(domain_name).unwrap();
         let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
-        let should_update =
-            should_update_domain_ip(&public_ips.to_ip_addr_from_any(), domain_record);
+        let (ip_addr, _ip_kind) = public_ips.to_ip_addr_from_any();
+        let should_update = should_update_domain_ip(&ip_addr, domain_record);
 
         assert!(should_update);
 
-        let result = updater.update_domain_ip(
-            domain_record.id,
-            &record_to_update,
-            &public_ips.to_ip_addr_from_any(),
-        );
+        let result = updater.update_domain_ip(domain_record.id, &record_to_update, &ip_addr);
         assert!(result.is_err());
     }
 }

@@ -8,37 +8,41 @@ use tracing::{error, info, trace, warn};
 use crate::config::app_config;
 use crate::config::app_config::AppConfig;
 use crate::domain_record_api::DomainRecordApi;
+use crate::global_state::GlobalState;
 use crate::ip_fetcher::{DnsIpFetcher, PublicIpFetcher};
 use crate::signal_handlers::AppTerminationHandler;
-use crate::types::{api, DomainRecordToUpdate, IpAddrV4AndV6};
-
+use crate::stats_handler::{StatsHandler, StatsHandlerFactory};
+use crate::types::{api, DomainRecordToUpdate, IpAddrKind, IpAddrV4AndV6};
 pub struct Updater {
-    config: AppConfig,
+    global_state: GlobalState,
     api: Box<dyn DomainRecordApi + Send>,
     failed_attempts: u64,
+    stats_handler: Box<dyn StatsHandler>,
     term_handler: AppTerminationHandler,
 }
 
 impl Updater {
     pub fn new(
-        config: AppConfig,
+        global_state: GlobalState,
         api: Box<dyn DomainRecordApi + Send>,
         term_handler: AppTerminationHandler,
     ) -> Self {
+        let config = global_state.config.clone();
         Self {
-            config,
+            global_state,
             api,
             failed_attempts: 0,
+            stats_handler: StatsHandlerFactory::new_handler(config),
             term_handler,
         }
     }
 
     fn attempt_update_for_record(
-        &self,
+        &mut self,
         current_public_ips: &IpAddrV4AndV6,
         record_to_update: &DomainRecordToUpdate,
         domain_record_cache: &mut api::DomainRecordCache,
-    ) -> Result<()> {
+    ) -> Result<Option<IpAddrKind>> {
         info!(
             "Attempting to update domain record '{}'",
             record_to_update.fqdn()
@@ -46,7 +50,7 @@ impl Updater {
         let records = match domain_record_cache.entry(record_to_update.domain_name.to_string()) {
             std::collections::hash_map::Entry::<_, _>::Vacant(o) => {
                 trace!("Querying records for '{}'", record_to_update.domain_name);
-                let records = self.api.get_domain_records(record_to_update.domain_name)?;
+                let records = self.api.get_domain_records(&record_to_update.domain_name)?;
                 o.insert(records)
             }
             std::collections::hash_map::Entry::<_, _>::Occupied(o) => {
@@ -58,15 +62,17 @@ impl Updater {
             }
         };
         let api_domain_record = get_record_to_update(records, record_to_update)?;
-        if let Some(curr_ip) =
+        let mut ip_kind_res = None;
+        if let Some((curr_ip, curr_ip_kind)) =
             get_single_ip_based_on_record_type(current_public_ips, api_domain_record)
         {
+            ip_kind_res = Some(curr_ip_kind);
             if should_update_domain_ip(&curr_ip, api_domain_record) {
                 info!(
                     "Old domain record IP does not match current IP\n  current public IP:    '{}'\n  old domain record IP: '{}'.\nUpdating domain record",
                     curr_ip, api_domain_record.data
                 );
-                if !self.config.general_options.dry_run {
+                if !self.global_state.config.general_options.dry_run {
                     self.api
                         .update_domain_ip(api_domain_record.id, record_to_update, &curr_ip)?;
                 } else {
@@ -77,31 +83,60 @@ impl Updater {
             }
         };
 
-        Ok(())
+        Ok(ip_kind_res)
     }
 
     fn attempt_update(
-        &self,
+        &mut self,
         ip_fetcher: &DnsIpFetcher,
         records_to_update: &[DomainRecordToUpdate],
     ) -> Result<()> {
-        let current_public_ips = ip_fetcher.fetch_public_ips(
-            self.config.general_options.ipv4,
-            self.config.general_options.ipv6,
-        )?;
+        let current_public_ips_result = ip_fetcher.fetch_public_ips(
+            self.global_state.config.general_options.ipv4,
+            self.global_state.config.general_options.ipv6,
+        );
+        let (maybe_current_public_ips, maybe_fetched_ip_err) = match current_public_ips_result {
+            Ok(v) => (Some(v), None),
+            Err(e) => (None, Some(e)),
+        };
+        if let Some(ref e) = maybe_fetched_ip_err {
+            error!("Ip fetching failed: {}", e);
+        }
 
-        let mut first_error = None;
+        self.stats_handler
+            .handle_ip_fetch(maybe_current_public_ips.clone())?;
+
+        let mut first_error = maybe_fetched_ip_err;
         let mut domain_record_cache = api::DomainRecordCache::new();
 
         for record_to_update in records_to_update {
-            if let Err(e) = self.attempt_update_for_record(
-                &current_public_ips,
-                record_to_update,
-                &mut domain_record_cache,
-            ) {
-                error!("{}", e);
-                first_error = Some(e);
+            let mut is_domain_record_update_successful = false;
+            let mut stats_ip_kind = None;
+            if let Some(ref current_public_ips) = maybe_current_public_ips {
+                match self.attempt_update_for_record(
+                    current_public_ips,
+                    record_to_update,
+                    &mut domain_record_cache,
+                ) {
+                    Ok(maybe_ip_kind) => {
+                        is_domain_record_update_successful = true;
+                        stats_ip_kind = maybe_ip_kind;
+                    }
+                    Err(e) => {
+                        error!("{}", e);
+                        if first_error.is_none() {
+                            first_error = Some(e);
+                        }
+                    }
+                }
             }
+
+            self.stats_handler.handle_updater_attempt(
+                &record_to_update.fqdn(),
+                &record_to_update.record_type,
+                is_domain_record_update_successful,
+                stats_ip_kind,
+            )?;
         }
         if let Some(e) = first_error {
             return Err(e);
@@ -119,7 +154,7 @@ impl Updater {
     ) -> String {
         let duration_formatted = format_duration(*interval.0);
         let m = format!(
-            "Starting updater with update interval: {duration_formatted}. The following domains will be updated:"
+            "Starting updater with update interval: {duration_formatted}. The following domain records will be updated:",
         );
         let mut record_m = vec![];
         for record in records_to_update {
@@ -152,10 +187,12 @@ impl Updater {
 
     pub fn start_update_loop(&mut self) -> Result<()> {
         let ip_fetcher = DnsIpFetcher::default();
-        let records_to_update = Updater::build_records_to_update(&self.config);
+        let records_to_update = Updater::build_records_to_update(&self.global_state.config);
+
+        self.stats_handler.init()?;
 
         let starting_message = Updater::build_starting_updater_mesage(
-            &self.config.general_options.update_interval,
+            &self.global_state.config.general_options.update_interval,
             &records_to_update,
         );
         info!("{}", starting_message);
@@ -172,7 +209,7 @@ impl Updater {
             }
 
             let duration_formatted =
-                format_duration(*self.config.general_options.update_interval.0);
+                format_duration(*self.global_state.config.general_options.update_interval.0);
             trace!("Sleeping for {}", duration_formatted);
 
             // Exit if interrupted.
@@ -187,7 +224,7 @@ impl Updater {
 
     fn was_interrupted_while_sleeping(&self) -> bool {
         let beginning_park = Instant::now();
-        let timeout = self.config.general_options.update_interval.0;
+        let timeout = self.global_state.config.general_options.update_interval.0;
         let mut sleep_time_left = timeout;
         loop {
             park_timeout(*sleep_time_left);
@@ -224,8 +261,8 @@ pub fn get_record_to_update<'a>(
         .domain_records
         .iter()
         .find(|&record| {
-            record.name.eq(record_to_update.hostname_part)
-                && record.record_type.eq(record_to_update.record_type)
+            record.name.eq(&record_to_update.hostname_part)
+                && record.record_type.eq(&record_to_update.record_type)
         })
         .ok_or_else(|| {
             eyre!(format!(
@@ -238,13 +275,13 @@ pub fn get_record_to_update<'a>(
 pub fn get_single_ip_based_on_record_type(
     curr_ips: &IpAddrV4AndV6,
     domain_record: &api::DomainRecord,
-) -> Option<IpAddr> {
+) -> Option<(IpAddr, IpAddrKind)> {
     // Choose which ip family type to compare based on the domain record type.
     // For generic record types, use any available ip.
     let record_type = domain_record.record_type.as_str();
     match record_type {
-        "A" if curr_ips.has_ipv4() => Some(curr_ips.to_ip_addr_from_ipv4()),
-        "AAAA" if curr_ips.has_ipv6() => Some(curr_ips.to_ip_addr_from_ipv6()),
+        "A" if curr_ips.has_ipv4() => Some((curr_ips.to_ip_addr_from_ipv4(), IpAddrKind::V4)),
+        "AAAA" if curr_ips.has_ipv6() => Some((curr_ips.to_ip_addr_from_ipv6(), IpAddrKind::V6)),
         _ => {
             if record_type != "A" && record_type != "AAAA" && curr_ips.has_any() {
                 info!("Non-standard domain record type: '{}', will use any available IP address (either ipv4 of ipv6)", record_type);

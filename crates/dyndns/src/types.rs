@@ -13,6 +13,7 @@ pub mod api {
         #[serde(rename = "type")]
         pub record_type: String,
         pub name: String,
+        // This contains the API response IP address.
         pub data: String,
     }
 
@@ -29,18 +30,18 @@ pub mod api {
 }
 
 #[derive(Debug)]
-pub struct DomainRecordToUpdate<'d, 'h, 'r> {
-    pub domain_name: &'d str,
-    pub hostname_part: &'h str,
-    pub record_type: &'r str,
+pub struct DomainRecordToUpdate {
+    pub domain_name: String,
+    pub hostname_part: String,
+    pub record_type: String,
 }
 
-impl<'d, 'h, 'r> DomainRecordToUpdate<'d, 'h, 'r> {
-    pub fn new(domain_name: &'d str, hostname_part: &'h str, record_type: &'r str) -> Self {
+impl DomainRecordToUpdate {
+    pub fn new(domain_name: &str, hostname_part: &str, record_type: &str) -> Self {
         DomainRecordToUpdate {
-            domain_name,
-            hostname_part,
-            record_type,
+            domain_name: domain_name.to_owned(),
+            hostname_part: hostname_part.to_owned(),
+            record_type: record_type.to_owned(),
         }
     }
 
@@ -57,6 +58,12 @@ impl<'d, 'h, 'r> DomainRecordToUpdate<'d, 'h, 'r> {
 pub struct IpAddrV4AndV6 {
     pub ipv4: Option<std::net::Ipv4Addr>,
     pub ipv6: Option<std::net::Ipv6Addr>,
+}
+
+#[derive(Debug, Copy, Clone)]
+pub enum IpAddrKind {
+    V4,
+    V6,
 }
 
 impl Display for IpAddrV4AndV6 {
@@ -117,11 +124,19 @@ impl IpAddrV4AndV6 {
         IpAddr::V6(self.ipv6.expect("Does not contain a ipv4 address"))
     }
 
-    pub fn to_ip_addr_from_any(&self) -> IpAddr {
+    pub fn to_ipv4_string(&self) -> Option<String> {
+        self.ipv4.map(|ip| ip.to_string())
+    }
+
+    pub fn to_ipv6_string(&self) -> Option<String> {
+        self.ipv6.map(|ip| ip.to_string())
+    }
+
+    pub fn to_ip_addr_from_any(&self) -> (IpAddr, IpAddrKind) {
         if self.has_ipv4() {
-            self.to_ip_addr_from_ipv4()
+            (self.to_ip_addr_from_ipv4(), IpAddrKind::V4)
         } else {
-            self.to_ip_addr_from_ipv6()
+            (self.to_ip_addr_from_ipv6(), IpAddrKind::V6)
         }
     }
 }
