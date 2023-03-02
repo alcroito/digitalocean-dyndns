@@ -5,6 +5,33 @@
 
 @import 'bulma/sass/utilities/_all';
 @import 'bulma/sass/base/_all';
+
+// Needs to be before bulma/sass/elements/container
+// Extra breakpoints for container when targeting tablet and mobile-big.
+$container-offset: (2 * $gap) !default;
+$container-max-width: $fullhd !default;
+$mobile-big: 576px;
+
+@mixin mobile-big {
+	@media screen and (min-width: $mobile-big) {
+		@content;
+	}
+}
+@mixin tablet-no-print {
+	@media screen and (min-width: $tablet) {
+		@content;
+	}
+}
+.container {
+	@include mobile-big {
+		// Empirically chosen so there's no jump when resizing.
+		max-width: 560px;
+	}
+	@include tablet-no-print {
+		max-width: min($tablet, $container-max-width) - $container-offset;
+	}
+}
+
 @import 'bulma/sass/elements/_all';
 @import 'bulma/sass/form/_all';
 @import 'bulma/sass/components/_all';
@@ -14,3 +41,10 @@
 
 @import '@fortawesome/fontawesome-free/css/fontawesome.css';
 @import '@fortawesome/fontawesome-free/css/solid.css';
+
+@include mobile {
+	.px-3-mobile {
+		padding-left: 0.75rem;
+		padding-right: 0.75rem;
+	}
+}

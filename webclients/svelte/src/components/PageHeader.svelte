@@ -2,8 +2,8 @@
 	import NavBar from './NavBar.svelte';
 </script>
 
-<div class="page-header-wrapper">
-	<header class="page-header container is-max-desktop">
+<div class="header-wrapper">
+	<header class="header container">
 		<NavBar />
 	</header>
 </div>
@@ -11,11 +11,11 @@
 <style lang="scss">
 	@import '../variables.scss';
 
-	.page-header {
+	.header {
 		max-width: 760px;
 	}
 
-	.page-header-wrapper {
+	.header-wrapper {
 		border-bottom: 1px solid $page-header-border-color;
 		background-color: #fff;
 	}

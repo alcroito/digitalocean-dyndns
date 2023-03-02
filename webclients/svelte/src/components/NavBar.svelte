@@ -26,7 +26,7 @@
 			<span aria-hidden="true" />
 		</a>
 
-		<a class="navbar-item ml-1" href={base}>
+		<a class="navbar-item" href={base}>
 			<figure class="image">
 				<img src={logo} alt="logo" />
 			</figure>
