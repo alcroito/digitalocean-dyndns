@@ -56,9 +56,9 @@
 					<tbody>
 						{#each $query.data.changes as entry}
 							<tr>
-								<td>{entry.name}</td>
-								<td>{entry.set_ip}</td>
-								<td>{dayjs(entry.attempt_date).fromNow()}</td>
+								<td class="has-text-centered">{entry.name}</td>
+								<td class="has-text-centered">{entry.set_ip}</td>
+								<td class="has-text-centered">{dayjs(entry.attempt_date).fromNow()}</td>
 							</tr>
 						{/each}
 					</tbody>
