@@ -16,8 +16,8 @@ const config = {
 		}),
 		paths: {
 			base: base
-		},
-		prerender: { entries: [] }
+		}
+		// prerender: { entries: [] }
 	}
 };
 
