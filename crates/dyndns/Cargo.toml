@@ -52,7 +52,7 @@ serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 serde_with = "2"
 signal-hook = { version = "0.3", features = ["extended-siginfo"] }
-tailsome = "0.1"
+tailsome = "1"
 toml = "0.7"
 tracing = "0.1"
 tracing-log = "0.1"
@@ -63,7 +63,7 @@ trust-dns-resolver = "0.22"
 cfg-if = "1"
 diesel = { version = "2", features = ["sqlite", "chrono"], optional = true }
 diesel_migrations = { version = "2", features = ["sqlite"], optional = true }
-directories = "4"
+directories = "5"
 libsqlite3-sys = { version = "0.25", features = ["bundled"], optional = true }
 
 # Web server dependencies
@@ -83,7 +83,7 @@ tokio = { version = "1", features = ["full"], optional = true }
 [build-dependencies]
 # Keep anyhow, because vergen depends on it.
 anyhow = "1"
-vergen = "7"
+vergen = { version = "8", features = ["build", "cargo", "git", "gitcl", "rustc", "si"] }
 
 [dev-dependencies]
 tempfile = "3"
