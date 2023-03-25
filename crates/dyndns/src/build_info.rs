@@ -15,7 +15,7 @@ Rust host triple:    {}
 Rust llvm version:   {}
 Rust version:        {}
 Cargo target triple: {}
-Cargo profile:       {}
+Cargo opt level      {}
 Cargo features:      {}
 Host platform:       {}
 Host OS:             {}
@@ -26,11 +26,11 @@ Host CPU brand:      {}
 ",
         env!("VERGEN_BUILD_DATE"),
         env!("VERGEN_BUILD_TIMESTAMP"),
-        env!("VERGEN_BUILD_SEMVER"),
+        env!("CARGO_PKG_VERSION"),
         option_env!("VERGEN_GIT_SHA"),
         option_env!("VERGEN_GIT_COMMIT_TIMESTAMP"),
         option_env!("VERGEN_GIT_BRANCH"),
-        option_env!("VERGEN_GIT_SEMVER_LIGHTWEIGHT"),
+        option_env!("VERGEN_GIT_DESCRIBE"),
         env!("VERGEN_RUSTC_CHANNEL"),
         env!("VERGEN_RUSTC_COMMIT_DATE"),
         env!("VERGEN_RUSTC_COMMIT_HASH"),
@@ -38,7 +38,7 @@ Host CPU brand:      {}
         env!("VERGEN_RUSTC_LLVM_VERSION"),
         env!("VERGEN_RUSTC_SEMVER"),
         env!("VERGEN_CARGO_TARGET_TRIPLE"),
-        env!("VERGEN_CARGO_PROFILE"),
+        env!("VERGEN_CARGO_OPT_LEVEL"),
         env!("VERGEN_CARGO_FEATURES"),
         env!("VERGEN_SYSINFO_NAME"),
         env!("VERGEN_SYSINFO_OS_VERSION"),
