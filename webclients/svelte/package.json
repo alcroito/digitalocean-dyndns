@@ -15,8 +15,8 @@
 	},
 	"devDependencies": {
 		"@fortawesome/fontawesome-free": "^6.3.0",
-		"@sveltejs/adapter-auto": "^2.0.0",
-		"@sveltejs/adapter-static": "next",
+		"@sveltejs/adapter-auto": "^2",
+		"@sveltejs/adapter-static": "^2",
 		"@sveltejs/kit": "^1.5.0",
 		"@tanstack/svelte-query": "^4.24.10",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
@@ -35,7 +35,7 @@
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",
 		"tslib": "^2.4.1",
-		"typescript": "^4.9.3",
+		"typescript": "^5",
 		"vite": "^4.0.0"
 	},
 	"type": "module"
