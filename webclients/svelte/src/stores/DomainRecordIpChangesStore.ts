@@ -26,6 +26,7 @@ export class DomainRecordIpChangesStore {
 	}
 
 	private queryFn() {
+		// TODO: Use msw to mock requests. https://mswjs.io/
 		const route = '/api/v1/domain_record_ip_changes';
 		const obs = defer(() => zodiosClient.get(route)).pipe(delay(500));
 		const promise = firstValueFrom(obs);
@@ -39,7 +40,14 @@ export class DomainRecordIpChangesStore {
 	public handleError(error: DomainRecordIpChangesError): string {
 		// Allows doing something special depending on the error type.
 		if (axios.isAxiosError(error)) {
-			return error.message;
+			if (error.message) {
+				return error.message;
+			} else if (error.code) {
+				return "Axios error: " + error.code;
+			} else {
+				console.error("Unknown axios error", error);
+				return "Unknown axios error";
+			}
 		} else if (error instanceof TimeoutError) {
 			return 'Failed to fetch data due to timeout';
 		}
