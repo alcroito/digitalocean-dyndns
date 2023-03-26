@@ -35,7 +35,6 @@ pub fn socket_addresses_from_host_and_port(hostname: &str, port: u16) -> Result<
     let addrs = (hostname, port)
         .to_socket_addrs()
         .wrap_err("Failed to convert hostname:port to at least one listening address")?
-        .into_iter()
         .filter(|addr| {
             // Filter out ipv6 link local addresses. Not robust, but better method is unstable.
             // Identify them by a non-zero scope id.
