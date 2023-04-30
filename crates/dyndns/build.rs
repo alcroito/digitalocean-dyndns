@@ -6,7 +6,7 @@ fn main() -> Result<()> {
         .all_build()
         .all_cargo()
         .all_git()
-        .git_describe(true, true)
+        .git_describe(true, true, None)
         .all_rustc()
         .all_sysinfo()
         .emit()?;
