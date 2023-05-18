@@ -22,7 +22,6 @@ use crate::web::routes::domain_record_ip_changes::list_domain_record_ip_changes;
 use crate::web::static_server::serve_static_decisor;
 
 const WEB_API_PATH_URL_PART: &str = "/api/v1";
-const WEB_APP_PATH_URL_PART: &str = "/";
 
 pub fn get_final_router(state: WebServerState) -> Router {
     #[allow(unused_mut)]
@@ -64,13 +63,14 @@ fn get_pure_router_and_open_api() -> (Router<WebServerState>, OpenApi) {
 
     let mut api = OpenApi::default();
 
-    let static_router = static_routes().into();
     let api_router = api_routes();
 
     let final_router = ApiRouter::new()
         .nest(WEB_API_PATH_URL_PART, api_router)
-        .nest(WEB_APP_PATH_URL_PART, static_router)
         .nest("/docs", docs_routes())
+        // Explicitly set fallback on outer router, to avoid
+        // https://github.com/tokio-rs/axum/discussions/2012
+        .fallback(serve_static_decisor)
         .finish_api_with(&mut api, api_docs);
     (final_router, api)
 }
@@ -83,10 +83,6 @@ fn api_routes() -> ApiRouter<WebServerState> {
             list_domain_record_ip_changes_docs,
         ),
     )
-}
-
-fn static_routes() -> Router<WebServerState> {
-    Router::new().fallback(serve_static_decisor)
 }
 
 #[cfg(test)]
