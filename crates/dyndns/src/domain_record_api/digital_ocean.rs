@@ -116,7 +116,13 @@ mod tests {
         }
 
         fn get_mock_domain_records_response() -> String {
-            let path = format!("tests/data/{}", "sample_list_domain_records_response.json");
+            let path = [
+                env!("CARGO_MANIFEST_DIR"),
+                "tests/data/",
+                "sample_list_domain_records_response.json",
+            ]
+            .iter()
+            .collect::<std::path::PathBuf>();
             std::fs::read_to_string(path).expect("Mock domain records not found")
         }
 
@@ -150,36 +156,44 @@ mod tests {
 
     #[test]
     fn test_basic() {
-        use crate::types::ValueFromStr;
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        let mut config_builder =
-            crate::config::app_config_builder::AppConfigBuilder::new(None, None);
-        config_builder
-            .set_subdomain_to_update("home".to_owned())
-            .set_domain_root("site.com".to_owned())
-            .set_digital_ocean_token(ValueFromStr::from_str("123").unwrap())
-            .set_log_level(tracing::Level::INFO)
-            .set_update_interval(crate::config::app_config::UpdateInterval(
-                std::time::Duration::from_secs(5),
-            ));
-        let config = config_builder.build().unwrap();
-        let ip_fetcher = MockIpFetcher::default();
-        let public_ips = ip_fetcher.fetch_public_ips(true, true).unwrap();
-        let updater = MockApi::new();
-        let domain_name = &config.domains.domains[0].name;
-        let hostname_part = &config.domains.domains[0].records[0].name;
-        let record_type = "A";
-        let record_to_update = DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
+        figment::Jail::expect_with(|jail| {
+            jail.create_file(
+                "config.toml",
+                r#"
+domain_root = "site.com"
+subdomain_to_update = "home"
+digital_ocean_token = "123"
+            "#,
+            )?;
 
-        let records = updater.get_domain_records(domain_name).unwrap();
-        let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
-        let (ip_addr, _ip_kind) = public_ips.to_ip_addr_from_any();
-        let should_update = should_update_domain_ip(&ip_addr, domain_record);
+            let config_builder = crate::config::app_config_builder::AppConfigBuilder::new(
+                None,
+                Some("config.toml".to_owned()),
+            )
+            .expect("Failed to create config builder");
+            let config = config_builder.build().expect("failed to parse config");
+            let ip_fetcher = MockIpFetcher::default();
+            let public_ips = ip_fetcher.fetch_public_ips(true, true).unwrap();
+            let updater = MockApi::new();
+            let domain_name = &config.domains.domains[0].name;
+            let hostname_part = &config.domains.domains[0].records[0].name;
+            let record_type = "A";
+            let record_to_update =
+                DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
 
-        assert!(should_update);
+            let records = updater.get_domain_records(domain_name).unwrap();
+            let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
+            let (ip_addr, _ip_kind) = public_ips.to_ip_addr_from_any();
+            let should_update = should_update_domain_ip(&ip_addr, domain_record);
 
-        let result = updater.update_domain_ip(domain_record.id, &record_to_update, &ip_addr);
-        assert!(result.is_err());
+            assert!(should_update);
+
+            let result = updater.update_domain_ip(domain_record.id, &record_to_update, &ip_addr);
+            assert!(result.is_err());
+
+            Ok(())
+        });
     }
 }
