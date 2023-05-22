@@ -20,7 +20,20 @@ pub fn setup_db(maybe_db_path: Option<std::path::PathBuf>) -> Result<SqliteConne
 
 pub fn find_db_path(config_db_path: Option<&std::path::Path>) -> Result<String> {
     if cfg!(debug_assertions) {
+        // Make the path absolute relative to the current directory to avoid weird
+        // flaky failures in test_do_ops_with_db because the current directory is
+        // modified by figment::Jail in other tests.
         let db_path = "./config/do_ddns_test.sqlite";
+        let cur_dir = std::env::current_dir()?;
+        let db_path = [cur_dir, db_path.into()]
+            .iter()
+            .collect::<std::path::PathBuf>();
+        let db_path = db_path.to_str().ok_or_else(|| {
+            eyre!(
+                "Failed to convert db_path: {:#?} PathBuf to a String",
+                db_path
+            )
+        })?;
         trace!("Using debug database path: {}", db_path);
         return Ok(db_path.to_owned());
     }

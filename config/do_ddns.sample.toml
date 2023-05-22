@@ -7,16 +7,16 @@ update_interval = "30mins"
 digital_ocean_token = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
 
 # Setting this option to true will cause the final IP updates to be skipped.
-dry_run = "false"
+dry_run = false
 
 # Setting this option to true will enable resolving of ipv6 addresses and 
 # storing them in AAAA records.
-# ipv6 = "true"
+# ipv6 = true
 
 # Enable collection of statistics (how often does the public IP change) in
 # a local sqlite database.
 # Disabled by default.
-# collect_stats = "true"
+# collect_stats = true
 
 # File path where the sqlite database with statistics will be stored.
 # By default stored in one of the following locations:
@@ -26,16 +26,16 @@ dry_run = "false"
 
 # Enable web server to visualize collected statistics.
 # Disabled by default.
-# enable_web = "true"
+# enable_web = true
 
 # An IPv4 / IPv6 address or host name where to serve HTTP pages on.
 # In case of host that has a dual IP stack, both will be used.
 # Default is localhost.
-# listen_hostname = "true"
+# listen_hostname = true
 
 # Port number where to serve HTTP pages on.
 # Default is 8095.
-# listen_port = "8095"
+# listen_port = 8095
 
 ## Simple config mode sample
 
@@ -48,7 +48,7 @@ subdomain_to_update = "home"
 
 # Updates the IP of the 'mysite.com' A record.
 # domain_root = "mysite.com"
-# update_domain_root = "true"
+# update_domain_root = true
 
 
 ## Advanced config mode sample
