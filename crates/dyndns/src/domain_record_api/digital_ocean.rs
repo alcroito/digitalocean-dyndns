@@ -161,7 +161,7 @@ mod tests {
             .set_digital_ocean_token(ValueFromStr::from_str("123").unwrap())
             .set_log_level(tracing::Level::INFO)
             .set_update_interval(crate::config::app_config::UpdateInterval(
-                std::time::Duration::from_secs(5).into(),
+                std::time::Duration::from_secs(5),
             ));
         let config = config_builder.build().unwrap();
         let ip_fetcher = MockIpFetcher::default();

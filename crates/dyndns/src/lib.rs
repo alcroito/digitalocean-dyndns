@@ -10,7 +10,6 @@ extern crate diesel;
 pub mod db;
 pub mod domain_record_api;
 pub mod global_state;
-pub mod humantime_wrapper_serde;
 pub mod ip_fetcher;
 pub mod logger;
 pub mod signal_handlers;

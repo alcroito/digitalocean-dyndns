@@ -152,7 +152,7 @@ impl Updater {
         interval: &app_config::UpdateInterval,
         records_to_update: &[DomainRecordToUpdate],
     ) -> String {
-        let duration_formatted = format_duration(*interval.0);
+        let duration_formatted = format_duration(interval.0);
         let m = format!(
             "Starting updater with update interval: {duration_formatted}. The following domain records will be updated:",
         );
@@ -209,7 +209,7 @@ impl Updater {
             }
 
             let duration_formatted =
-                format_duration(*self.global_state.config.general_options.update_interval.0);
+                format_duration(self.global_state.config.general_options.update_interval.0);
             trace!("Sleeping for {}", duration_formatted);
 
             // Exit if interrupted.
@@ -231,17 +231,17 @@ impl Updater {
         let timeout = self.global_state.config.general_options.update_interval.0;
         let mut sleep_time_left = timeout;
         loop {
-            park_timeout(*sleep_time_left);
+            park_timeout(sleep_time_left);
             let elapsed = beginning_park.elapsed();
             trace!("Interrupted, elapsed {:?}", elapsed);
             if self.should_exit() {
                 return true;
             }
-            if elapsed >= *timeout {
+            if elapsed >= timeout {
                 break;
             }
             trace!("restarting park_timeout after {:?}", elapsed);
-            sleep_time_left = (*timeout - elapsed).into();
+            sleep_time_left = timeout - elapsed;
         }
         false
     }

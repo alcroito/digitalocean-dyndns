@@ -1,8 +1,8 @@
 use crate::token::SecretDigitalOceanToken;
 use color_eyre::eyre::Result;
-use humantime::Duration;
+use humantime::parse_duration;
 use serde::Deserialize;
-use std::{ops::Deref, sync::Arc, time::Duration as StdDuration};
+use std::{ops::Deref, sync::Arc, time::Duration};
 
 #[derive(Debug, Clone)]
 pub struct AppConfig {
@@ -74,7 +74,7 @@ pub struct UpdateInterval(pub Duration);
 
 impl Default for UpdateInterval {
     fn default() -> Self {
-        UpdateInterval(StdDuration::from_secs(60 * 10).into())
+        UpdateInterval(Duration::from_secs(60 * 10))
     }
 }
 
@@ -82,6 +82,6 @@ impl std::str::FromStr for UpdateInterval {
     type Err = humantime::DurationError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.parse::<Duration>().map(UpdateInterval)
+        parse_duration(s).map(UpdateInterval)
     }
 }
