@@ -52,3 +52,13 @@ impl Drop for EyreSpanTraceWorkaroundGuard {
         std::env::set_var(RUST_SPANTRACE_KEY, "1");
     }
 }
+
+struct ColorEyreGuard(());
+static INIT_COLOR_EYRE: OnceCell<ColorEyreGuard> = OnceCell::new();
+
+pub fn init_color_eyre() {
+    INIT_COLOR_EYRE.get_or_init(|| {
+        color_eyre::install().expect("Failed to initialize color_eyre");
+        ColorEyreGuard(())
+    });
+}
