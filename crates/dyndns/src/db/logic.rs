@@ -312,6 +312,8 @@ mod tests {
 
     #[test]
     fn test_do_ops_with_db() -> Result<()> {
+        crate::logger::init_color_eyre();
+
         let maybe_db_path = None;
         let conn = &mut setup_db(maybe_db_path)?;
         let domain_record = create_domain_record(

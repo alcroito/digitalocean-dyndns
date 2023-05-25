@@ -158,6 +158,8 @@ mod tests {
     fn test_basic() {
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
+        crate::logger::init_color_eyre();
+
         figment::Jail::expect_with(|jail| {
             jail.create_file(
                 "config.toml",
