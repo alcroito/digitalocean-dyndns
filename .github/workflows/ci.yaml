@@ -11,6 +11,12 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
   pull_request:
   workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 
 jobs:
   check:
@@ -162,6 +168,10 @@ jobs:
         run: cargo test ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
         env:
           RUST_BACKTRACE: full
+
+      - name: Setup tmate session
+        if: ${{ failure() && github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        uses: mxschmitt/action-tmate@v3
 
   lints:
     name: Lints
