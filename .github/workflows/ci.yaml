@@ -164,8 +164,11 @@ jobs:
       - name: Create dummy web artifacts
         run: mkdir -p webclients/svelte/build
 
-      - name: Run cargo test
-        run: cargo test ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
+      - name: Install latest nextest release
+        uses: taiki-e/install-action@nextest
+
+      - name: Run cargo nextest
+        run: cargo nextest run --profile ci ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
         env:
           RUST_BACKTRACE: full
 
