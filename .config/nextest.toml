@@ -1,0 +1,16 @@
+[profile.ci]
+# Don't fail fast in CI to run the full test suite.
+fail-fast = false
+failure-output = "immediate-final"
+retries = 3
+
+[test-groups]
+serial-integration = { max-threads = 1 }
+
+[[profile.default.overrides]]
+filter = 'test(db::logic::tests::test_do_ops_with_db)'
+test-group = 'serial-integration'
+
+[[profile.ci.overrides]]
+filter = 'test(db::logic::tests::test_do_ops_with_db)'
+test-group = 'serial-integration'
