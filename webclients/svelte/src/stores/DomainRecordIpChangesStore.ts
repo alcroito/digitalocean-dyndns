@@ -3,8 +3,8 @@ import axios from 'axios';
 import { createQuery, QueryClient } from '@tanstack/svelte-query';
 import { defer, delay, firstValueFrom, TimeoutError } from 'rxjs';
 import type { z } from 'zod';
-import type { schemas } from '../generated/zodiusClient';
-import { zodiusClient } from '../services/zodius';
+import type { schemas } from '../generated/zodiosClient';
+import { zodiosClient } from '../services/zodios';
 
 type DomainRecordIpChange = z.infer<typeof schemas.DomainRecordIpChange>;
 type DomainRecordIpChanges = {
@@ -27,7 +27,7 @@ export class DomainRecordIpChangesStore {
 
 	private queryFn() {
 		const route = '/api/v1/domain_record_ip_changes';
-		const obs = defer(() => zodiusClient.get(route)).pipe(delay(500));
+		const obs = defer(() => zodiosClient.get(route)).pipe(delay(500));
 		const promise = firstValueFrom(obs);
 		return promise;
 	}
