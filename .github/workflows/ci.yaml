@@ -160,6 +160,8 @@ jobs:
 
       - name: Run cargo test
         run: cargo test ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
+        env:
+          RUST_BACKTRACE: full
 
   lints:
     name: Lints
