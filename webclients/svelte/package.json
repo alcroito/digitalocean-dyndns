@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
-		"apigen": "openapi-zod-client ../../crates/dyndns/generated/openapi.json -o ./src/generated/zodiusClient.ts --default-status auto-correct",
+		"apigen": "openapi-zod-client ../../crates/dyndns/generated/openapi.json -o ./src/generated/zodiosClient.ts --default-status auto-correct",
 		"build": "vite build",
 		"watch": "vite build -w",
 		"preview": "vite preview",
