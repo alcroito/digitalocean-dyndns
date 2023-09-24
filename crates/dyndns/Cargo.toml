@@ -35,11 +35,15 @@ web = [
     "schemars",
     "tower",
     "tower-http",
-    "tokio"
+    "tokio",
 ]
 
 [dependencies]
-chrono = { version = "0.4", default-features = false, features = ["alloc", "serde", "clock"] }
+chrono = { version = "0.4", default-features = false, features = [
+    "alloc",
+    "serde",
+    "clock",
+] }
 clap = { version = "4", features = ["cargo", "derive"] }
 color-eyre = "0.6"
 figment = { version = "0.10", features = ["env", "toml", "test"] }
@@ -69,11 +73,18 @@ directories = "5"
 libsqlite3-sys = { version = "0.26", features = ["bundled"], optional = true }
 
 # Web server dependencies
-aide = { git = "https://github.com/tamasfe/aide", version = "0.12", optional = true, features = ["redoc", "axum", "axum-extra", "macros"]}
-axum = {version = "0.6", optional = true }
-axum-jsonschema = { git = "https://github.com/tamasfe/aide", version = "0.7", optional = true, features = ["aide"]}
-axum-macros = {version = "0.3", optional = true }
-http = {version = "0.2", optional = true }
+aide = { git = "https://github.com/tamasfe/aide", version = "0.12", optional = true, features = [
+    "redoc",
+    "axum",
+    "axum-extra",
+    "macros",
+] }
+axum = { version = "0.6", optional = true }
+axum-jsonschema = { git = "https://github.com/tamasfe/aide", version = "0.7", optional = true, features = [
+    "aide",
+] }
+axum-macros = { version = "0.3", optional = true }
+http = { version = "0.2", optional = true }
 hyper = { version = "0.14", optional = true }
 mime_guess = { version = "2", optional = true }
 rust-embed = { version = "8", features = ["debug-embed"], optional = true }
@@ -85,7 +96,14 @@ tokio = { version = "1", features = ["full"], optional = true }
 [build-dependencies]
 # Keep anyhow, because vergen depends on it.
 anyhow = "1"
-vergen = { version = "8", features = ["build", "cargo", "git", "gitcl", "rustc", "si"] }
+vergen = { version = "8", features = [
+    "build",
+    "cargo",
+    "git",
+    "gitcl",
+    "rustc",
+    "si",
+] }
 
 [dev-dependencies]
 tempfile = "3"
