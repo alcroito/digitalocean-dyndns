@@ -28,8 +28,10 @@ web = [
     "axum",
     "axum-jsonschema",
     "axum-macros",
+    "futures-util",
     "http",
     "hyper",
+    "hyper-util",
     "mime_guess",
     "rust-embed",
     "schemars",
@@ -50,10 +52,10 @@ figment = { version = "0.10", features = ["env", "toml", "test"] }
 figment_file_provider_adapter = "0.1"
 humantime = "2"
 humantime-serde = "1"
-itertools = "0.11"
+itertools = "0.12"
 native-tls = { version = "0.2", features = ["vendored"] }
 once_cell = "1"
-reqwest = { version = "0.11", features = ["blocking", "json"] }
+reqwest = { version = "0.12", features = ["blocking", "json"] }
 secrecy = { version = "0.8", features = ["serde"] }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
@@ -61,7 +63,7 @@ serde_with = "3"
 signal-hook = { version = "0.3", features = ["extended-siginfo"] }
 tailsome = "1"
 tracing = "0.1"
-tracing-log = "0.1"
+tracing-log = "0.2"
 tracing-subscriber = "0.3"
 trust-dns-resolver = "0.23"
 
@@ -70,27 +72,29 @@ cfg-if = "1"
 diesel = { version = "2", features = ["sqlite", "chrono"], optional = true }
 diesel_migrations = { version = "2", features = ["sqlite"], optional = true }
 directories = "5"
-libsqlite3-sys = { version = "0.26", features = ["bundled"], optional = true }
+libsqlite3-sys = { version = "0.28", features = ["bundled"], optional = true }
 
 # Web server dependencies
-aide = { git = "https://github.com/tamasfe/aide", version = "0.12", optional = true, features = [
+aide = { version = "0.13", optional = true, features = [
     "redoc",
     "axum",
     "axum-extra",
     "macros",
 ] }
-axum = { version = "0.6", optional = true }
-axum-jsonschema = { git = "https://github.com/tamasfe/aide", version = "0.7", optional = true, features = [
+axum = { version = "0.7", optional = true }
+axum-jsonschema = {  version = "0.8", optional = true, features = [
     "aide",
 ] }
-axum-macros = { version = "0.3", optional = true }
-http = { version = "0.2", optional = true }
-hyper = { version = "0.14", optional = true }
+axum-macros = { version = "0.4", optional = true }
+futures-util = { version = "0.3", optional = true }
+http = { version = "1", optional = true }
+hyper = { version = "1", optional = true }
+hyper-util = { version = "0", optional = true }
 mime_guess = { version = "2", optional = true }
 rust-embed = { version = "8", features = ["debug-embed"], optional = true }
 schemars = { version = "0.8", optional = true, features = ["chrono"] }
 tower = { version = "0.4", features = ["full"], optional = true }
-tower-http = { version = "0.4", features = ["full"], optional = true }
+tower-http = { version = "0.5", features = ["full"], optional = true }
 tokio = { version = "1", features = ["full"], optional = true }
 
 [build-dependencies]
