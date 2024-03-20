@@ -1,11 +1,9 @@
 use axum::{
-    body::{boxed, Body},
+    body::Body,
     response::{IntoResponse, Response},
 };
 use http::Request;
 
-#[cfg(any(feature = "debug_static_embedded", not(debug_assertions)))]
-use axum::body::Full;
 #[cfg(any(feature = "debug_static_embedded", not(debug_assertions)))]
 use mime_guess;
 #[cfg(any(feature = "debug_static_embedded", not(debug_assertions)))]
@@ -79,7 +77,9 @@ async fn serve_static_from_filesystem_and_maybe_embedded(
 
     trace!("Trying to serve path: '{path}' using ServeDir");
     match ServeDir::new(static_files_dir).oneshot(req).await {
-        Ok(res) if res.status().is_success() || res.status().is_redirection() => Ok(res.map(boxed)),
+        Ok(res) if res.status().is_success() || res.status().is_redirection() => {
+            Ok(res.map(Body::new))
+        }
         Ok(_) | Err(_) => {
             trace!("Couldn't find: '{path}'");
             cfg_if::cfg_if! {
@@ -116,7 +116,7 @@ async fn serve_static_using_embedded_from_path(path: &str) -> WebResult<Response
 
     match WebAssets::get(path) {
         Some(content) => {
-            let body = boxed(Full::from(content.data));
+            let body = Body::from(content.data);
             let mime = mime_guess::from_path(path).first_or_octet_stream();
             Ok(Response::builder()
                 .header(http::header::CONTENT_TYPE, mime.as_ref())
