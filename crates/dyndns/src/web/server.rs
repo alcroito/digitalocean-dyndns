@@ -103,15 +103,56 @@ async fn start_web_server(
 
     let router = get_final_router(state);
 
-    axum::Server::builder(incoming)
-        .serve(router.into_make_service())
-        .with_graceful_shutdown(async {
-            web_exit_rx.await.ok();
-            info!("Web server received signal to shut down");
-        })
-        .await
-        .wrap_err("web server shutdown error")?;
+    // TODO: This needs to be done in a loop
+    let (tcp_stream, _) = incoming.await?;
+    let socket = hyper_util::rt::TokioIo::new(tcp_stream);
+
+    use axum::extract::Request;
+    use hyper::body::Incoming;
+    use hyper_util::server::conn::auto::Builder;
+    use hyper_util::rt::TokioExecutor;
+    use tower::Service;
+    use futures_util::pin_mut;
+    let hyper_service =
+        hyper::service::service_fn(move |request: Request<Incoming>| router.clone().call(request));
+
+    // TODO: Need to use web_exit_rx.
+    let builder = Builder::new(TokioExecutor::new());
+    let conn = builder.serve_connection_with_upgrades(socket, hyper_service);
+    pin_mut!(conn);
+
+    let web_exit_rx = Arc::new(web_exit_rx);
+    let web_exit_rx_inner = Arc::clone(&web_exit_rx);
+    pin_mut!(web_exit_rx_inner);
+
+    loop {
+        tokio::select! {
+            result = conn.as_mut() => {
+                if let Err(err) = result {
+                    eprintln!("failed to serve connection: {err:#}");
+                }
+                break;
+            }
+            _ = web_exit_rx_inner => {
+                eprintln!("signal received in task, starting graceful shutdown");
+                conn.as_mut().graceful_shutdown();
+
+            }
+        }
+    }
+    // let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    // axum::serve(listener, router).await.unwrap();
+
+    // axum::Server::builder(incoming)
+    // .serve(router.into_make_service())
+    // .with_graceful_shutdown(async {
+    //     web_exit_rx.await.ok();
+    //     info!("Web server received signal to shut down");
+    // })
+    // .await
+    // .wrap_err("web server shutdown error")?;
 
     info!("Web server was shutdown");
+
     Ok(())
 }

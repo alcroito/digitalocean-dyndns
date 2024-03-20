@@ -2,7 +2,7 @@ use std::error::Error as StdError;
 use std::fmt::{Display, Formatter};
 
 use aide::OperationIo;
-use axum::body::{boxed, Full};
+use axum::body::Body;
 use axum::{
     response::{IntoResponse, Response},
     Json,
@@ -39,7 +39,7 @@ impl IntoResponse for WebError {
             Self::NotFound => (StatusCode::NOT_FOUND, format!("{self}")),
         };
 
-        let error_body = boxed(Full::from(error_message));
+        let error_body = Body::from(error_message);
         (status, error_body).into_response()
     }
 }

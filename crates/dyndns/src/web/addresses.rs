@@ -1,29 +1,26 @@
 use color_eyre::eyre::{bail, Result, WrapErr};
-use hyper::server::{accept::Accept, conn::AddrIncoming};
 use itertools::Itertools;
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::{
+    future::Future,
     pin::Pin,
     task::{Context, Poll},
 };
 use tailsome::IntoResult;
+use tokio::net::TcpListener;
 use tracing::info;
 
 pub struct MultipleAddrsIncoming {
-    pub addrs: Vec<AddrIncoming>,
+    pub listeners: Vec<TcpListener>,
 }
 
-impl Accept for MultipleAddrsIncoming {
-    type Conn = <AddrIncoming as Accept>::Conn;
-    type Error = <AddrIncoming as Accept>::Error;
+impl Future for MultipleAddrsIncoming {
+    type Output = std::io::Result<(tokio::net::TcpStream, std::net::SocketAddr)>;
 
-    fn poll_accept(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-    ) -> Poll<Option<Result<Self::Conn, Self::Error>>> {
-        for addr in &mut self.addrs {
-            if let Poll::Ready(Some(value)) = Pin::new(addr).poll_accept(cx) {
-                return Poll::Ready(Some(value));
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        for listener in &mut self.listeners {
+            if let Poll::Ready(Ok(value)) = Pin::new(listener).poll_accept(cx) {
+                return Poll::Ready(Ok(value));
             }
         }
 
@@ -57,9 +54,18 @@ pub fn socket_addresses_from_host_and_port(hostname: &str, port: u16) -> Result<
 pub fn socket_acceptor_from_socket_addreses(addrs: &[SocketAddr]) -> Result<MultipleAddrsIncoming> {
     let addrs = addrs
         .iter()
-        .map(|a| AddrIncoming::bind(a).wrap_err("Failed to bind to address socket"))
+        .map(|a| {
+            let listener =
+                std::net::TcpListener::bind(a).wrap_err("Failed to bind to address socket")?;
+            listener
+                .set_nonblocking(true)
+                .wrap_err("Failed move tcp stream into non blocking mode")?;
+            let listener =
+                TcpListener::from_std(listener).wrap_err("Failed to create async TcpListener")?;
+            Ok(listener)
+        })
         .collect::<Result<Vec<_>>>()?;
-    MultipleAddrsIncoming { addrs }.into_ok()
+    MultipleAddrsIncoming { listeners: addrs }.into_ok()
 }
 
 pub fn print_listener_addresses(addrs: &[SocketAddr]) {
