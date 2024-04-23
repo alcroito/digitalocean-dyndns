@@ -1,9 +1,9 @@
 use color_eyre::eyre::Result;
-use signal_hook::consts::signal::{SIGINT, SIGQUIT, SIGTERM};
+use signal_hook::consts::signal::{SIGHUP, SIGINT, SIGQUIT, SIGTERM};
+use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::flag;
 use signal_hook::iterator::exfiltrator::WithOrigin;
 use signal_hook::iterator::SignalsInfo;
-use signal_hook::{consts::TERM_SIGNALS, low_level::signal_name};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
@@ -217,16 +217,23 @@ impl AppTerminationHandler {
         let mut signals_guard = self.signals.lock().expect("signals mutex poisoned");
         let signals = signals_guard.as_mut().expect("signals option should exist");
         for info in signals {
-            let killer_pid = info
+            let killer_pid_message = info
                 .process
-                .map(|p| format!(" by pid {}", p.pid))
+                .map(|p| format!(" from pid: {}", p.pid))
                 .unwrap_or_else(|| "".to_owned());
-            info!(
-                "Received signal {}{}",
-                signal_name(info.signal).expect("Empty signal name"),
-                killer_pid
-            );
+
+            let signal_name = signal_hook::low_level::signal_name(info.signal)
+                .map(|s| s.to_owned())
+                .unwrap_or_else(|| {
+                    info!("Can't find human readable name for signal: {}", info.signal);
+                    info.signal.to_string()
+                });
+
+            info!("Received signal: {}{}", signal_name, killer_pid_message);
             match info.signal {
+                SIGHUP => {
+                    info!("Ignoring signal because config reloading is not yet supported")
+                }
                 SIGTERM | SIGQUIT | SIGINT => {
                     assert!(TERM_SIGNALS.contains(&info.signal));
                     info!("Starting process termination due to received signal");
