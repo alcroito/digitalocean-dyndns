@@ -468,5 +468,5 @@ jobs:
       - name: Upload archive
         uses: actions/upload-artifact@master
         with:
-          name: ${{ env.ARTIFACT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.rust_target_arch }}-${{ github.run_id }}.tar.gz
+          name: ${{ env.ARTIFACT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.rust_target_arch }}-feat-${{ matrix.build }}-${{ github.run_id }}.tar.gz
           path: ${{ steps.create_staging_archive.outputs.archive_name }}
