@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create artifacts directory
         run: mkdir artifacts
@@ -71,10 +71,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: matrix.cross == true
         with:
           path: |
@@ -83,7 +83,7 @@ jobs:
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
 
       - name: Cache target folder
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: matrix.cross == true
         with:
           path: target
@@ -105,7 +105,7 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 19
           cache: npm

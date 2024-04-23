@@ -71,15 +71,15 @@ jobs:
             release: true
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
@@ -145,15 +145,15 @@ jobs:
             release: true
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-test-${{ hashFiles('**/Cargo.lock') }}
@@ -228,15 +228,15 @@ jobs:
             release: true
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
@@ -261,12 +261,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 19
+          node-version: 20
           cache: npm
           cache-dependency-path: 'webclients/svelte/package-lock.json'
 
@@ -283,12 +283,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 19
+          node-version: 20
           cache: npm
           cache-dependency-path: 'webclients/svelte/package-lock.json'
 
@@ -383,10 +383,10 @@ jobs:
             features: web
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: matrix.cross == true
         with:
           path: |
@@ -395,7 +395,7 @@ jobs:
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
 
       - name: Cache target folder
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: matrix.cross == true
         with:
           path: target
@@ -420,7 +420,7 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Setup node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         if: matrix.features == 'web'
         with:
           node-version: 19
