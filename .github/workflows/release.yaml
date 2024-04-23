@@ -20,14 +20,14 @@ jobs:
         
       - name: "Build Changelog"
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@v3
+        uses: mikepenz/release-changelog-builder-action@32e3c96f29a6532607f638797455e9e98cfc703d # v4
         with:
           toTag: ${{ github.ref_name }}
           configuration: ".github/changelog_conf.json"
 
       - name: Create GitHub release
         id: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v2
         with:
           tag_name: ${{ github.ref_name }}
           prerelease: ${{ github.ref_type == 'branch' }}
@@ -38,7 +38,7 @@ jobs:
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
         with:
           name: artifacts
           path: artifacts
@@ -128,7 +128,7 @@ jobs:
         if: matrix.cross == true
 
       - name: Get release download URL
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@9c19ed7fe5d278cd354c7dfd5d3b88589c7e2395 # v4
         with:
           name: artifacts
           path: artifacts
