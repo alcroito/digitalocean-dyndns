@@ -60,16 +60,15 @@
 </nav>
 
 <style lang="scss">
-	@import '../variables.scss';
-	@import '../../node_modules/bulma/sass/utilities/mixins.sass';
+	@use '../../node_modules/bulma/sass/utilities/mixins.scss';
 
-	@include from(992px) {
+	@include mixins.from(992px) {
 		.navbar a {
 			font-size: 13px;
 		}
 	}
 
-	@include widescreen {
+	@include mixins.widescreen {
 		.navbar a {
 			font-size: 14px;
 		}

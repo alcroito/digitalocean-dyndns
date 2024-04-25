@@ -9,14 +9,14 @@
 </div>
 
 <style lang="scss">
-	@import '../variables.scss';
+	@use '../variables.scss';
 
 	.header {
 		max-width: 760px;
 	}
 
 	.header-wrapper {
-		border-bottom: 1px solid $page-header-border-color;
+		border-bottom: 1px solid variables.$page-header-border-color;
 		background-color: #fff;
 	}
 </style>

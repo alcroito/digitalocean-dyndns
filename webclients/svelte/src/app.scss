@@ -1,15 +1,28 @@
 /* Write your global styles here, in SCSS syntax. 
    Variables and mixins from the src/variables.scss file are available here without importing */
 /* Import only what you need from Bulma */
-@import 'variables.scss';
+@use 'variables.scss';
 
-@import 'bulma/sass/utilities/_all';
-@import 'bulma/sass/base/_all';
+@use 'bulma/sass/base';
+@use 'bulma/sass/themes';
+@use 'bulma/sass/utilities';
+@use 'bulma/sass/utilities/mixins' as mx;
+@use 'bulma/sass/utilities/initial-variables' as iv;
 
-// Needs to be before bulma/sass/elements/container
+@use 'bulma/sass/elements';
+@use 'bulma/sass/form';
+@use 'bulma/sass/components';
+@use 'bulma/sass/grid';
+@use 'bulma/sass/layout';
+@use 'bulma/sass/base/skeleton';
+@use 'bulma/sass/helpers';
+
+@import '@fortawesome/fontawesome-free/css/fontawesome.css';
+@import '@fortawesome/fontawesome-free/css/solid.css';
+
 // Extra breakpoints for container when targeting tablet and mobile-big.
-$container-offset: (2 * $gap) !default;
-$container-max-width: $fullhd !default;
+$container-offset: (2 * iv.$gap) !default;
+$container-max-width: iv.$fullhd !default;
 $mobile-big: 576px;
 
 @mixin mobile-big {
@@ -17,32 +30,38 @@ $mobile-big: 576px;
 		@content;
 	}
 }
+
 @mixin tablet-no-print {
-	@media screen and (min-width: $tablet) {
+	@media screen and (min-width: iv.$tablet) {
 		@content;
 	}
 }
+
 .container {
 	@include mobile-big {
 		// Empirically chosen so there's no jump when resizing.
 		max-width: 560px;
 	}
+
 	@include tablet-no-print {
-		max-width: min($tablet, $container-max-width) - $container-offset;
+		max-width: min(iv.$tablet, $container-max-width) - $container-offset;
 	}
 }
 
-@import 'bulma/sass/elements/_all';
-@import 'bulma/sass/form/_all';
-@import 'bulma/sass/components/_all';
-@import 'bulma/sass/grid/_all';
-@import 'bulma/sass/helpers/_all';
-@import 'bulma/sass/layout/_all';
+:root {
+	--bulma-body-background-color: #{variables.$body-background-color};
+	--bulma-text-strong: #{variables.$text-strong};
 
-@import '@fortawesome/fontawesome-free/css/fontawesome.css';
-@import '@fortawesome/fontawesome-free/css/solid.css';
+	// Copied families from old v0.9.4 version.
+	--bulma-body-family: 'BlinkMacSystemFont', 'Inter', 'SF Pro', 'Segoe UI', 'Roboto', 'Oxygen',
+		'Ubuntu', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+}
 
-@include mobile {
+.card {
+	--bulma-card-background-color: #{variables.$card-background-color};
+}
+
+@include mx.mobile {
 	.px-3-mobile {
 		padding-left: 0.75rem;
 		padding-right: 0.75rem;
