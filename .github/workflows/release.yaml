@@ -14,16 +14,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create artifacts directory
         run: mkdir artifacts
         
       - name: "Build Changelog"
         id: build_changelog
-        uses: mikepenz/release-changelog-builder-action@32e3c96f29a6532607f638797455e9e98cfc703d # v4
+        uses: orhun/git-cliff-action@main
         with:
-          toTag: ${{ github.ref_name }}
-          configuration: ".github/changelog_conf.json"
+          config: cliff.toml
+          args: -vv --latest --no-exec
+        env:
+          OUTPUT: GITHUB_RELEASE_CHANGELOG.md
 
       - name: Create GitHub release
         id: release
@@ -32,7 +36,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           prerelease: ${{ github.ref_type == 'branch' }}
           draft: ${{ github.ref_type == 'tag' }}
-          body: ${{ steps.build_changelog.outputs.changelog }}
+          body: ${{ steps.build_changelog.outputs.content }}
 
       - name: Save release upload URL to artifact
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
