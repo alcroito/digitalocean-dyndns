@@ -21,7 +21,7 @@ pub fn setup_early_logger() -> Result<()> {
         .init();
     TRACING_FILTER_RELOAD_HANDLE
         .set(reload_handle)
-        .map_err(|_| eyre!("Could not save tracing filter reload handle"))
+        .map_err(|e| eyre!("Could not save tracing filter reload handle {e:?}"))
 }
 
 pub fn setup_logger(log_level: &tracing::Level) -> Result<()> {

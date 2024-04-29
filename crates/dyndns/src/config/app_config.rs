@@ -149,7 +149,7 @@ where
     impl<'de> Visitor<'de> for LogLevelVisitor {
         type Value = tracing::Level;
 
-        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             formatter.write_str("a number between 0 and 3 or one of the following strings: error, warn, info, debug, trace")
         }
 
@@ -160,7 +160,6 @@ where
             let level = match value {
                 0 => tracing::Level::INFO,
                 1 => tracing::Level::DEBUG,
-                2 => tracing::Level::TRACE,
                 _ => tracing::Level::TRACE,
             };
             Ok(level)
@@ -170,9 +169,11 @@ where
         where
             E: de::Error,
         {
-            value.parse::<tracing::Level>().map_err(|_| {
-                let msg = "error parsing log level: expected one of \"error\", \"warn\", \
-                \"info\", \"debug\", \"trace\"";
+            value.parse::<tracing::Level>().map_err(|e| {
+                let msg = format!(
+                    "error parsing log level: expected one of \"error\", \"warn\", \
+                \"info\", \"debug\", \"trace\": {e}"
+                );
                 E::custom(msg)
             })
         }
@@ -190,11 +191,9 @@ where
     S: serde::Serializer,
 {
     let level_u8 = match *level {
-        tracing::Level::INFO => 0,
+        tracing::Level::INFO | tracing::Level::WARN | tracing::Level::ERROR => 0,
         tracing::Level::DEBUG => 1,
         tracing::Level::TRACE => 2,
-        tracing::Level::ERROR => 0,
-        tracing::Level::WARN => 0,
     };
     serializer.serialize_u8(level_u8)
 }

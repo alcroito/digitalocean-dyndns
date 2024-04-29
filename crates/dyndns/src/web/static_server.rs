@@ -43,7 +43,7 @@ pub fn print_where_files_are_served_from() {
         ServeStaticFilesFrom::Filesystem => info!("Serving web assets from filesystem"),
         ServeStaticFilesFrom::Embedded => info!("Serving web assets embedded in binary"),
         ServeStaticFilesFrom::FSOrEmbedded => {
-            info!("Serving web assets from filesystem with fallback to assets embedded in binary")
+            info!("Serving web assets from filesystem with fallback to assets embedded in binary");
         }
     }
 }

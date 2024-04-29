@@ -1,6 +1,164 @@
 [workspace]
+members = ["crates/dyndns"]
 resolver = "2"
 
-members = [
-    "crates/dyndns",
-]
+[workspace.package]
+rust-version = "1.76"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+chrono = { version = "0.4", default-features = false, features = [
+    "alloc",
+    "serde",
+    "clock",
+] }
+clap = { version = "4", features = ["cargo", "derive"] }
+color-eyre = "0.6"
+figment = { version = "0.10", features = ["env", "toml", "test"] }
+figment_file_provider_adapter = "0.1"
+humantime = "2"
+humantime-serde = "1"
+itertools = "0.12"
+native-tls = { version = "0.2", features = ["vendored"] }
+once_cell = "1"
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+secrecy = { version = "0.8", features = ["serde"] }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+serde_with = "3"
+signal-hook = { version = "0.3", features = ["extended-siginfo"] }
+tailsome = "1"
+tracing = "0.1"
+tracing-log = "0.2"
+tracing-subscriber = "0.3"
+trust-dns-resolver = "0.23"
+
+# Stats feature dependencies
+cfg-if = "1"
+diesel = { version = "2", features = ["sqlite", "chrono"]}
+diesel_migrations = { version = "2", features = ["sqlite"]}
+directories = "5"
+libsqlite3-sys = { version = "0.28", features = ["bundled"]}
+
+# Web server dependencies
+aide = { version = "0.13", features = [
+    "redoc",
+    "axum",
+    "axum-extra",
+    "macros",
+] }
+axum = { version = "0.7" }
+axum-jsonschema = {  version = "0.8", features = [
+    "aide",
+] }
+axum-macros = { version = "0.4" }
+futures-util = { version = "0.3" }
+http = { version = "1" }
+hyper = { version = "1" }
+hyper-util = { version = "0" }
+mime_guess = { version = "2" }
+rust-embed = { version = "8", features = ["debug-embed"]}
+schemars = { version = "0.8", features = ["chrono"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+
+# workspace.build-dependencies (not actually a valid key, so needs to be part of 
+# regular dependencies)
+# Keep anyhow, because vergen depends on it.
+anyhow = "1"
+vergen = { version = "8", features = [
+    "build",
+    "cargo",
+    "git",
+    "gitcl",
+    "rustc",
+    "si",
+] }
+
+# workspace.dev-dependencies (not actually a valid key, so needs to be part of 
+# regular dependencies)
+tempfile = "3"
+
+# An opinionated list of extra clippy lints. Can be overridden where necessary.
+# Taken from
+# https://github.com/EmbarkStudios/rust-ecosystem/blob/542740e462f7ebf246e0b7170b3fb77cf6c68ec7/lints.rs
+# but converted to new 1.74+ Cargo.toml syntax.
+# See https://doc.rust-lang.org/nightly/cargo/reference/manifest.html#the-lints-section
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+future_incompatible = "warn"
+nonstandard_style = "warn"
+rust_2018_idioms = "warn"
+
+[workspace.lints.clippy]
+all = "warn"
+await_holding_lock = "warn"
+char_lit_as_u8 = "warn"
+checked_conversions = "warn"
+dbg_macro = "warn"
+debug_assert_with_mut_call = "warn"
+doc_markdown = "warn"
+empty_enum = "warn"
+enum_glob_use = "warn"
+exit = "warn"
+expl_impl_clone_on_copy = "warn"
+explicit_deref_methods = "warn"
+explicit_into_iter_loop = "warn"
+fallible_impl_from = "warn"
+filter_map_next = "warn"
+flat_map_option = "warn"
+float_cmp_const = "warn"
+fn_params_excessive_bools = "warn"
+from_iter_instead_of_collect = "warn"
+if_let_mutex = "warn"
+implicit_clone = "warn"
+imprecise_flops = "warn"
+inefficient_to_string = "warn"
+invalid_upcast_comparisons = "warn"
+large_digit_groups = "warn"
+large_stack_arrays = "warn"
+large_types_passed_by_value = "warn"
+let_unit_value = "warn"
+linkedlist = "warn"
+lossy_float_literal = "warn"
+macro_use_imports = "warn"
+manual_ok_or = "warn"
+map_err_ignore = "warn"
+map_flatten = "warn"
+map_unwrap_or = "warn"
+match_on_vec_items = "warn"
+match_same_arms = "warn"
+match_wild_err_arm = "warn"
+match_wildcard_for_single_variants = "warn"
+mem_forget = "warn"
+mismatched_target_os = "warn"
+missing_enforced_import_renames = "warn"
+mut_mut = "warn"
+mutex_integer = "warn"
+needless_borrow = "warn"
+needless_continue = "warn"
+needless_for_each = "warn"
+option_option = "warn"
+path_buf_push_overwrite = "warn"
+ptr_as_ptr = "warn"
+rc_mutex = "warn"
+ref_option_ref = "warn"
+rest_pat_in_fully_bound_structs = "warn"
+same_functions_in_if_condition = "warn"
+semicolon_if_nothing_returned = "warn"
+single_match_else = "warn"
+string_add_assign = "warn"
+string_add = "warn"
+string_lit_as_bytes = "warn"
+string_to_string = "warn"
+todo = "warn"
+trait_duplication_in_bounds = "warn"
+unimplemented = "warn"
+unnested_or_patterns = "warn"
+unused_self = "warn"
+useless_transmute = "warn"
+verbose_file_reads = "warn"
+zero_sized_map_values = "warn"

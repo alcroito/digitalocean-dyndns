@@ -38,7 +38,7 @@ pub fn get_domain_records(conn: &mut SqliteConnection) -> Result<Vec<DomainRecor
 
 pub fn create_domain_record(
     conn: &mut SqliteConnection,
-    new_domain_record: &NewDomainRecord,
+    new_domain_record: &NewDomainRecord<'_, '_>,
 ) -> Result<Option<DomainRecord>> {
     use super::super::schema::domain_records;
     let domain_record =
