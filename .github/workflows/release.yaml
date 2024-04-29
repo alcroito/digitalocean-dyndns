@@ -19,13 +19,25 @@ jobs:
 
       - name: Create artifacts directory
         run: mkdir artifacts
+
+      - name: Detect if test_release branch
+        shell: bash
+        if: github.ref == 'refs/heads/test_release'
+        run: |
+          echo "IS_TEST_RELEASE=1" >> $GITHUB_ENV
+      
+      - name: Detect if not test_release branch
+        shell: bash
+        if: github.ref != 'refs/heads/test_release'
+        run: |
+          echo "IS_TEST_RELEASE=0" >> $GITHUB_ENV
         
       - name: "Build Changelog"
         id: build_changelog
         uses: orhun/git-cliff-action@main
         with:
           config: cliff.toml
-          args: -vv --latest --no-exec
+          args: -v --no-exec
         env:
           OUTPUT: GITHUB_RELEASE_CHANGELOG.md
 

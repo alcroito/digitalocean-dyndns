@@ -5,6 +5,7 @@
 # Configuration options are organized into tables and keys.
 # See documentation for more information on available options.
 
+
 [changelog]
 # changelog header
 header = """
@@ -24,7 +25,7 @@ body = """
         {{ commit.message | upper_first }} - \
         ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }}))\
         {% if commit.github.username %} by \
-          ([@{{ commit.github.username }}](https://github.com//{{ commit.github.username }}))\
+          ([@{{ commit.github.username }}](https://github.com/{{ commit.github.username }}))\
         {%- endif -%}\
         {% if commit.github.pr_number %} in \
           [#{{ commit.github.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.github.pr_number }})\
