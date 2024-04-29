@@ -30,7 +30,7 @@ body = """
           [#{{ commit.github.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.github.pr_number }})\
         {%- endif %}\
         {% for footer in commit.footers -%}\
-          , {{ footer.token }}{{ footer.separator }}{{ footer.value }}\
+          {% raw %}\n{% endraw %}  - {{ footer.token }}{{ footer.separator }} {{ footer.value }}
         {% endfor %}\
 {% endmacro -%}
 
@@ -80,7 +80,8 @@ footer = """
 trim = true
 # postprocessors
 postprocessors = [
-  { pattern = '<REPO>', replace = "https://github.com/alcroito/digitalocean-dyndns" }, # replace repository URL
+  { pattern = '<REPO>', replace = "https://github.com/alcroito/digitalocean-dyndns" },
+  { pattern = 'BREAKING CHANGE:', replace = "**BREAKING CHANGE:**" }
 ]
 
 [bump]
