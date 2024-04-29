@@ -15,6 +15,6 @@ pub async fn list_domain_record_ip_changes(
     Ok(Json(ip_changes))
 }
 
-pub fn list_domain_record_ip_changes_docs(op: TransformOperation) -> TransformOperation {
+pub fn list_domain_record_ip_changes_docs(op: TransformOperation<'_>) -> TransformOperation<'_> {
     op.description("List all recent domain record ip changes")
 }

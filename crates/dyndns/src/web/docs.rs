@@ -43,7 +43,7 @@ pub fn docs_routes() -> ApiRouter<WebServerState> {
     router
 }
 
-pub fn api_docs(api: TransformOpenApi) -> TransformOpenApi {
+pub fn api_docs(api: TransformOpenApi<'_>) -> TransformOpenApi<'_> {
     api.title("ddns Open API")
         .summary("ddns Open API")
         .description("ddns Open API")

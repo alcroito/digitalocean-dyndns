@@ -89,7 +89,7 @@ impl DomainRecordApi for DigitalOceanApi {
 
 impl Drop for DigitalOceanApi {
     fn drop(&mut self) {
-        trace!("DigitalOceanApi object destroyed")
+        trace!("DigitalOceanApi object destroyed");
     }
 }
 

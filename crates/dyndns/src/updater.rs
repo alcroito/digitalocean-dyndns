@@ -47,7 +47,7 @@ impl Updater {
             "Attempting to update domain record '{}'",
             record_to_update.fqdn()
         );
-        let records = match domain_record_cache.entry(record_to_update.domain_name.to_string()) {
+        let records = match domain_record_cache.entry(record_to_update.domain_name.clone()) {
             std::collections::hash_map::Entry::<_, _>::Vacant(o) => {
                 trace!("Querying records for '{}'", record_to_update.domain_name);
                 let records = self.api.get_domain_records(&record_to_update.domain_name)?;
@@ -76,7 +76,7 @@ impl Updater {
                     self.api
                         .update_domain_ip(api_domain_record.id, record_to_update, &curr_ip)?;
                 } else {
-                    info!("Skipping updating IP due to dry run")
+                    info!("Skipping updating IP due to dry run");
                 }
             } else {
                 info!("Correct IP already set, nothing to do");

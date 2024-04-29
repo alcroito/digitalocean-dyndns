@@ -130,6 +130,7 @@ impl AppTerminationHandler {
         }
     }
 
+    #[allow(clippy::unused_self)]
     fn notify_threads_to_exit(&self) {
         #[cfg(feature = "web")]
         {
@@ -219,20 +220,20 @@ impl AppTerminationHandler {
         for info in signals {
             let killer_pid_message = info
                 .process
-                .map(|p| format!(" from pid: {}", p.pid))
-                .unwrap_or_else(|| "".to_owned());
+                .map_or_else(|| "".to_owned(), |p| format!(" from pid: {}", p.pid));
 
-            let signal_name = signal_hook::low_level::signal_name(info.signal)
-                .map(|s| s.to_owned())
-                .unwrap_or_else(|| {
+            let signal_name = signal_hook::low_level::signal_name(info.signal).map_or_else(
+                || {
                     info!("Can't find human readable name for signal: {}", info.signal);
                     info.signal.to_string()
-                });
+                },
+                |s| s.to_owned(),
+            );
 
             info!("Received signal: {}{}", signal_name, killer_pid_message);
             match info.signal {
                 SIGHUP => {
-                    info!("Ignoring signal because config reloading is not yet supported")
+                    info!("Ignoring signal because config reloading is not yet supported");
                 }
                 SIGTERM | SIGQUIT | SIGINT => {
                     assert!(TERM_SIGNALS.contains(&info.signal));

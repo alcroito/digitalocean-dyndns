@@ -9,7 +9,7 @@ use trust_dns_resolver::Resolver;
 use crate::types::{DisplayIpAddrV4AndV6Pretty, IpAddrV4AndV6};
 
 /// IP addresses for OpenDNS Public DNS
-/// https://en.wikipedia.org/wiki/OpenDNS
+/// [https://en.wikipedia.org/wiki/OpenDNS](https://en.wikipedia.org/wiki/OpenDNS)
 const OPEN_DNS_IPS: &[IpAddr] = &[
     IpAddr::V4(Ipv4Addr::new(208, 67, 222, 222)),
     IpAddr::V4(Ipv4Addr::new(208, 67, 220, 220)),
@@ -26,7 +26,8 @@ pub struct DnsIpFetcher {}
 
 impl PublicIpFetcher for DnsIpFetcher {
     /// Fetch public IP of current machine by querying the OpenDNS myip resolver
-    /// See https://unix.stackexchange.com/questions/22615/how-can-i-get-my-external-ip-address-in-a-shell-script/81699#81699
+    /// See
+    /// [Stack Overflow](https://unix.stackexchange.com/questions/22615/how-can-i-get-my-external-ip-address-in-a-shell-script/81699#81699)
     fn fetch_public_ips(&self, lookup_ipv4: bool, lookup_ipv6: bool) -> Result<IpAddrV4AndV6> {
         info!("Fetching public IP using OpenDNS");
         let hostname_to_lookup = "myip.opendns.com.";

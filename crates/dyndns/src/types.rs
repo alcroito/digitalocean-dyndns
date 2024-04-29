@@ -47,7 +47,7 @@ impl DomainRecordToUpdate {
 
     pub fn fqdn(&self) -> String {
         if self.hostname_part == "@" {
-            self.domain_name.to_owned()
+            self.domain_name.clone()
         } else {
             format!("{}.{}", self.hostname_part, self.domain_name)
         }

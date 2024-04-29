@@ -2,10 +2,11 @@
 name = "digitalocean-dyndns"
 version = "0.6.0"
 edition = "2021"
+license.workspace = true
+rust-version.workspace = true
 description = "Dynamic DNS using DigitalOcean's DNS API"
 readme = "README.md"
 repository = "https://github.com/alcroito/digitalocean-dyndns"
-license = "MIT"
 keywords = ["dyndns", "digitalocean"]
 publish = false
 build = "build.rs"
@@ -41,66 +42,66 @@ web = [
 ]
 
 [dependencies]
-chrono = { version = "0.4", default-features = false, features = [
+chrono = { workspace = true, default-features = false, features = [
     "alloc",
     "serde",
     "clock",
 ] }
-clap = { version = "4", features = ["cargo", "derive"] }
-color-eyre = "0.6"
-figment = { version = "0.10", features = ["env", "toml", "test"] }
-figment_file_provider_adapter = "0.1"
-humantime = "2"
-humantime-serde = "1"
-itertools = "0.12"
-native-tls = { version = "0.2", features = ["vendored"] }
-once_cell = "1"
-reqwest = { version = "0.12", features = ["blocking", "json"] }
-secrecy = { version = "0.8", features = ["serde"] }
-serde = { version = "1", features = ["derive", "rc"] }
-serde_json = "1"
-serde_with = "3"
-signal-hook = { version = "0.3", features = ["extended-siginfo"] }
-tailsome = "1"
-tracing = "0.1"
-tracing-log = "0.2"
-tracing-subscriber = "0.3"
-trust-dns-resolver = "0.23"
+clap = { workspace = true, features = ["cargo", "derive"] }
+color-eyre.workspace = true
+figment = { workspace = true, features = ["env", "toml", "test"] }
+figment_file_provider_adapter.workspace = true
+humantime.workspace = true
+humantime-serde.workspace = true
+itertools.workspace = true
+native-tls = { workspace = true, features = ["vendored"] }
+once_cell.workspace = true
+reqwest = { workspace = true, features = ["blocking", "json"] }
+secrecy = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive", "rc"] }
+serde_json.workspace = true
+serde_with.workspace = true
+signal-hook = { workspace = true, features = ["extended-siginfo"] }
+tailsome.workspace = true
+tracing.workspace = true
+tracing-log.workspace = true
+tracing-subscriber.workspace = true
+trust-dns-resolver.workspace = true
 
 # Stats feature dependencies
-cfg-if = "1"
-diesel = { version = "2", features = ["sqlite", "chrono"], optional = true }
-diesel_migrations = { version = "2", features = ["sqlite"], optional = true }
-directories = "5"
-libsqlite3-sys = { version = "0.28", features = ["bundled"], optional = true }
+cfg-if.workspace = true
+diesel = { workspace = true, features = ["sqlite", "chrono"], optional = true }
+diesel_migrations = { workspace = true, features = ["sqlite"], optional = true }
+directories.workspace = true
+libsqlite3-sys = { workspace = true, features = ["bundled"], optional = true }
 
 # Web server dependencies
-aide = { version = "0.13", optional = true, features = [
+aide = { workspace = true, optional = true, features = [
     "redoc",
     "axum",
     "axum-extra",
     "macros",
 ] }
-axum = { version = "0.7", optional = true }
-axum-jsonschema = {  version = "0.8", optional = true, features = [
+axum = { workspace = true, optional = true }
+axum-jsonschema = {  workspace = true, optional = true, features = [
     "aide",
 ] }
-axum-macros = { version = "0.4", optional = true }
-futures-util = { version = "0.3", optional = true }
-http = { version = "1", optional = true }
-hyper = { version = "1", optional = true }
-hyper-util = { version = "0", optional = true }
-mime_guess = { version = "2", optional = true }
-rust-embed = { version = "8", features = ["debug-embed"], optional = true }
-schemars = { version = "0.8", optional = true, features = ["chrono"] }
-tower = { version = "0.4", features = ["full"], optional = true }
-tower-http = { version = "0.5", features = ["full"], optional = true }
-tokio = { version = "1", features = ["full"], optional = true }
+axum-macros = { workspace = true, optional = true }
+futures-util = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+hyper = { workspace = true, optional = true }
+hyper-util = { workspace = true, optional = true }
+mime_guess = { workspace = true, optional = true }
+rust-embed = { workspace = true, features = ["debug-embed"], optional = true }
+schemars = { workspace = true, optional = true, features = ["chrono"] }
+tower = { workspace = true, features = ["full"], optional = true }
+tower-http = { workspace = true, features = ["full"], optional = true }
+tokio = { workspace = true, features = ["full"], optional = true }
 
 [build-dependencies]
 # Keep anyhow, because vergen depends on it.
-anyhow = "1"
-vergen = { version = "8", features = [
+anyhow.workspace = true
+vergen = { workspace = true, features = [
     "build",
     "cargo",
     "git",
@@ -110,4 +111,7 @@ vergen = { version = "8", features = [
 ] }
 
 [dev-dependencies]
-tempfile = "3"
+tempfile.workspace = true
+
+[lints]
+workspace = true
