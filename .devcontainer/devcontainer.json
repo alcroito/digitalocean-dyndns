@@ -8,7 +8,7 @@
         "dockerfile": "Dockerfile"
     },
     "features": {
-        "ghcr.io/lee-orr/rusty-dev-containers/cargo-expand:0": {}
+        "ghcr.io/lee-orr/rusty-dev-containers/cargo-expand:0@sha256:7b2aba77a6c1bb3c440867a648bd3f4fd58ed4bc098b222e3e15db7062a015ba": {}
     }
 
     // Use 'mounts' to make the cargo cache persistent in a Docker Volume.
