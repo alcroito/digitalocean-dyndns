@@ -2,7 +2,7 @@
 #
 ARG BASE_IMAGE=messense/rust-musl-cross:armv7-musleabihf
 
-FROM --platform=$BUILDPLATFORM node:20-alpine@sha256:7a91aa397f2e2dfbfcdad2e2d72599f374e0b0172be1d86eeb73f1d33f36a4b2 AS web-builder
+FROM --platform=$BUILDPLATFORM node:20-alpine@sha256:a7b980c958bfe4d84ee9263badd95a40c8bb50ad5afdb87902c187fefaef0e24 AS web-builder
 WORKDIR /web
 COPY ./webclients/svelte .
 RUN apk add --no-cache --virtual .gyp \
