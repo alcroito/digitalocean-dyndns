@@ -1,12 +1,13 @@
 use crate::types::ValueFromStr;
 use color_eyre::eyre::Error;
-use secrecy::Secret;
+use secrecy::zeroize::Zeroize;
+use secrecy::SecretBox;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DigitalOceanToken(String);
 
-pub type SecretDigitalOceanToken = Secret<DigitalOceanToken>;
+pub type SecretDigitalOceanToken = SecretBox<DigitalOceanToken>;
 
 impl DigitalOceanToken {
     pub fn as_str(&self) -> &str {
@@ -14,14 +15,13 @@ impl DigitalOceanToken {
     }
 }
 
-impl secrecy::Zeroize for DigitalOceanToken {
+impl Zeroize for DigitalOceanToken {
     fn zeroize(&mut self) {
         self.0.zeroize();
     }
 }
 
 impl secrecy::CloneableSecret for DigitalOceanToken {}
-impl secrecy::DebugSecret for DigitalOceanToken {}
 impl secrecy::SerializableSecret for DigitalOceanToken {}
 
 impl std::str::FromStr for DigitalOceanToken {
@@ -32,14 +32,14 @@ impl std::str::FromStr for DigitalOceanToken {
     }
 }
 
-impl ValueFromStr for Secret<DigitalOceanToken> {
+impl ValueFromStr for SecretBox<DigitalOceanToken> {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Secret::new(s.parse::<DigitalOceanToken>()?))
+        Ok(SecretBox::new(Box::new(s.parse::<DigitalOceanToken>()?)))
     }
 }
 
-pub fn parse_secret_token(s: &str) -> Result<Secret<DigitalOceanToken>, Error> {
-    Ok(Secret::new(s.parse::<DigitalOceanToken>()?))
+pub fn parse_secret_token(s: &str) -> Result<SecretBox<DigitalOceanToken>, Error> {
+    Ok(SecretBox::new(Box::new(s.parse::<DigitalOceanToken>()?)))
 }

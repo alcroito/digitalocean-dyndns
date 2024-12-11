@@ -74,7 +74,7 @@ impl Display for IpAddrV4AndV6 {
 
 pub struct DisplayIpAddrV4AndV6Pretty<'a>(pub &'a IpAddrV4AndV6);
 
-impl<'a> Display for DisplayIpAddrV4AndV6Pretty<'a> {
+impl Display for DisplayIpAddrV4AndV6Pretty<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.0.has_both() {
             writeln!(f, "Public IPs are:")?;

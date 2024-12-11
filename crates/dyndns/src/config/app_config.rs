@@ -146,7 +146,7 @@ where
     use serde::de::{self, Visitor};
 
     struct LogLevelVisitor;
-    impl<'de> Visitor<'de> for LogLevelVisitor {
+    impl Visitor<'_> for LogLevelVisitor {
         type Value = tracing::Level;
 
         fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

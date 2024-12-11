@@ -17,13 +17,14 @@ clap = { version = "4", features = ["cargo", "derive"] }
 color-eyre = "0.6"
 figment = { version = "0.10", features = ["env", "toml", "test"] }
 figment_file_provider_adapter = "0.1"
+hickory-resolver = "0.24"
 humantime = "2"
 humantime-serde = "1"
-itertools = "0.12"
+itertools = "0.13"
 native-tls = { version = "0.2", features = ["vendored"] }
 once_cell = "1"
 reqwest = { version = "0.12", features = ["blocking", "json"] }
-secrecy = { version = "0.8", features = ["serde"] }
+secrecy = { version = "0.10", features = ["serde"] }
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 serde_with = "3"
@@ -32,14 +33,13 @@ tailsome = "1"
 tracing = "0.1"
 tracing-log = "0.2"
 tracing-subscriber = "0.3"
-trust-dns-resolver = "0.23"
 
 # Stats feature dependencies
 cfg-if = "1"
 diesel = { version = "2", features = ["sqlite", "chrono"]}
 diesel_migrations = { version = "2", features = ["sqlite"]}
 directories = "5"
-libsqlite3-sys = { version = "0.28", features = ["bundled"]}
+libsqlite3-sys = { version = "0.30", features = ["bundled"]}
 
 # Web server dependencies
 aide = { version = "0.13", features = [
@@ -60,24 +60,22 @@ hyper-util = { version = "0" }
 mime_guess = { version = "2" }
 rust-embed = { version = "8", features = ["debug-embed"]}
 schemars = { version = "0.8", features = ["chrono"] }
-tower = { version = "0.4", features = ["full"] }
-tower-http = { version = "0.5", features = ["full"] }
+tower = { version = "0.5", features = ["full"] }
+tower-http = { version = "0.6", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 
-# workspace.build-dependencies (not actually a valid key, so needs to be part of 
+# workspace.build-dependencies (not actually a valid key, so needs to be part of
 # regular dependencies)
 # Keep anyhow, because vergen depends on it.
 anyhow = "1"
-vergen = { version = "8", features = [
+vergen-gitcl = { version = "1", features = [
     "build",
     "cargo",
-    "git",
-    "gitcl",
     "rustc",
     "si",
 ] }
 
-# workspace.dev-dependencies (not actually a valid key, so needs to be part of 
+# workspace.dev-dependencies (not actually a valid key, so needs to be part of
 # regular dependencies)
 tempfile = "3"
 
@@ -89,9 +87,10 @@ tempfile = "3"
 
 [workspace.lints.rust]
 unsafe_code = "deny"
-future_incompatible = "warn"
-nonstandard_style = "warn"
-rust_2018_idioms = "warn"
+future_incompatible = { level = "warn", priority = -1 }
+nonstandard_style = { level = "warn", priority = -1 }
+rust_2018_idioms = { level = "warn", priority = -1 }
+unexpected_cfgs = "warn"
 
 [workspace.lints.clippy]
 all = "warn"
@@ -134,7 +133,6 @@ match_same_arms = "warn"
 match_wild_err_arm = "warn"
 match_wildcard_for_single_variants = "warn"
 mem_forget = "warn"
-mismatched_target_os = "warn"
 missing_enforced_import_renames = "warn"
 mut_mut = "warn"
 mutex_integer = "warn"
