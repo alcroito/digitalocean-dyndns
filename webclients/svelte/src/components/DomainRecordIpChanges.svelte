@@ -18,15 +18,16 @@
 		</div>
 
 		<div class="card-header-icon" class:is-hidden={!$query.isFetching}>
-			<div class="loader mr-1" />
+			<div class="loader mr-1"></div>
 		</div>
 		<button
+			aria-label="Refresh"
 			class="refresh button m-3"
 			class:is-hidden={$query.isFetching}
 			on:click={() => store.reset()}
 		>
 			<div class="icon">
-				<i class="fa-solid fa-arrows-rotate" />
+				<i class="fa-solid fa-arrows-rotate"></i>
 			</div>
 		</button>
 	</header>
@@ -120,7 +121,7 @@
 			padding: 10px 15px;
 			line-height: 1.875;
 
-			:first-child {
+			&:first-child {
 				width: 100px;
 			}
 		}
