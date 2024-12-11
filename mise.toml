@@ -1,0 +1,70 @@
+[tasks.default]
+depends = ["build:backend"]
+description = "Build the binary"
+
+# Build
+[tasks."build:backend"]
+description = "Build the binary"
+run = "cargo build --features web"
+wait_for = ["build:web"]
+
+[tasks."build:web"]
+description = "Build the web frontend"
+run = "npm run build"
+dir = "{{cwd}}/webclients/svelte"
+
+[tasks."build:all"]
+description = "Build the binary and web frontend"
+depends = ["build:backend", "build:web"]
+
+# Gen
+[tasks."gen:openapi"]
+description = "Generate the open api schema"
+run = "npm run apigen"
+dir = "{{cwd}}/webclients/svelte"
+
+[tasks."gen:changelog"]
+description = "Update changelog using git cliff"
+run = 'git cliff -o CHANGELOG.md'
+
+# Test
+[tasks."test:backend"]
+description = "Test the binary"
+run = "cargo test --features web"
+
+# Lint
+[tasks."lint:backend"]
+description = "Lint the backend code"
+run = "cargo clippy --features web"
+
+[tasks."lint:web"]
+description = "Lint the web frontend code"
+run = "npm run lint"
+dir = "{{cwd}}/webclients/svelte"
+
+[tasks."lint:all"]
+description = "Lint the backend and web frontend code"
+depends = ["lint:backend", "lint:web"]
+
+# Update deps
+[tasks."bump:backend:semver"]
+description = "Update backend dependencies according to semver compatibility"
+run = "cargo upgrade"
+
+[tasks."bump:backend:breaking"]
+description = "Update backend dependencies according to latest versions, ignoring semver"
+run = "cargo upgrade --incompatible"
+
+[tasks."bump:backend:lockfile"]
+description = "Update backend lockfile"
+run = "cargo update"
+
+[tasks."bump:web:semver"]
+description = "Update web dependencies according to semver compatibility"
+run = 'npm-check-updates --target semver'
+dir = "{{cwd}}/webclients/svelte"
+
+[tasks."bump:web:breaking"]
+description = "Update web dependencies according to latest versions, ignoring semver"
+run = 'npm-check-updates'
+dir = "{{cwd}}/webclients/svelte"
