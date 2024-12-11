@@ -103,7 +103,7 @@ jobs:
         echo "tag=${GITHUB_REPOSITORY}:${DOCKER_TAG_PREFIX}-${{ matrix.rust_target_arch }}-${BASE_RUNTIME_IMAGE}" >> $GITHUB_OUTPUT
     - name: Build and push
       id: docker_build
-      uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
+      uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6
       with:
         push: true
         context: .
@@ -135,7 +135,7 @@ jobs:
 
   publish_containers:
     name: Publish docker images
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         registry: [docker.io, ghcr.io]
