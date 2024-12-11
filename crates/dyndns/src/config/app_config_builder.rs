@@ -69,9 +69,10 @@ fn get_config_path_from_candidates(candidates: &[String]) -> Option<String> {
         })
         .map(|path| path.to_owned());
 
-    match &config_file {
-        Some(path) => trace!("Final config file chosen: {}", path),
-        None => trace!("No valid config file found. Make sure required options are set via command line options or environment variables."),
+    if let Some(path) = &config_file {
+        trace!("Final config file chosen: {}", path);
+    } else {
+        trace!("No valid config file found. Make sure required options are set via command line options or environment variables.");
     };
     config_file
 }
@@ -86,18 +87,16 @@ pub fn config_with_args(early_config: &EarlyConfig) -> Result<AppConfig> {
     let config_file_path = get_config_path(clap_matches);
     let config_builder = AppConfigBuilder::new(Some(clap_matches), config_file_path);
     let config = config_builder
-        .map_err(|e| {
+        .inspect_err(|_e| {
             tracing::error!(
                 "Failed to initialize configuration system. Will exit shortly with error details."
             );
-            e
         })?
         .build()
-        .map_err(|e| {
+        .inspect_err(|_e| {
             tracing::error!(
                 "Failed to configure the application. Will exit shortly with error details."
             );
-            e
         })
         .wrap_err(eyre!("Failed to configure the application"))?;
     Ok(config)

@@ -51,6 +51,7 @@ clap = { workspace = true, features = ["cargo", "derive"] }
 color-eyre.workspace = true
 figment = { workspace = true, features = ["env", "toml", "test"] }
 figment_file_provider_adapter.workspace = true
+hickory-resolver.workspace = true
 humantime.workspace = true
 humantime-serde.workspace = true
 itertools.workspace = true
@@ -66,7 +67,6 @@ tailsome.workspace = true
 tracing.workspace = true
 tracing-log.workspace = true
 tracing-subscriber.workspace = true
-trust-dns-resolver.workspace = true
 
 # Stats feature dependencies
 cfg-if.workspace = true
@@ -101,11 +101,9 @@ tokio = { workspace = true, features = ["full"], optional = true }
 [build-dependencies]
 # Keep anyhow, because vergen depends on it.
 anyhow.workspace = true
-vergen = { workspace = true, features = [
+vergen-gitcl = { workspace = true, features = [
     "build",
     "cargo",
-    "git",
-    "gitcl",
     "rustc",
     "si",
 ] }

@@ -1,10 +1,10 @@
 use color_eyre::eyre::{bail, Result, WrapErr};
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use tracing::info;
-use trust_dns_resolver::config::{
+use hickory_resolver::config::{
     LookupIpStrategy, NameServerConfigGroup, ResolverConfig, ResolverOpts,
 };
-use trust_dns_resolver::Resolver;
+use hickory_resolver::Resolver;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use tracing::info;
 
 use crate::types::{DisplayIpAddrV4AndV6Pretty, IpAddrV4AndV6};
 

@@ -22,7 +22,7 @@ pub fn get_domain_ip_fetches(conn: &mut SqliteConnection) -> Result<Vec<DomainIp
     Ok(results)
 }
 
-sql_function! {
+define_sql_function! {
     /// Represents the SQL last_insert_row() function
     fn last_insert_rowid() -> diesel::sql_types::BigInt;
 }
