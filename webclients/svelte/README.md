@@ -36,3 +36,23 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+## Updating versions
+
+To update to latest semver run
+
+```bash
+npm-check-updates --target semver --upgrade
+npm update
+npm run build
+npm run preview
+```
+
+To updates to latest versions including possible breakages
+
+```bash
+npm-check-updates --upgrade
+npm update
+npm run build
+npm run preview
+```
