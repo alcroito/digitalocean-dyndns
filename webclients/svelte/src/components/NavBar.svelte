@@ -21,9 +21,9 @@
 			class:is-active={burgerIsActive}
 			on:click={() => (burgerIsActive = !burgerIsActive)}
 		>
-			<span aria-hidden="true" />
-			<span aria-hidden="true" />
-			<span aria-hidden="true" />
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
+			<span aria-hidden="true"></span>
 		</a>
 
 		<a class="navbar-item" href={base}>
@@ -39,7 +39,7 @@
 				<a class="navbar-item" href={base} class:active={$page.url.pathname == '/'}>
 					<div class="icon-text">
 						<span class="icon">
-							<i class="fa-solid fa-house" />
+							<i class="fa-solid fa-house"></i>
 						</span>
 						<span> Dashboard </span>
 					</div>
@@ -49,7 +49,7 @@
 				<a class="navbar-item" href={'#more'}>
 					<div class="icon-text">
 						<span class="icon">
-							<i class="fa-solid fa-circle-question" />
+							<i class="fa-solid fa-circle-question"></i>
 						</span>
 						<span> More to come </span>
 					</div>
