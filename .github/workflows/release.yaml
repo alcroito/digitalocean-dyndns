@@ -31,7 +31,7 @@ jobs:
 
       - name: Create GitHub release
         id: release
-        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87 # v2
+        uses: softprops/action-gh-release@e7a8f85e1c67a31e6ed99a94b41bd0b71bbee6b8 # v2
         with:
           tag_name: ${{ github.ref_name }}
           prerelease: ${{ github.ref_type == 'branch' }}
@@ -42,7 +42,7 @@ jobs:
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: artifacts
           path: artifacts
@@ -132,7 +132,7 @@ jobs:
         if: matrix.cross == true
 
       - name: Get release download URL
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           name: artifacts
           path: artifacts
