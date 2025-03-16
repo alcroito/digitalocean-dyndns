@@ -55,11 +55,11 @@ pub fn get_final_router(state: WebServerState) -> Router {
 }
 
 fn get_pure_router_and_open_api() -> (Router<WebServerState>, OpenApi) {
-    aide::gen::on_error(|gen_error| {
+    aide::generate::on_error(|gen_error| {
         panic!("Open API generation error: {}", gen_error);
     });
 
-    aide::gen::extract_schemas(true);
+    aide::generate::extract_schemas(true);
 
     let mut api = OpenApi::default();
 

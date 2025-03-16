@@ -37,7 +37,7 @@
                 }
             }
         },
-        "/docs/": {
+        "/docs": {
             "get": {
                 "description": "This documentation page.",
                 "responses": {
