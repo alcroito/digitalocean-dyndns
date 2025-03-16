@@ -16,19 +16,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "type": "object",
-                                            "required": [
-                                                "GenericError"
-                                            ],
-                                            "properties": {
-                                                "GenericError": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/WebApiError"
                                 },
                                 "example": {
                                     "GenericError": "generic error"
@@ -58,19 +46,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "oneOf": [
-                                        {
-                                            "type": "object",
-                                            "required": [
-                                                "GenericError"
-                                            ],
-                                            "properties": {
-                                                "GenericError": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    ]
+                                    "$ref": "#/components/schemas/WebApiError"
                                 },
                                 "example": {
                                     "GenericError": "generic error"
@@ -141,6 +117,21 @@
                         }
                     }
                 }
+            },
+            "WebApiError": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "required": [
+                            "GenericError"
+                        ],
+                        "properties": {
+                            "GenericError": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ]
             }
         }
     }
