@@ -83,9 +83,7 @@ aide = { workspace = true, optional = true, features = [
     "macros",
 ] }
 axum = { workspace = true, optional = true }
-axum-jsonschema = {  workspace = true, optional = true, features = [
-    "aide",
-] }
+axum-jsonschema = { path = "../axum-jsonschema", optional = true, features = ["aide"] }
 axum-macros = { workspace = true, optional = true }
 futures-util = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
