@@ -17,7 +17,7 @@ clap = { version = "4", features = ["cargo", "derive"] }
 color-eyre = "0.6"
 figment = { version = "0.10", features = ["env", "toml", "test"] }
 figment_file_provider_adapter = "0.1"
-hickory-resolver = "0.24"
+hickory-resolver = "0.25"
 humantime = "2"
 humantime-serde = "1"
 itertools = "0.14"
@@ -39,7 +39,7 @@ cfg-if = "1"
 diesel = { version = "2", features = ["sqlite", "chrono"]}
 diesel_migrations = { version = "2", features = ["sqlite"]}
 directories = "6"
-libsqlite3-sys = { version = "0.31", features = ["bundled"]}
+libsqlite3-sys = { version = "0.32", features = ["bundled"]}
 
 # Web server dependencies
 aide = { version = "0.14", features = [
