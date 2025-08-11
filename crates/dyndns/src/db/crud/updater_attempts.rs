@@ -23,7 +23,7 @@ pub fn get_updater_attempts(conn: &mut SqliteConnection) -> Result<Vec<UpdaterAt
 }
 
 define_sql_function! {
-    /// Represents the SQL last_insert_row() function
+    /// Represents the SQL `last_insert_row()` function
     fn last_insert_rowid() -> diesel::sql_types::BigInt;
 }
 
