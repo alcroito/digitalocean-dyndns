@@ -13,47 +13,47 @@ pub fn get_cli_args() -> ArgMatches {
 pub struct CommonArgs {
     /// Path to TOML config file.
     ///
-    /// Default config path when none specified: '$PWD/config/do_ddns.toml'
-    /// Env var: DO_DYNDNS_CONFIG=/config/do_ddns.toml",
+    /// Default config path when none specified: `$PWD/config/do_ddns.toml`
+    /// Env var: `DO_DYNDNS_CONFIG=/config/do_ddns.toml`,
     #[arg(short = 'c', long = "config", id = "config")]
     pub config_file_path: Option<String>,
 
     /// Increases the level of verbosity. Repeat for more verbosity.
     ///
-    /// Env var: DO_DYNDNS_LOG_LEVEL=info [error|warn|info|debug|trace]
+    /// Env var: `DO_DYNDNS_LOG_LEVEL=info` [error|warn|info|debug|trace]
     #[arg(short = 'v', action = clap::ArgAction::Count, id = "v")]
     pub log_level: Option<u8>,
 
     /// The domain root for which the domain record will be changed.
     ///
     /// Example: 'foo.net'
-    /// Env var: DO_DYNDNS_DOMAIN_ROOT=foo.net"
+    /// Env var: `DO_DYNDNS_DOMAIN_ROOT=foo.net`
     #[arg(short = 'd', long)]
     pub domain_root: Option<String>,
 
     /// The subdomain for which the public IP will be updated.
     ///
     /// Example: 'home'
-    /// Env var: DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home
+    /// Env var: `DO_DYNDNS_SUBDOMAIN_TO_UPDATE=home`
     #[arg(short = 's', long)]
     pub subdomain_to_update: Option<String>,
 
     /// If true, the provided domain root 'A' record will be updated (instead of a subdomain).
     ///
-    /// Env var: DO_DYNDNS_UPDATE_DOMAIN_ROOT=true
+    /// Env var: `DO_DYNDNS_UPDATE_DOMAIN_ROOT=true`
     #[arg(short = 'r', long, conflicts_with = "subdomain_to_update", default_missing_value = "true", num_args = 0..=1)]
     pub update_domain_root: Option<bool>,
 
     /// The digital ocean access token.
     ///
     /// Example: 'abcdefghijklmnopqrstuvwxyz'
-    /// Env var: DO_DYNDNS_DIGITAL_OCEAN_TOKEN=abcdefghijklmnopqrstuvwxyz"
+    /// Env var: `DO_DYNDNS_DIGITAL_OCEAN_TOKEN=abcdefghijklmnopqrstuvwxyz`
     #[arg(short = 't', long, value_parser = crate::token::parse_secret_token)]
     pub digital_ocean_token: Option<SecretDigitalOceanToken>,
 
     /// Path to file containing the digital ocean token on its first line.
     ///
-    /// Example: '/config/secret_token.txt'
+    /// Example: `/config/secret_token.txt`
     #[arg(
         short = 'p',
         long = "token-file-path",
@@ -67,19 +67,19 @@ pub struct CommonArgs {
     /// Default is every 10 minutes.
     /// Uses rust's humantime format.
     /// Example: '15 mins 30 secs'
-    /// Env var: DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins
+    /// Env var: `DO_DYNDNS_UPDATE_INTERVAL=2hours 30mins`
     #[arg(short = 'i', long)]
     pub update_interval: Option<UpdateInterval>,
 
     /// Show what would have been updated.
     ///
-    /// Env var: DO_DYNDNS_DRY_RUN=true
+    /// Env var: `DO_DYNDNS_DRY_RUN=true`
     #[arg(short = 'n', long, default_missing_value = "true", num_args = 0..=1)]
     pub dry_run: Option<bool>,
 
     /// Enable ipv6 support (disabled by default).
     ///
-    /// Env var: DO_DYNDNS_IPV6_SUPPORT=true"
+    /// Env var: `DO_DYNDNS_IPV6_SUPPORT=true`
     // num_args + default_missing_value emulates a flag action::SetTrue, which
     // preserves None when nothing is passed
     #[arg(long = "enable-ipv6", id = "ipv6", default_missing_value = "true", num_args = 0..=1)]
@@ -96,14 +96,14 @@ pub struct CommonArgs {
 pub struct ConditionalArgs {
     /// Enable collection of statistics (how often does the public IP change).
     ///
-    /// Env var: DO_DYNDNS_COLLECT_STATS=true"
+    /// Env var: `DO_DYNDNS_COLLECT_STATS=true`
     #[arg(long, default_missing_value = "true", num_args = 0..=1)]
     #[cfg_attr(not(feature = "stats"), arg(hide = true))]
     pub collect_stats: Option<bool>,
 
     /// File path where a sqlite database with statistics will be stored.
     ///
-    /// Env var: DO_DYNDNS_DATABASE_PATH=/tmp/dyndns_stats_db.sqlite
+    /// Env var: `DO_DYNDNS_DATABASE_PATH=/tmp/dyndns_stats_db.sqlite`
     #[arg(long = "database-path", id = "database_path")]
     #[cfg_attr(not(feature = "stats"), arg(hide = true))]
     #[serde(rename = "database_path")]
@@ -111,21 +111,21 @@ pub struct ConditionalArgs {
 
     /// Enable web server to visualize collected statistics.
     ///
-    /// Env var: DO_DYNDNS_ENABLE_WEB=true
+    /// Env var: `DO_DYNDNS_ENABLE_WEB=true`
     #[arg(long, default_missing_value = "true", num_args = 0..=1)]
     #[cfg_attr(not(feature = "web"), arg(hide = true))]
     pub enable_web: Option<bool>,
 
     /// An IP address or host name where to serve HTTP pages on.
     ///
-    /// Env var: DO_DYNDNS_LISTEN_HOSTNAME=192.168.0.1
+    /// Env var: `DO_DYNDNS_LISTEN_HOSTNAME=192.168.0.1`
     #[arg(long)]
     #[cfg_attr(not(feature = "web"), arg(hide = true))]
     pub listen_hostname: Option<String>,
 
     /// Port numbere where to serve HTTP pages on.
     ///
-    /// Env var: DO_DYNDNS_LISTEN_PORT=8080
+    /// Env var: `DO_DYNDNS_LISTEN_PORT=8080`
     #[arg(long)]
     #[cfg_attr(not(feature = "web"), arg(hide = true))]
     pub listen_port: Option<u16>,
