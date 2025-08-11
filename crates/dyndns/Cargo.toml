@@ -91,7 +91,7 @@ hyper = { workspace = true, optional = true }
 hyper-util = { workspace = true, optional = true }
 mime_guess = { workspace = true, optional = true }
 rust-embed = { workspace = true, features = ["debug-embed"], optional = true }
-schemars = { workspace = true, optional = true, features = ["chrono"] }
+schemars = { workspace = true, optional = true, features = ["chrono04"] }
 tower = { workspace = true, features = ["full"], optional = true }
 tower-http = { workspace = true, features = ["full"], optional = true }
 
