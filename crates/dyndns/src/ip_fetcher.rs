@@ -1,8 +1,8 @@
 use color_eyre::eyre::{bail, Result, WrapErr};
 use hickory_resolver::config::{
-    LookupIpStrategy, NameServerConfigGroup, ResolverConfig, ResolverOpts,
+    LookupIpStrategy, NameServerConfigGroup, ResolveHosts, ResolverConfig, ResolverOpts,
 };
-use hickory_resolver::Resolver;
+use hickory_resolver::{name_server::TokioConnectionProvider, Resolver};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use tracing::info;
 
@@ -31,14 +31,20 @@ impl PublicIpFetcher for DnsIpFetcher {
     fn fetch_public_ips(&self, lookup_ipv4: bool, lookup_ipv6: bool) -> Result<IpAddrV4AndV6> {
         info!("Fetching public IP using OpenDNS");
         let hostname_to_lookup = "myip.opendns.com.";
+        let lookup_open_dns_ips = match (lookup_ipv4, lookup_ipv6) {
+            (true, true) => OPEN_DNS_IPS,
+            (true, false) => OPEN_DNS_IPS.get(..2).expect("No IPv4 addresses"), // Only IPv4 addresses
+            (false, true) => OPEN_DNS_IPS.get(2..).expect("No IPv6 addresses"), // Only IPv6 addresses
+            (false, false) => unreachable!(),
+        };
         let resolver_config = ResolverConfig::from_parts(
             None,
             vec![],
-            NameServerConfigGroup::from_ips_clear(OPEN_DNS_IPS, 53, true),
+            NameServerConfigGroup::from_ips_clear(lookup_open_dns_ips, 53, true),
         );
 
         let mut resolver_options = ResolverOpts::default();
-        resolver_options.use_hosts_file = false;
+        resolver_options.use_hosts_file = ResolveHosts::Never;
 
         resolver_options.ip_strategy = match (lookup_ipv4, lookup_ipv6) {
             (true, true) => LookupIpStrategy::Ipv4AndIpv6,
@@ -51,11 +57,15 @@ impl PublicIpFetcher for DnsIpFetcher {
         resolver_options.num_concurrent_reqs = 1;
 
         let resolver_options = resolver_options;
-        let resolver = Resolver::new(resolver_config, resolver_options)?;
+        let mut builder =
+            Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default());
+        *builder.options_mut() = resolver_options;
+        let resolver = builder.build();
 
-        let response = resolver
-            .lookup_ip(hostname_to_lookup)
-            .wrap_err("Failed to resolve public IP address")?;
+        let response = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(resolver.lookup_ip(hostname_to_lookup))
+        })
+        .wrap_err("Failed to resolve public IP address")?;
 
         let address =
             response
