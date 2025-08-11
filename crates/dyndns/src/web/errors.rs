@@ -9,9 +9,7 @@ use axum::{
 };
 use color_eyre::eyre::{eyre, Report, Result};
 use http::StatusCode;
-use schemars::gen::SchemaGenerator;
-use schemars::schema::{Schema, SchemaObject};
-use schemars::JsonSchema;
+use schemars::{json_schema, JsonSchema, Schema, SchemaGenerator};
 use serde::Serialize;
 use serde_with::{serde_as, DisplayFromStr};
 
@@ -66,23 +64,21 @@ pub enum WebApiError {
 }
 
 impl JsonSchema for WebApiError {
-    fn schema_name() -> String {
-        "WebApiError".to_owned()
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "WebApiError".into()
     }
 
     fn json_schema(gen: &mut SchemaGenerator) -> Schema {
-        let mut schema = SchemaObject {
-            instance_type: Some(schemars::schema::InstanceType::Object.into()),
-            ..Default::default()
-        };
-        let obj = schema.object();
-        obj.required.insert("GenericError".to_owned());
-        obj.properties
-            .insert("GenericError".to_owned(), gen.subschema_for::<String>());
-
-        let mut final_schema = SchemaObject::default();
-        final_schema.subschemas().one_of = Some(vec![schema.into()]);
-        final_schema.into()
+        json_schema!({
+            "type": "object",
+            "oneOf": [{
+                "type": "object",
+                "properties": {
+                    "GenericError": gen.subschema_for::<String>()
+                },
+                "required": ["GenericError"]
+            }]
+        })
     }
 }
 

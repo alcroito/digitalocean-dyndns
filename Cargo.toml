@@ -42,7 +42,7 @@ directories = "6"
 libsqlite3-sys = { version = "0.35", features = ["bundled"]}
 
 # Web server dependencies
-aide = { version = "0.14", features = [
+aide = { git = "https://github.com/tamasfe/aide", rev = "985cfa5d78a2f9503324eaa7a62aba9859072d8d", features = [
     "redoc",
     "axum",
     "axum-extra",
@@ -56,7 +56,7 @@ hyper = { version = "1" }
 hyper-util = { version = "0" }
 mime_guess = { version = "2" }
 rust-embed = { version = "8", features = ["debug-embed"]}
-schemars = { version = "0.8", features = ["chrono"] }
+schemars = { version = "1.0", features = ["chrono04"] }
 tower = { version = "0.5", features = ["full"] }
 tower-http = { version = "0.6", features = ["full"] }
 tokio = { version = "1", features = ["full"] }

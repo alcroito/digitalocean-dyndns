@@ -72,14 +72,6 @@
         "schemas": {
             "DomainRecordIpChange": {
                 "type": "object",
-                "required": [
-                    "attempt_date",
-                    "domain_record_id",
-                    "id",
-                    "name",
-                    "set_ip",
-                    "success"
-                ],
                 "properties": {
                     "attempt_date": {
                         "type": "string",
@@ -102,13 +94,18 @@
                     "success": {
                         "type": "boolean"
                     }
-                }
+                },
+                "required": [
+                    "id",
+                    "domain_record_id",
+                    "set_ip",
+                    "attempt_date",
+                    "success",
+                    "name"
+                ]
             },
             "DomainRecordIpChanges": {
                 "type": "object",
-                "required": [
-                    "changes"
-                ],
                 "properties": {
                     "changes": {
                         "type": "array",
@@ -116,20 +113,24 @@
                             "$ref": "#/components/schemas/DomainRecordIpChange"
                         }
                     }
-                }
+                },
+                "required": [
+                    "changes"
+                ]
             },
             "WebApiError": {
+                "type": "object",
                 "oneOf": [
                     {
                         "type": "object",
-                        "required": [
-                            "GenericError"
-                        ],
                         "properties": {
                             "GenericError": {
                                 "type": "string"
                             }
-                        }
+                        },
+                        "required": [
+                            "GenericError"
+                        ]
                     }
                 ]
             }
