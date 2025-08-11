@@ -145,7 +145,14 @@ impl Updater {
     }
 
     pub fn start_update_loop_detached(mut self) -> JoinHandle<Result<()>> {
-        std::thread::spawn(move || self.start_update_loop())
+        std::thread::spawn(move || {
+            let rt = tokio::runtime::Builder::new_multi_thread()
+                .enable_all()
+                .build()?;
+
+            let _guard = rt.enter();
+            self.start_update_loop()
+        })
     }
 
     fn build_starting_updater_mesage(
