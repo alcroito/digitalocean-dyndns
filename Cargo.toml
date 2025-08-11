@@ -39,7 +39,7 @@ cfg-if = "1"
 diesel = { version = "2", features = ["sqlite", "chrono"]}
 diesel_migrations = { version = "2", features = ["sqlite"]}
 directories = "6"
-libsqlite3-sys = { version = "0.31", features = ["bundled"]}
+libsqlite3-sys = { version = "0.35", features = ["bundled"]}
 
 # Web server dependencies
 aide = { version = "0.14", features = [
