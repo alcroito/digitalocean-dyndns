@@ -71,12 +71,16 @@ run = "cargo fmt"
 description = "Check that the backend is formatted"
 run = "cargo fmt --check"
 
-# Run it with mise run check:all -j 1 to make it serialized
-# TODO: Figure out how to run this serialized with the param
 [tasks."check:all"]
 description = "Build the backend, run tests, and lint the code"
-depends = ["build:all", "test:backend", "format:backend:check", "lint:all"]
-
+run = [
+    "{{mise_bin}} run build:backend",
+    "{{mise_bin}} run test:backend",
+    "{{mise_bin}} run format:backend:check",
+    "{{mise_bin}} run lint:backend",
+    "{{mise_bin}} run build:web",
+    "{{mise_bin}} run lint:web",
+]
 
 # Update deps
 [tasks."bump:backend:semver"]
