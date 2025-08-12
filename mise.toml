@@ -1,10 +1,14 @@
+# Build
 [tasks.default]
 depends = ["build:backend"]
 description = "Build the binary"
 
-# Build
+[tasks."build:backend_minimal"]
+description = "Build the minimal binary"
+run = "cargo build "
+
 [tasks."build:backend"]
-description = "Build the binary"
+description = "Build the web-enabled binary"
 run = "cargo build --features web"
 wait_for = ["build:web"]
 
@@ -17,6 +21,7 @@ dir = "{{cwd}}/webclients/svelte"
 description = "Build the binary and web frontend"
 depends = ["build:backend", "build:web"]
 
+
 # Gen
 [tasks."gen:openapi"]
 description = "Generate the open api schema"
@@ -27,10 +32,22 @@ dir = "{{cwd}}/webclients/svelte"
 description = "Update changelog using git cliff"
 run = 'git cliff -o CHANGELOG.md'
 
+
+# Run
+[tasks."run:backend_minimal"]
+description = "Run the binary"
+run = "cargo run"
+
+[tasks."run:backend"]
+description = "Run the binary"
+run = "cargo run --features web"
+
+
 # Test
 [tasks."test:backend"]
 description = "Test the binary"
 run = "cargo test --features web"
+
 
 # Lint
 [tasks."lint:backend"]
@@ -45,6 +62,21 @@ dir = "{{cwd}}/webclients/svelte"
 [tasks."lint:all"]
 description = "Lint the backend and web frontend code"
 depends = ["lint:backend", "lint:web"]
+
+[tasks."format:backend"]
+description = "Format the backend"
+run = "cargo fmt"
+
+[tasks."format:backend:check"]
+description = "Check that the backend is formatted"
+run = "cargo fmt --check"
+
+# Run it with mise run check:all -j 1 to make it serialized
+# TODO: Figure out how to run this serialized with the param
+[tasks."check:all"]
+description = "Build the backend, run tests, and lint the code"
+depends = ["build:all", "test:backend", "format:backend:check", "lint:all"]
+
 
 # Update deps
 [tasks."bump:backend:semver"]
