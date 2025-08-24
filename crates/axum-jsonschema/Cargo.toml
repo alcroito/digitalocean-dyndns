@@ -16,7 +16,7 @@ aide = { workspace = true, optional = true, features = [
 axum = { workspace = true, features = ["json"] }
 http = { workspace = true }
 itertools = { workspace = true }
-jsonschema = { version = "0.32.1", default-features = false }
+jsonschema = { version = "0.33.0", default-features = false }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
