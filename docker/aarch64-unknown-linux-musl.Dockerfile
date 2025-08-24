@@ -2,7 +2,7 @@
 #
 ARG BASE_IMAGE=messense/rust-musl-cross:aarch64-musl
 
-FROM --platform=$BUILDPLATFORM node:22-alpine@sha256:1b2479dd35a99687d6638f5976fd235e26c5b37e8122f786fcd5fe231d63de5b AS web-builder
+FROM --platform=$BUILDPLATFORM node:24-alpine AS web-builder
 WORKDIR /web
 COPY ./webclients/svelte .
 RUN apk add --no-cache --virtual .gyp \
@@ -24,7 +24,7 @@ RUN cargo version && rustup --version && rustc --version
 RUN cargo fetch
 COPY --from=web-builder /web/build webclients/svelte/build
 
-FROM --platform=$BUILDPLATFORM builder-prep as builder-final
+FROM --platform=$BUILDPLATFORM builder-prep AS builder-final
 RUN cargo build --release --features web
 
 FROM alpine:latest
