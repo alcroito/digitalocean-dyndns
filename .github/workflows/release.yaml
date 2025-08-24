@@ -25,7 +25,7 @@ jobs:
         uses: orhun/git-cliff-action@main
         with:
           config: cliff.toml
-          args: -vv --latest --no-exec
+          args: --unreleased --no-exec
         env:
           OUTPUT: GITHUB_RELEASE_CHANGELOG.md
 
