@@ -32,7 +32,7 @@ jobs:
             os: ubuntu-latest
             docker_architecture: "linux/arm/v7"
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
     # https://stackoverflow.com/a/73783567/603646
     # https://github.com/docker/buildx/issues/495#issuecomment-918925854
     - name: Set up QEMU
@@ -142,7 +142,7 @@ jobs:
     needs: [build_containers]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
       - name: Login to DockerHub
         if: matrix.registry == 'docker.io'
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
