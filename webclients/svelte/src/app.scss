@@ -53,8 +53,9 @@ $mobile-big: 576px;
 	--bulma-text-strong: #{variables.$text-strong};
 
 	// Copied families from old v0.9.4 version.
-	--bulma-body-family: 'BlinkMacSystemFont', 'Inter', 'SF Pro', 'Segoe UI', 'Roboto', 'Oxygen',
-		'Ubuntu', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+	--bulma-body-family:
+		'BlinkMacSystemFont', 'Inter', 'SF Pro', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
+		'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
 
 .card {
