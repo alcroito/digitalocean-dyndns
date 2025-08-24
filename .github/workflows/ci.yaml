@@ -266,7 +266,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: 'webclients/svelte/package-lock.json'
 
@@ -288,7 +288,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: 'webclients/svelte/package-lock.json'
 
@@ -420,7 +420,7 @@ jobs:
         uses: actions/setup-node@v4
         if: matrix.features == 'web'
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
           cache-dependency-path: 'webclients/svelte/package-lock.json'
 
