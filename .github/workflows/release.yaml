@@ -19,7 +19,7 @@ jobs:
 
       - name: Create artifacts directory
         run: mkdir artifacts
-        
+
       - name: "Build Changelog"
         id: build_changelog
         uses: orhun/git-cliff-action@main
@@ -53,7 +53,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [linux_x64, linux_armv7, linux_aarch64, mac_x64]
+        build: [linux_x64, linux_armv7, linux_aarch64, mac_x64, mac_arm64]
         include:
           - build: linux_x64
             # building x86_64-unknown-linux-musl fails with not finding musl-gcc
@@ -71,6 +71,10 @@ jobs:
           - build: mac_x64
             rust_target_arch: x86_64-apple-darwin
             os: macos-latest
+            cross: false
+          - build: mac_arm64
+            rust_target_arch: aarch64-apple-darwin
+            os: macos-15
             cross: false
 
     steps:

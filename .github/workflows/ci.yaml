@@ -324,6 +324,7 @@ jobs:
           - mac_x64
           - mac_x64_stats
           - mac_x64_web
+          - mac_arm64_web
         include:
           - build: linux_x64
             # building x86_64-unknown-linux-musl fails with not finding musl-gcc
@@ -376,6 +377,11 @@ jobs:
           - build: mac_x64_web
             rust_target_arch: x86_64-apple-darwin
             os: macos-latest
+            cross: false
+            features: web
+          - build: mac_arm64_web
+            rust_target_arch: aarch64-apple-darwin
+            os: macos-15
             cross: false
             features: web
     steps:
