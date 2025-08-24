@@ -12,7 +12,7 @@
 <nav class="navbar" aria-label="main navigation">
 	<div class="navbar-brand ml-0">
 		<a
-			href={'#menu'}
+			href="#menu"
 			role="button"
 			class="navbar-burger ml-0"
 			aria-label="menu"
@@ -46,7 +46,7 @@
 				</a>
 			</div>
 			<div class="navbar-item-wrapper">
-				<a class="navbar-item" href={'#more'}>
+				<a class="navbar-item" href="#more">
 					<div class="icon-text">
 						<span class="icon">
 							<i class="fa-solid fa-circle-question"></i>

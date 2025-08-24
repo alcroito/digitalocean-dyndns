@@ -55,7 +55,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each $query.data.changes as entry}
+						{#each $query.data.changes as entry (entry.id)}
 							<tr>
 								<td class="has-text-centered">{entry.name}</td>
 								<td class="has-text-centered">{entry.set_ip}</td>
