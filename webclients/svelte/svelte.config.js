@@ -16,6 +16,9 @@ const config = {
 		}),
 		paths: {
 			base: base
+		},
+		output: {
+			bundleStrategy: 'single'
 		}
 		// prerender: { entries: [] }
 	}
