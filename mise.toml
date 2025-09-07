@@ -33,6 +33,12 @@ description = "Update changelog using git cliff"
 run = 'git cliff -o CHANGELOG.md'
 
 
+# Release
+[tasks."release"]
+description = "Create new git tag based on version returned by git cliff"
+run = 'git tag $(git cliff --bumped-version)'
+
+
 # Run
 [tasks."run:backend_minimal"]
 description = "Run the binary"
