@@ -20,20 +20,38 @@ jobs:
       - name: Create artifacts directory
         run: mkdir artifacts
 
+      - name: Determine git-cliff arguments
+        id: cliff_args
+        run: |
+          if [ "${{ github.ref_name }}" = "test_release" ]; then
+            echo "args=--unreleased --bump --no-exec --strip header" >> $GITHUB_OUTPUT
+          else
+            echo "args=--latest --no-exec --strip header" >> $GITHUB_OUTPUT
+          fi
+
       - name: "Build Changelog"
         id: build_changelog
         uses: orhun/git-cliff-action@main
         with:
           config: cliff.toml
-          args: --unreleased --no-exec
+          args: ${{ steps.cliff_args.outputs.args }}
         env:
           OUTPUT: GITHUB_RELEASE_CHANGELOG.md
+
+      - name: Determine release tag name
+        id: tag_name
+        run: |
+          if [ "${{ github.ref_name }}" = "test_release" ]; then
+            echo "tag=test_release_tag" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub release
         id: release
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ steps.tag_name.outputs.tag }}
           prerelease: ${{ github.ref_type == 'branch' }}
           draft: ${{ github.ref_type == 'tag' }}
           body: ${{ steps.build_changelog.outputs.content }}
