@@ -29,61 +29,83 @@ impl PublicIpFetcher for DnsIpFetcher {
     /// See
     /// [Stack Overflow](https://unix.stackexchange.com/questions/22615/how-can-i-get-my-external-ip-address-in-a-shell-script/81699#81699)
     fn fetch_public_ips(&self, lookup_ipv4: bool, lookup_ipv6: bool) -> Result<IpAddrV4AndV6> {
-        info!("Fetching public IP using OpenDNS");
-        let hostname_to_lookup = "myip.opendns.com.";
-        let lookup_open_dns_ips = match (lookup_ipv4, lookup_ipv6) {
-            (true, true) => OPEN_DNS_IPS,
-            (true, false) => OPEN_DNS_IPS.get(..2).expect("No IPv4 addresses"), // Only IPv4 addresses
-            (false, true) => OPEN_DNS_IPS.get(2..).expect("No IPv6 addresses"), // Only IPv6 addresses
-            (false, false) => unreachable!(),
-        };
-        let resolver_config = ResolverConfig::from_parts(
-            None,
-            vec![],
-            NameServerConfigGroup::from_ips_clear(lookup_open_dns_ips, 53, true),
+        info!(
+            "Fetching public IP using OpenDNS, IPv4: {}, IPv6: {}",
+            lookup_ipv4, lookup_ipv6
         );
+        let hostname_to_lookup = "myip.opendns.com.";
 
-        let mut resolver_options = ResolverOpts::default();
-        resolver_options.use_hosts_file = ResolveHosts::Never;
+        let mut result = IpAddrV4AndV6::default();
 
-        resolver_options.ip_strategy = match (lookup_ipv4, lookup_ipv6) {
-            (true, true) => LookupIpStrategy::Ipv4AndIpv6,
-            (true, false) => LookupIpStrategy::Ipv4Only,
-            (false, true) => LookupIpStrategy::Ipv6Only,
-            (false, false) => unreachable!(),
-        };
+        if lookup_ipv4 {
+            let ipv4_dns_ips = OPEN_DNS_IPS.get(..2).expect("No IPv4 addresses");
+            let resolver_config = ResolverConfig::from_parts(
+                None,
+                vec![],
+                NameServerConfigGroup::from_ips_clear(ipv4_dns_ips, 53, true),
+            );
 
-        resolver_options.attempts = 1;
-        resolver_options.num_concurrent_reqs = 1;
+            let mut resolver_options = ResolverOpts::default();
+            resolver_options.use_hosts_file = ResolveHosts::Never;
+            resolver_options.ip_strategy = LookupIpStrategy::Ipv4Only;
+            resolver_options.attempts = 1;
+            resolver_options.num_concurrent_reqs = 1;
 
-        let resolver_options = resolver_options;
-        let mut builder =
-            Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default());
-        *builder.options_mut() = resolver_options;
-        let resolver = builder.build();
+            let mut builder =
+                Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default());
+            *builder.options_mut() = resolver_options;
+            let resolver = builder.build();
 
-        let response = tokio::task::block_in_place(|| {
-            tokio::runtime::Handle::current().block_on(resolver.lookup_ip(hostname_to_lookup))
-        })
-        .wrap_err("Failed to resolve public IP address")?;
+            let response = tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current().block_on(resolver.lookup_ip(hostname_to_lookup))
+            })
+            .wrap_err("Failed to resolve IPv4 public IP address")?;
 
-        let address =
-            response
-                .iter()
-                .fold(IpAddrV4AndV6::default(), |mut maybe_ip, response_ip| {
-                    match response_ip {
-                        IpAddr::V4(ip) if maybe_ip.ipv4.is_none() => maybe_ip.ipv4 = Some(ip),
-                        IpAddr::V6(ip) if maybe_ip.ipv6.is_none() => maybe_ip.ipv6 = Some(ip),
-                        _ => (),
-                    }
-                    maybe_ip
-                });
+            for response_ip in response.iter() {
+                if let IpAddr::V4(ip) = response_ip {
+                    result.ipv4 = Some(ip);
+                    break;
+                }
+            }
+        }
 
-        if address.has_none() {
+        if lookup_ipv6 {
+            let ipv6_dns_ips = OPEN_DNS_IPS.get(2..).expect("No IPv6 addresses");
+            let resolver_config = ResolverConfig::from_parts(
+                None,
+                vec![],
+                NameServerConfigGroup::from_ips_clear(ipv6_dns_ips, 53, true),
+            );
+
+            let mut resolver_options = ResolverOpts::default();
+            resolver_options.use_hosts_file = ResolveHosts::Never;
+            resolver_options.ip_strategy = LookupIpStrategy::Ipv6Only;
+            resolver_options.attempts = 1;
+            resolver_options.num_concurrent_reqs = 1;
+
+            let mut builder =
+                Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default());
+            *builder.options_mut() = resolver_options;
+            let resolver = builder.build();
+
+            let response = tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current().block_on(resolver.lookup_ip(hostname_to_lookup))
+            })
+            .wrap_err("Failed to resolve IPv6 public IP address")?;
+
+            for response_ip in response.iter() {
+                if let IpAddr::V6(ip) = response_ip {
+                    result.ipv6 = Some(ip);
+                    break;
+                }
+            }
+        }
+
+        if result.has_none() {
             bail!("Failed to find public IP address: no addresses returned from DNS resolution");
         }
-        info!("{}", DisplayIpAddrV4AndV6Pretty(&address));
-        Ok(address)
+        info!("{}", DisplayIpAddrV4AndV6Pretty(&result));
+        Ok(result)
     }
 }
 
