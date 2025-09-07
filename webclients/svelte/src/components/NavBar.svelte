@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 
 	import logo from '$lib/images/logo.png';
@@ -26,7 +26,7 @@
 			<span aria-hidden="true"></span>
 		</a>
 
-		<a class="navbar-item" href={base}>
+		<a class="navbar-item" href={resolve('/')}>
 			<figure class="image">
 				<img src={logo} alt="logo" />
 			</figure>
@@ -36,7 +36,7 @@
 	<div id="mainNavMenu" class="navbar-menu" class:is-active={burgerIsActive}>
 		<div class="navbar-start is-justify-content-center is-flex-grow-1">
 			<div class="navbar-item-wrapper">
-				<a class="navbar-item" href={base} class:active={$page.url.pathname == '/'}>
+				<a class="navbar-item" href={resolve('/')} class:active={$page.url.pathname == '/'}>
 					<div class="icon-text">
 						<span class="icon">
 							<i class="fa-solid fa-house"></i>
