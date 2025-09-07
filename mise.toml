@@ -80,12 +80,12 @@ run = "cargo fmt --check"
 [tasks."check:all"]
 description = "Build the backend, run tests, and lint the code"
 run = [
-    "{{mise_bin}} run build:backend",
-    "{{mise_bin}} run test:backend",
-    "{{mise_bin}} run format:backend:check",
-    "{{mise_bin}} run lint:backend",
-    "{{mise_bin}} run build:web",
-    "{{mise_bin}} run lint:web",
+    { task = "build:backend" },
+    { task = "test:backend" },
+    { task = "format:backend:check" },
+    { task = "lint:backend" },
+    { task = "build:web" },
+    { task = "lint:web" },
 ]
 
 # Update deps
