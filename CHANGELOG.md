@@ -12,7 +12,11 @@ All notable changes to this project will be documented in this file.
 
 ### 🐛 Fixes
 
+- *(backend)* Do separate DNS lookups for IPv4 and IPv6 - ([344f159](https://github.com/alcroito/digitalocean-dyndns/commit/344f1590a41a8488bde80b0539f4ebf0d9266291)) by ([@alcroito](https://github.com//alcroito))
+  - Fixes # 86
+
 - *(deps)* Axum 0.6.13 does not allow nesting fallback routers under / - ([2e3af64](https://github.com/alcroito/digitalocean-dyndns/commit/2e3af64233b03cf1a9365bc5ad2935dff3760922)) by ([@alcroito](https://github.com//alcroito))
+- *(web)* Fix svelte/no-navigation-without-resolve lint - ([3ac8687](https://github.com/alcroito/digitalocean-dyndns/commit/3ac8687a08f10d96c038197d4eb1863509c06cdc)) by ([@alcroito](https://github.com//alcroito))
 - *(web)* Fix web ui not fetching data on macOS sometimes - ([94d4175](https://github.com/alcroito/digitalocean-dyndns/commit/94d4175464f9da56c9ec0f03df296c9e456a061e)) by ([@alcroito](https://github.com//alcroito))
 - Enable webapp pre-rendering - ([1d6cc5e](https://github.com/alcroito/digitalocean-dyndns/commit/1d6cc5e4aed371e0d12b0ddcde5543f1c9766319)) by ([@alcroito](https://github.com//alcroito)) in [#38](https://github.com/alcroito/digitalocean-dyndns/pull/38)
 - Improve web app design - ([5eab22d](https://github.com/alcroito/digitalocean-dyndns/commit/5eab22d9e1b5411070a22dac355e0e17bd653506)) by ([@alcroito](https://github.com//alcroito))
@@ -29,7 +33,24 @@ to implementation issues.
 
 ### ⚙️ Miscellaneous Tasks
 
+- *(build)* Bump dependencies - ([435a4ac](https://github.com/alcroito/digitalocean-dyndns/commit/435a4ac3a9e7c02d060cf0339a8acbf964d6dc2e)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Add arm64 mac builds to github actions CI and release - ([2763dd4](https://github.com/alcroito/digitalocean-dyndns/commit/2763dd4a120d1c8f3dcef906fdc7ee157b89254c)) by ([@alcroito](https://github.com//alcroito)) in [#93](https://github.com/alcroito/digitalocean-dyndns/pull/93)
+- *(build)* Fix docker builds to use newer npm version - ([400a6c5](https://github.com/alcroito/digitalocean-dyndns/commit/400a6c582e0f65c66fc462895c2a7f85162020cb)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Switch to rustsec/audit-check v2 - ([091cbf6](https://github.com/alcroito/digitalocean-dyndns/commit/091cbf681a8a94384140e4039e9a17bda035777c)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Change svelte to output a single js and css file - ([57b0682](https://github.com/alcroito/digitalocean-dyndns/commit/57b06829f2343b9bb8fd2787a846fe793bb3bac8)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Add a eslint fix script - ([230fb5e](https://github.com/alcroito/digitalocean-dyndns/commit/230fb5e665e9ae01acb5b42deae1cf9fd5b5d439)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Fix mise tasks to use project root - ([48b78a9](https://github.com/alcroito/digitalocean-dyndns/commit/48b78a978ea418e0fd5d1ac4b8294d385130da8e)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Re-generate openapi.json - ([8366530](https://github.com/alcroito/digitalocean-dyndns/commit/8366530382accdbabe47eca3e0e4d010d5bb1736)) by ([@alcroito](https://github.com//alcroito))
+- *(build)* Add a mise tasks file - ([097dac9](https://github.com/alcroito/digitalocean-dyndns/commit/097dac9b72567d4f75bf7a5751bf5fe194db4881)) by ([@alcroito](https://github.com//alcroito))
+- *(lint)* Fix lint warnings - ([71b29cd](https://github.com/alcroito/digitalocean-dyndns/commit/71b29cd49e3706820226001bb40d57adb11b1f71)) by ([@alcroito](https://github.com//alcroito))
 - *(web)* Regenerate open api zodius client - ([3c257f3](https://github.com/alcroito/digitalocean-dyndns/commit/3c257f30954777e8eb51827f4559a048fef66501)) by ([@alcroito](https://github.com//alcroito)) in [#43](https://github.com/alcroito/digitalocean-dyndns/pull/43)
+- Improve release process - ([2447c28](https://github.com/alcroito/digitalocean-dyndns/commit/2447c28f63ecc9b09e2c70e86803a25a4228ecf5))
+- Fix lint:web task to also run npm run check - ([0421f7a](https://github.com/alcroito/digitalocean-dyndns/commit/0421f7a4da62cc1795b23ec78b6089bd5ab433ef)) by ([@alcroito](https://github.com//alcroito)) in [#98](https://github.com/alcroito/digitalocean-dyndns/pull/98)
+- Fix release version extraction - ([0336529](https://github.com/alcroito/digitalocean-dyndns/commit/0336529df9669997871a9e99329cdf1c0ed3dd7d)) by ([@alcroito](https://github.com//alcroito)) in [#94](https://github.com/alcroito/digitalocean-dyndns/pull/94)
+- Unbump version to 0.6.0 - ([051278f](https://github.com/alcroito/digitalocean-dyndns/commit/051278fc525b053c6cb33da5c20574146156b77b)) by ([@alcroito](https://github.com//alcroito))
+- Fix mise check all task to run serialized - ([a80c466](https://github.com/alcroito/digitalocean-dyndns/commit/a80c466e58d9642e3e1e1de7c98792b887b9ece7)) by ([@alcroito](https://github.com//alcroito))
+- Update mise.toml to add minimal backend build and run tasks - ([02d6895](https://github.com/alcroito/digitalocean-dyndns/commit/02d689586d2d2eda3458c0468014f409e4e04d8d)) by ([@alcroito](https://github.com//alcroito))
+- Update cliff.toml to not use deprecated github fields - ([bf83f3d](https://github.com/alcroito/digitalocean-dyndns/commit/bf83f3d203a0fc8306056f645fcd4ed108ec60a7)) by ([@alcroito](https://github.com//alcroito)) in [#77](https://github.com/alcroito/digitalocean-dyndns/pull/77)
 - Don't run CI twice when opening pull request - ([36b71f9](https://github.com/alcroito/digitalocean-dyndns/commit/36b71f9d7a370022183892193e97be02008cd8e1)) by ([@alcroito](https://github.com//alcroito)) in [#60](https://github.com/alcroito/digitalocean-dyndns/pull/60)
 - Bump versions of github actions - ([1deaec8](https://github.com/alcroito/digitalocean-dyndns/commit/1deaec8724c926246fbeb22e90b7f3c863173b07)) by ([@alcroito](https://github.com//alcroito)) in [#48](https://github.com/alcroito/digitalocean-dyndns/pull/48)
 - Fix uploading different feature artifacts to same path - ([f8b824b](https://github.com/alcroito/digitalocean-dyndns/commit/f8b824b665062fb73a84320319cc95dfcbda35dc)) by ([@alcroito](https://github.com//alcroito)) in [#47](https://github.com/alcroito/digitalocean-dyndns/pull/47)
@@ -53,9 +74,39 @@ to implementation issues.
 
 ### Build
 
+- *(rust)* Move cargo dependencies into root Cargo.toml - ([48a7dcd](https://github.com/alcroito/digitalocean-dyndns/commit/48a7dcd77567f5bb1043f83c038c0d85c9524679)) by ([@alcroito](https://github.com//alcroito)) in [#64](https://github.com/alcroito/digitalocean-dyndns/pull/64)
 - Add simple devcontainer - ([11c8a6c](https://github.com/alcroito/digitalocean-dyndns/commit/11c8a6c1bc8e10f4120aa40095de59632a53d34f)) by ([@alcroito](https://github.com//alcroito)) in [#46](https://github.com/alcroito/digitalocean-dyndns/pull/46)
 - Use nextest cargo test runner in CI - ([f7fb656](https://github.com/alcroito/digitalocean-dyndns/commit/f7fb6560bd55d9f583230f5d08c851e0c4175ddc)) by ([@alcroito](https://github.com//alcroito))
 
 
 
-<!-- generated by git-cliff -->
+
+
+## New Contributors
+* @renovate[bot] made their first contribution in [#80](https://github.com/alcroito/digitalocean-dyndns/pull/80)## [0.0.5](https://github.com/alcroito/digitalocean-dyndns/compare/v0.0.4..v0.0.5) - 2023-01-26
+
+
+
+## [0.0.4](https://github.com/alcroito/digitalocean-dyndns/compare/v0.0.3..v0.0.4) - 2022-01-03
+
+
+
+## [0.0.3](https://github.com/alcroito/digitalocean-dyndns/compare/v0.0.2..v0.0.3) - 2021-03-05
+
+
+
+## [0.0.2](https://github.com/alcroito/digitalocean-dyndns/compare/v0.0.1..v0.0.2) - 2021-03-05
+
+
+
+
+
+## New Contributors
+* @stellarpower made their first contribution in [#2](https://github.com/alcroito/digitalocean-dyndns/pull/2)## [0.0.1] - 2021-02-21
+
+
+
+
+
+## New Contributors
+* @alcroito made their first contribution<!-- generated by git-cliff -->
