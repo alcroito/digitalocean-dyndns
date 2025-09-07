@@ -56,7 +56,7 @@ run = "cargo clippy --features web"
 
 [tasks."lint:web"]
 description = "Lint the web frontend code"
-run = "npm run lint"
+run = "npm run lint && npm run check"
 dir = "{{config_root}}/webclients/svelte"
 
 [tasks."lint:all"]
