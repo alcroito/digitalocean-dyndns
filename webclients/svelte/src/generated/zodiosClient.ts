@@ -12,10 +12,22 @@ const DomainRecordIpChange = z
 	})
 	.passthrough();
 const DomainRecordIpChanges = z.object({ changes: z.array(DomainRecordIpChange) }).passthrough();
+const WebApiError = z.object({ GenericError: z.string() }).passthrough();
+const VersionResponse = z
+	.object({
+		build_date: z.string(),
+		build_timestamp: z.string(),
+		git_branch: z.union([z.string(), z.null()]).optional(),
+		git_sha: z.union([z.string(), z.null()]).optional(),
+		version: z.string()
+	})
+	.passthrough();
 
 export const schemas = {
 	DomainRecordIpChange,
-	DomainRecordIpChanges
+	DomainRecordIpChanges,
+	WebApiError,
+	VersionResponse
 };
 
 const endpoints = makeApi([
@@ -29,13 +41,27 @@ const endpoints = makeApi([
 		errors: [
 			{
 				status: 'default',
-				schema: z.object({ GenericError: z.string() }).passthrough()
+				schema: WebApiError
 			}
 		]
 	},
 	{
 		method: 'get',
-		path: '/docs/',
+		path: '/api/v1/version',
+		alias: 'getApiv1version',
+		description: `Get version information`,
+		requestFormat: 'json',
+		response: VersionResponse,
+		errors: [
+			{
+				status: 'default',
+				schema: WebApiError
+			}
+		]
+	},
+	{
+		method: 'get',
+		path: '/docs',
 		alias: 'getDocs',
 		description: `This documentation page.`,
 		requestFormat: 'json',
@@ -43,7 +69,7 @@ const endpoints = makeApi([
 		errors: [
 			{
 				status: 'default',
-				schema: z.object({ GenericError: z.string() }).passthrough()
+				schema: WebApiError
 			}
 		]
 	}
