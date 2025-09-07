@@ -37,6 +37,40 @@
                 }
             }
         },
+        "/api/v1/version": {
+            "get": {
+                "tags": [
+                    "version"
+                ],
+                "summary": "Returns version, build date, and Git information for the running application",
+                "description": "Get version information",
+                "responses": {
+                    "default": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WebApiError"
+                                },
+                                "example": {
+                                    "GenericError": "generic error"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VersionResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/docs": {
             "get": {
                 "description": "This documentation page.",
@@ -116,6 +150,37 @@
                 },
                 "required": [
                     "changes"
+                ]
+            },
+            "VersionResponse": {
+                "type": "object",
+                "properties": {
+                    "build_date": {
+                        "type": "string"
+                    },
+                    "build_timestamp": {
+                        "type": "string"
+                    },
+                    "git_branch": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "git_sha": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "version": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "version",
+                    "build_date",
+                    "build_timestamp"
                 ]
             },
             "WebApiError": {

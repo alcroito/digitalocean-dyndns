@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### 🚀 Features
+
+- Show app version in the web UI - ([6e9af5f](https://github.com/alcroito/digitalocean-dyndns/commit/6e9af5fc5e4875b7915727103ba8a5783dae40fa))
+
 ### ⚙️ Miscellaneous Tasks
 
-- Change mise check:all task syntax to use new sequential format - ([34b448c](https://github.com/alcroito/digitalocean-dyndns/commit/34b448cf3205594a324073b8c56657879c3a5ead))
+- Change mise check:all task syntax to use new sequential format - ([34b448c](https://github.com/alcroito/digitalocean-dyndns/commit/34b448cf3205594a324073b8c56657879c3a5ead)) by ([@alcroito](https://github.com//alcroito))
 
 
 
@@ -83,10 +87,7 @@ to implementation issues.
 
 
 
-
-
-## New Contributors
-* @renovate[bot] made their first contribution in [#80](https://github.com/alcroito/digitalocean-dyndns/pull/80)## [0.0.1] - 2021-02-21
+## [0.0.1] - 2021-02-21
 
 
 

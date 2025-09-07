@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
+	import VersionDisplay from './VersionDisplay.svelte';
 
 	import logo from '$lib/images/logo.png';
 
@@ -54,6 +55,11 @@
 						<span> More to come </span>
 					</div>
 				</a>
+			</div>
+		</div>
+		<div class="navbar-end">
+			<div class="navbar-item">
+				<VersionDisplay />
 			</div>
 		</div>
 	</div>

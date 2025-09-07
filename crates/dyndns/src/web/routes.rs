@@ -1,4 +1,5 @@
 mod domain_record_ip_changes;
+mod version;
 
 use std::sync::Arc;
 
@@ -14,11 +15,13 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 
 use self::domain_record_ip_changes::list_domain_record_ip_changes_docs;
+use self::version::get_version_docs;
 
 use super::docs::api_docs;
 use super::docs::docs_routes;
 use super::server::WebServerState;
 use crate::web::routes::domain_record_ip_changes::list_domain_record_ip_changes;
+use crate::web::routes::version::get_version;
 use crate::web::static_server::serve_static_decisor;
 
 const WEB_API_PATH_URL_PART: &str = "/api/v1";
@@ -76,13 +79,15 @@ fn get_pure_router_and_open_api() -> (Router<WebServerState>, OpenApi) {
 }
 
 fn api_routes() -> ApiRouter<WebServerState> {
-    ApiRouter::new().api_route(
-        "/domain_record_ip_changes",
-        get_with(
-            list_domain_record_ip_changes,
-            list_domain_record_ip_changes_docs,
-        ),
-    )
+    ApiRouter::new()
+        .api_route(
+            "/domain_record_ip_changes",
+            get_with(
+                list_domain_record_ip_changes,
+                list_domain_record_ip_changes_docs,
+            ),
+        )
+        .api_route("/version", get_with(get_version, get_version_docs))
 }
 
 #[cfg(test)]
