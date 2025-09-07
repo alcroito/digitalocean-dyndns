@@ -784,7 +784,7 @@ dependencies = [
 
 [[package]]
 name = "digitalocean-dyndns"
-version = "0.6.0"
+version = "0.0.7"
 dependencies = [
  "aide",
  "anyhow",

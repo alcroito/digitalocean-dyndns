@@ -1,6 +1,6 @@
 [package]
 name = "digitalocean-dyndns"
-version = "0.6.0"
+version = "0.0.7"
 edition = "2021"
 license.workspace = true
 rust-version.workspace = true
