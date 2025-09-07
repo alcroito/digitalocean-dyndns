@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### ⚙️ Miscellaneous Tasks
+
+- Change mise check:all task syntax to use new sequential format - ([34b448c](https://github.com/alcroito/digitalocean-dyndns/commit/34b448cf3205594a324073b8c56657879c3a5ead))
+
+
+
+## [0.0.6](https://github.com/alcroito/digitalocean-dyndns/compare/v0.0.5..v0.0.6) - 2025-09-07
+
 ### 🚀 Features
 
 - Add svelte-based frontend web client - ([00160e9](https://github.com/alcroito/digitalocean-dyndns/commit/00160e9b1fca4c5a818a70d69607599c65c162fd)) by ([@alcroito](https://github.com//alcroito))
@@ -44,6 +52,7 @@ to implementation issues.
 - *(build)* Add a mise tasks file - ([097dac9](https://github.com/alcroito/digitalocean-dyndns/commit/097dac9b72567d4f75bf7a5751bf5fe194db4881)) by ([@alcroito](https://github.com//alcroito))
 - *(lint)* Fix lint warnings - ([71b29cd](https://github.com/alcroito/digitalocean-dyndns/commit/71b29cd49e3706820226001bb40d57adb11b1f71)) by ([@alcroito](https://github.com//alcroito))
 - *(web)* Regenerate open api zodius client - ([3c257f3](https://github.com/alcroito/digitalocean-dyndns/commit/3c257f30954777e8eb51827f4559a048fef66501)) by ([@alcroito](https://github.com//alcroito)) in [#43](https://github.com/alcroito/digitalocean-dyndns/pull/43)
+- Add release task to mise.toml - ([a0dce7f](https://github.com/alcroito/digitalocean-dyndns/commit/a0dce7f6067d1ab5229e518ac2b82f7df70c2871)) by ([@alcroito](https://github.com//alcroito))
 - Improve release process - ([491831a](https://github.com/alcroito/digitalocean-dyndns/commit/491831a7941ba8c9de6c72a1561892ad197e4817)) by ([@alcroito](https://github.com//alcroito))
 - Fix lint:web task to also run npm run check - ([0421f7a](https://github.com/alcroito/digitalocean-dyndns/commit/0421f7a4da62cc1795b23ec78b6089bd5ab433ef)) by ([@alcroito](https://github.com//alcroito)) in [#98](https://github.com/alcroito/digitalocean-dyndns/pull/98)
 - Fix release version extraction - ([0336529](https://github.com/alcroito/digitalocean-dyndns/commit/0336529df9669997871a9e99329cdf1c0ed3dd7d)) by ([@alcroito](https://github.com//alcroito)) in [#94](https://github.com/alcroito/digitalocean-dyndns/pull/94)
