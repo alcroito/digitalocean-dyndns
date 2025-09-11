@@ -20,7 +20,7 @@
 		"@sveltejs/adapter-auto": "^6.1.0",
 		"@sveltejs/adapter-static": "^3.0.9",
 		"@sveltejs/kit": "^2.37.1",
-		"@sveltejs/vite-plugin-svelte": "^6.1.4",
+		"@sveltejs/vite-plugin-svelte": "^6.2.0",
 		"@tanstack/svelte-query": "^5.87.1",
 		"@tanstack/svelte-query-devtools": "^5.87.1",
 		"bulma": "^1.0.4",
