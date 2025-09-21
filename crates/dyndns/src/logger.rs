@@ -58,7 +58,14 @@ static INIT_COLOR_EYRE: OnceCell<ColorEyreGuard> = OnceCell::new();
 
 pub fn init_color_eyre() {
     INIT_COLOR_EYRE.get_or_init(|| {
-        color_eyre::install().expect("Failed to initialize color_eyre");
+        match color_eyre::install() {
+            Ok(()) => {
+                tracing::debug!("color_eyre initialized successfully");
+            }
+            Err(_) => {
+                tracing::trace!("color_eyre was already initialized");
+            }
+        }
         ColorEyreGuard(())
     });
 }

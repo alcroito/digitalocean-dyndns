@@ -1,55 +1,117 @@
-use color_eyre::eyre::{bail, Result, WrapErr};
+use color_eyre::eyre::{bail, Error, Result, WrapErr};
 use reqwest::blocking::Client;
 use secrecy::ExposeSecret;
+use serde::Deserialize;
 use std::net::IpAddr;
 use tracing::{info, trace};
 
-use crate::config::app_config::AppConfig;
+use crate::config::provider_config::ProviderType;
+use crate::digital_ocean_token::SecretDigitalOceanToken;
 use crate::domain_record_api::DomainRecordApi;
-use crate::types::{api, DomainRecordToUpdate};
+use crate::types::{DomainRecordCommon, DomainRecordToUpdate, DomainRecordsCommon};
+
+/// DigitalOcean-specific domain record structure.
+#[derive(Deserialize, Debug)]
+pub struct DomainRecordDigitalOcean {
+    pub id: u64,
+    #[serde(rename = "type")]
+    pub record_type: String,
+    pub name: String,
+    // This contains the API response IP address.
+    pub data: String,
+}
+
+/// DigitalOcean-specific domain records collection.
+#[derive(Deserialize, Debug)]
+pub struct DomainRecordsDigitalOcean {
+    pub domain_records: Vec<DomainRecordDigitalOcean>,
+}
+
+/// DigitalOcean-specific update response.
+#[derive(Deserialize, Debug)]
+pub struct UpdateDomainRecordResponse {
+    pub domain_record: DomainRecordDigitalOcean,
+}
+
+// Conversion implementations for DigitalOcean API types to common types
+impl TryFrom<DomainRecordDigitalOcean> for DomainRecordCommon {
+    type Error = Error;
+
+    fn try_from(record: DomainRecordDigitalOcean) -> Result<Self, Self::Error> {
+        Ok(Self {
+            id: record.id.to_string(),
+            record_type: record.record_type,
+            name: record.name,
+            ip_value: record.data,
+        })
+    }
+}
+
+impl TryFrom<DomainRecordsDigitalOcean> for DomainRecordsCommon {
+    type Error = Error;
+
+    fn try_from(records: DomainRecordsDigitalOcean) -> Result<Self, Self::Error> {
+        let converted_records: Result<Vec<_>, _> = records
+            .domain_records
+            .into_iter()
+            .map(|record| record.try_into())
+            .collect();
+
+        Ok(Self {
+            records: converted_records?,
+        })
+    }
+}
 
 const DIGITAL_OCEAN_API_HOST_NAME: &str = "https://api.digitalocean.com";
 
 pub struct DigitalOceanApi {
     request_client: Client,
-    config: AppConfig,
+    token: SecretDigitalOceanToken,
 }
 
 impl DigitalOceanApi {
-    pub fn new(config: AppConfig) -> Self {
+    pub fn new(token: SecretDigitalOceanToken) -> Self {
         Self {
             request_client: Client::new(),
-            config,
+            token,
         }
     }
 }
 
 impl DomainRecordApi for DigitalOceanApi {
-    fn get_domain_records(&self, domain_name: &str) -> Result<api::DomainRecords> {
+    fn provider_name(&self) -> &'static str {
+        "DigitalOcean"
+    }
+
+    fn provider_type(&self) -> ProviderType {
+        ProviderType::DigitalOcean
+    }
+
+    fn get_domain_records(&self, domain_name: &str) -> Result<DomainRecordsCommon> {
         let endpoint = format!("/v2/domains/{domain_name}/records?per_page=200");
         let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
-        let access_token = &self.config.general_options.digital_ocean_token;
         let response = self
             .request_client
             .get(request_url)
-            .bearer_auth(access_token.expose_secret().as_str())
+            .bearer_auth(self.token.expose_secret().as_str())
             .send()
             .wrap_err("Failed to query DO for domain records")?;
         let response_text = response
             .text()
             .wrap_err("Failed to retrieve domain records response text")?;
-        let records: api::DomainRecords =
+        let records: DomainRecordsDigitalOcean =
             serde_json::from_str(&response_text).wrap_err(format!(
                 "Failed to parse domain records JSON data. Response text: {}",
                 &response_text
             ))?;
-        Ok(records)
+        records.try_into()
     }
 
     // Extract domain and hostname part into separate struct.
     fn update_domain_ip(
         &self,
-        domain_record_id: u64,
+        domain_record_id: &str,
         record_to_update: &DomainRecordToUpdate,
         new_ip: &IpAddr,
     ) -> Result<()> {
@@ -59,18 +121,17 @@ impl DomainRecordApi for DigitalOceanApi {
             record_to_update.domain_name, domain_record_id
         );
         let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
-        let access_token = &self.config.general_options.digital_ocean_token;
         let client = Client::new();
         let mut body = std::collections::HashMap::new();
         body.insert("data", new_ip.to_string());
         let response = client
             .put(request_url)
-            .bearer_auth(access_token.expose_secret().as_str())
+            .bearer_auth(self.token.expose_secret().as_str())
             .json(&body)
             .send()
             .wrap_err(format!("Failed to update domain record for: {fqdn}"))?;
 
-        let record: api::UpdateDomainRecordResponse = response
+        let record: UpdateDomainRecordResponse = response
             .json()
             .wrap_err("Failed to parse domain record response JSON data")?;
         let response_ip = record
@@ -126,23 +187,31 @@ mod tests {
             std::fs::read_to_string(path).expect("Mock domain records not found")
         }
 
-        fn parse_domain_records(s: &str) -> Result<api::DomainRecords> {
-            let records: api::DomainRecords =
+        fn parse_domain_records(s: &str) -> Result<DomainRecordsDigitalOcean> {
+            let records: DomainRecordsDigitalOcean =
                 serde_json::from_str(s).wrap_err("Failed to parse domain records JSON data")?;
             Ok(records)
         }
     }
 
     impl DomainRecordApi for MockApi {
-        fn get_domain_records(&self, _domain_name: &str) -> Result<api::DomainRecords> {
+        fn provider_name(&self) -> &'static str {
+            "Mock"
+        }
+
+        fn provider_type(&self) -> ProviderType {
+            ProviderType::DigitalOcean
+        }
+
+        fn get_domain_records(&self, _domain_name: &str) -> Result<DomainRecordsCommon> {
             let s = Self::get_mock_domain_records_response();
-            Self::parse_domain_records(&s)
+            Self::parse_domain_records(&s).and_then(|records| records.try_into())
         }
 
         #[allow(unused_variables)]
         fn update_domain_ip(
             &self,
-            domain_record_id: u64,
+            domain_record_id: &str,
             record_to_update: &DomainRecordToUpdate,
             new_ip: &IpAddr,
         ) -> Result<()> {
@@ -191,7 +260,7 @@ digital_ocean_token = "123"
                 .name;
             let record_type = "A";
             let record_to_update =
-                DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
+                DomainRecordToUpdate::new(domain_name, hostname_part, record_type, None);
 
             let records = updater.get_domain_records(domain_name).unwrap();
             let domain_record = get_record_to_update(&records, &record_to_update).unwrap();
@@ -200,7 +269,7 @@ digital_ocean_token = "123"
 
             assert!(should_update);
 
-            let result = updater.update_domain_ip(domain_record.id, &record_to_update, &ip_addr);
+            let result = updater.update_domain_ip(&domain_record.id, &record_to_update, &ip_addr);
             assert!(result.is_err());
 
             Ok(())
