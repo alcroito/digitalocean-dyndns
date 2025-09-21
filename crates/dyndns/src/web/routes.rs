@@ -124,8 +124,6 @@ mod tests {
 
     #[test]
     fn generate_open_api_schema() {
-        crate::logger::init_color_eyre();
-
         let (_, api) = get_pure_router_and_open_api();
 
         let mut buf = Vec::with_capacity(128);

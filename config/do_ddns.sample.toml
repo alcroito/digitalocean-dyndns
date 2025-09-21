@@ -3,15 +3,32 @@
 # How often should the domains be updated. Uses rust's humantime parsing rules.
 update_interval = "30mins"
 
-# Access token to use for DigitalOcean API calls.
-digital_ocean_token = "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz"
+## Provider Configuration
+# Configure DNS providers with their API tokens.
+# You can configure multiple providers and select which records update on which providers.
+
+[[providers]]
+provider = "digitalocean"
+token = "digitalocean_token"
+
+[[providers]]
+provider = "hetzner"
+token = "hetzner_token"
+
+# The legacy digital_ocean_token field is still supported for DigitalOcean.
+digital_ocean_token = "digitalocean_token"
 
 # Setting this option to true will cause the final IP updates to be skipped.
 dry_run = false
 
-# Setting this option to true will enable resolving of ipv6 addresses and 
+# Setting this option to true will enable resolving of ipv6 addresses and
 # storing them in AAAA records.
 # ipv6 = true
+
+# Control default behavior for domain records without explicit providers list.
+# When true (default): records without explicit providers list are updated on ALL configured providers
+# When false: records without explicit providers list are NOT updated (requires explicit provider specification)
+update_all_providers_by_default = false
 
 # Enable collection of statistics (how often does the public IP change) in
 # a local sqlite database.
@@ -43,37 +60,47 @@ dry_run = false
 domain_root = "mysite.com"
 subdomain_to_update = "home"
 
-
-## Simple config mode sample
-
 # Updates the IP of the 'mysite.com' A record.
-# domain_root = "mysite.com"
-# update_domain_root = true
-
+domain_root = "mysite.com"
+update_domain_root = true
 
 ## Advanced config mode sample
 [[domains]]
 name = "mysite.com"
 
-# Updates home.mysite.com
+# Updates home.mysite.com on ALL configured providers, when update_all_providers_by_default = true.
 [[domains.records]]
 type = "A"
 name = "home"
 
-# Updates home-backup.mysite.com
+# Updates home-backup.mysite.com only on Hetzner
 [[domains.records]]
 type = "A"
 name = "home-backup"
+providers = ["hetzner"]
+
+# Updates cdn.mysite.com on both DigitalOcean and Hetzner
+[[domains.records]]
+type = "A"
+name = "cdn"
+providers = ["digitalocean", "hetzner"]
+
+# Does NOT update staging.mysite.com on any provider (explicitly disabled)
+[[domains.records]]
+type = "A"
+name = "staging"
+providers = []
 
 [[domains]]
 name = "mysecondsite.com"
 
-# Updates mysecondsite.com
+# Updates mysecondsite.com on all providers
 [[domains.records]]
 type = "A"
 name = "@"
 
-# Updates crib.mysecondsite.com
+# Updates crib.mysecondsite.com only on DigitalOcean
 [[domains.records]]
 type = "A"
 name = "crib"
+providers = ["digitalocean"]

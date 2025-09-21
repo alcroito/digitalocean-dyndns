@@ -2,14 +2,14 @@ use clap::{crate_version, ArgMatches, Args, Command};
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-use crate::{config::app_config::UpdateInterval, token::SecretDigitalOceanToken};
+use crate::config::{app_config::UpdateInterval, provider_config::SecretProviderToken};
 
 pub fn get_cli_args() -> ArgMatches {
     get_cli_command_definition().get_matches()
 }
 
 #[skip_serializing_none]
-#[derive(Args, Debug, Serialize)]
+#[derive(Args, Debug, Serialize, Clone)]
 pub struct CommonArgs {
     /// Path to TOML config file.
     ///
@@ -44,14 +44,14 @@ pub struct CommonArgs {
     #[arg(short = 'r', long, conflicts_with = "subdomain_to_update", default_missing_value = "true", num_args = 0..=1)]
     pub update_domain_root: Option<bool>,
 
-    /// The digital ocean access token.
+    /// The `DigitalOcean` access token.
     ///
     /// Example: 'abcdefghijklmnopqrstuvwxyz'
     /// Env var: `DO_DYNDNS_DIGITAL_OCEAN_TOKEN=abcdefghijklmnopqrstuvwxyz`
-    #[arg(short = 't', long, value_parser = crate::token::parse_secret_token)]
-    pub digital_ocean_token: Option<SecretDigitalOceanToken>,
+    #[arg(short = 't', long, value_parser = crate::config::provider_config::parse_secret_token)]
+    pub digital_ocean_token: Option<SecretProviderToken>,
 
-    /// Path to file containing the digital ocean token on its first line.
+    /// Path to file containing the `DigitalOcean` token on its first line.
     ///
     /// Example: `/config/secret_token.txt`
     #[arg(
@@ -92,7 +92,7 @@ pub struct CommonArgs {
 }
 
 #[skip_serializing_none]
-#[derive(Args, Debug, Serialize)]
+#[derive(Args, Debug, Serialize, Clone)]
 pub struct ConditionalArgs {
     /// Enable collection of statistics (how often does the public IP change).
     ///
@@ -132,7 +132,7 @@ pub struct ConditionalArgs {
 }
 
 #[skip_serializing_none]
-#[derive(Args, Debug, Serialize)]
+#[derive(Args, Debug, Serialize, Clone)]
 pub struct ClapAllArgs {
     #[command(flatten)]
     #[serde(flatten)]
@@ -158,9 +158,9 @@ impl ClapAllArgs {
 }
 
 fn get_cli_command_definition_base() -> Command {
-    Command::new("DigitalOcean dynamic dns updater")
+    Command::new("Multi-provider dynamic DNS updater")
         .version(crate_version!())
-        .about("Updates DigitalOcean domain records to point to the current machine's public IP")
+        .about("Updates DNS domain records to point to the current machine's public IP")
         .next_line_help(true)
         .override_usage(
             "\
@@ -172,7 +172,7 @@ fn get_cli_command_definition_base() -> Command {
     do_dyndns -vvv -d foo.net -s home -i '10 mins' -p <TOKEN_PATH>
 
     Advanced config mode:
-    do_dyndns -c /config/ddns.toml -t <TOKEN>
+    do_dyndns -c /config/ddns.toml
 ",
         )
         .after_help(
@@ -186,8 +186,15 @@ The details can only be provided via the config file.
 
 Below is a sample config file which updates multiple domains:
 update_interval = \"10 minutes\"
-digital_ocean_token = \"abcd\"
 log_level = \"info\"
+
+[[providers]]
+provider = \"digitalocean\"
+token = \"your_digitalocean_token\"
+
+[[providers]]
+provider = \"hetzner\"
+token = \"your_hetzner_token\"
 
 [[domains]]
 name = \"mysite.com\"
