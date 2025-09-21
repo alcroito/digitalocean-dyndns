@@ -16,7 +16,6 @@ pub mod signal_handlers;
 pub mod stats_handler;
 #[cfg(feature = "stats")]
 pub mod stats_handler_db;
-pub mod token;
 pub mod types;
 pub mod updater;
 

@@ -6,6 +6,7 @@ use super::app_config::{
 };
 use super::consts::*;
 use super::early::EarlyConfig;
+use super::provider_config::ProviderType;
 
 use clap::ArgMatches;
 use color_eyre::eyre::{bail, eyre, Result, WrapErr};
@@ -142,7 +143,7 @@ impl AppConfigBuilder {
 
         if let Some(clap_matches) = clap_matches {
             let clap_args = ClapAllArgs::parse_and_process(clap_matches)?;
-            let wrapped_clap_figment = FileAdapter::wrap(Serialized::defaults(clap_args))
+            let wrapped_clap_figment = FileAdapter::wrap(Serialized::defaults(clap_args.clone()))
                 .with_suffix("_path")
                 .only(&[DIGITAL_OCEAN_TOKEN_PATH]);
             figment = figment.merge(wrapped_clap_figment);
@@ -183,6 +184,7 @@ impl AppConfigBuilder {
                 records: vec![DomainRecord {
                     record_type: "A".to_owned(),
                     name: config.1,
+                    providers: None, // None means update on all providers
                 }],
             }],
         };
@@ -214,10 +216,32 @@ impl AppConfigBuilder {
     fn build_general_options(&self) -> Result<GeneralOptions> {
         let general_options: GeneralOptions = self.figment.extract()?;
 
+        let has_new_config = !general_options.providers_config.providers.is_empty();
+        let has_legacy_config = general_options.digital_ocean_token.is_some();
+
+        if has_new_config {
+            general_options.providers_config.validate()?;
+
+            if has_legacy_config
+                && general_options
+                    .providers_config
+                    .has_provider(ProviderType::DigitalOcean)
+            {
+                bail!(
+                    "Both [[providers]] DigitalOcean configuration and legacy `digital_ocean_token` found. \
+                    This is not allowed as it creates ambiguity about which token should be used. \
+                    Please remove the legacy `digital_ocean_token` field and use only the [[providers]] configuration."
+                );
+            }
+        } else if has_legacy_config {
+            // Fall through
+        } else {
+            bail!("At least one DNS provider must be configured via [[providers]]");
+        }
+
         if !general_options.ipv4 && !general_options.ipv6 {
             bail!("At least one kind of ip family support needs to be enabled, both are disabled.");
         }
-
         Ok(general_options)
     }
 
@@ -231,5 +255,44 @@ impl AppConfigBuilder {
             general_options,
         });
         Ok(config)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use figment::providers::{Format, Serialized, Toml};
+
+    #[test]
+    fn test_legacy_and_new_digitalocean_config_fails() {
+        // Test that having both digital_ocean_token and [[providers]] DigitalOcean fails validation
+        let toml = r#"
+        digital_ocean_token = "legacy_token_123"
+
+        [[providers]]
+        provider = "digitalocean"
+        token = "new_token_456"
+
+        [[domains]]
+        name = "example.com"
+
+        [[domains.records]]
+        type = "A"
+        name = "www"
+    "#;
+
+        let figment = Figment::new()
+            .merge(Serialized::defaults(GeneralOptionsDefaults::default()))
+            .merge(Toml::string(toml));
+
+        let builder = AppConfigBuilder { figment };
+        let result = builder.build();
+
+        assert!(result.is_err());
+        let error_msg = result.unwrap_err().to_string();
+        assert!(
+            error_msg.contains("Both [[providers]] DigitalOcean configuration and legacy")
+                && error_msg.contains("digital_ocean_token")
+        );
     }
 }

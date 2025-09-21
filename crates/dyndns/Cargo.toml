@@ -107,6 +107,7 @@ vergen-gitcl = { workspace = true, features = [
 
 [dev-dependencies]
 tempfile.workspace = true
+toml.workspace = true
 
 [lints]
 workspace = true
