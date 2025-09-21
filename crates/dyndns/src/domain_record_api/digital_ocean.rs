@@ -179,8 +179,16 @@ digital_ocean_token = "123"
             let ip_fetcher = MockIpFetcher::default();
             let public_ips = ip_fetcher.fetch_public_ips(true, true).unwrap();
             let updater = MockApi::new();
-            let domain_name = &config.domains.domains[0].name;
-            let hostname_part = &config.domains.domains[0].records[0].name;
+            let domain_name = &config.domains.domains.first().expect("no domain").name;
+            let hostname_part = &config
+                .domains
+                .domains
+                .first()
+                .expect("no domain")
+                .records
+                .first()
+                .expect("no record")
+                .name;
             let record_type = "A";
             let record_to_update =
                 DomainRecordToUpdate::new(domain_name, hostname_part, record_type);
