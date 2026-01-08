@@ -36,13 +36,13 @@ tracing-subscriber = "0.3"
 
 # Stats feature dependencies
 cfg-if = "1"
-diesel = { version = "=2.2.12", features = ["sqlite", "chrono"]}
-diesel_migrations = { version = "=2.2.0", features = ["sqlite"]}
+diesel = { version = "=2.3.5", features = ["sqlite", "chrono"]}
+diesel_migrations = { version = "=2.3.1", features = ["sqlite"]}
 directories = "6"
-libsqlite3-sys = { version = "0.35", features = ["bundled"]}
+libsqlite3-sys = { version = "0.36", features = ["bundled"]}
 
 # Web server dependencies
-aide = { git = "https://github.com/tamasfe/aide", rev = "985cfa5d78a2f9503324eaa7a62aba9859072d8d", features = [
+aide = { git = "https://github.com/tamasfe/aide", rev = "870be1c802b481149538d2aef68dfefc48d8aedb", features = [
     "redoc",
     "axum",
     "axum-extra",
