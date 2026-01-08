@@ -20,5 +20,5 @@ jsonschema = { version = "0.33.0", default-features = false }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-serde_path_to_error = "0.1.17"
+serde_path_to_error = "0.1.20"
 tracing = { workspace = true }
