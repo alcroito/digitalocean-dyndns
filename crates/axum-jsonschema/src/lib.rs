@@ -28,10 +28,7 @@ use axum::{
 };
 use http::{Request, StatusCode};
 use itertools::Itertools;
-use jsonschema::{
-    output::{BasicOutput, ErrorDescription, OutputUnit},
-    Validator,
-};
+use jsonschema::Validator;
 use schemars::{
     generate::{SchemaGenerator, SchemaSettings},
     JsonSchema,
@@ -79,11 +76,21 @@ where
                 }
             });
 
-            let out = schema.apply(&value).basic();
+            // Use evaluate() API for JSON Schema Output v1 compliance
+            let evaluation = schema.evaluate(&value);
+            let errors: Vec<PathError> = evaluation
+                .iter_errors()
+                .map(|entry| PathError {
+                    instance_location: entry.instance_location.to_string(),
+                    keyword_location: Some(entry.schema_location.to_string()),
+                    error: entry.error.to_string(),
+                })
+                .collect();
 
-            match out {
-                BasicOutput::Valid(_) => Ok(()),
-                BasicOutput::Invalid(v) => Err(v),
+            if errors.is_empty() {
+                Ok(())
+            } else {
+                Err(errors)
             }
         });
 
@@ -135,7 +142,7 @@ pub enum JsonSchemaRejection {
     /// A serde error.
     Serde(serde_path_to_error::Error<serde_json::Error>),
     /// A schema validation error.
-    Schema(VecDeque<OutputUnit<ErrorDescription>>),
+    Schema(Vec<PathError>),
 }
 
 /// The response that is returned by default.
@@ -164,12 +171,19 @@ struct SchemaResponse {
     schema_validation: VecDeque<PathError>,
 }
 
+/// Represents a validation error at a specific location in the JSON instance.
+///
+/// This structure contains information about where the validation failed
+/// and what the error was.
 #[derive(Debug, Serialize)]
-struct PathError {
-    instance_location: String,
+pub struct PathError {
+    /// The location in the JSON instance where the error occurred.
+    pub instance_location: String,
+    /// The location in the JSON schema that triggered the error.
     #[serde(skip_serializing_if = "Option::is_none")]
-    keyword_location: Option<String>,
-    error: String,
+    pub keyword_location: Option<String>,
+    /// A human-readable description of the validation error.
+    pub error: String,
 }
 
 impl From<JsonSchemaRejection> for JsonSchemaErrorResponse {
@@ -187,7 +201,7 @@ impl From<JsonSchemaRejection> for JsonSchemaErrorResponse {
                         // enum is ignored because it doesn't exist in json
                         instance_location: std::iter::once(String::new())
                             .chain(s.path().iter().map(|s| match s {
-                                Segment::Map { key } => key.to_string(),
+                                Segment::Map { key } => key.clone(),
                                 Segment::Seq { index } => index.to_string(),
                                 _ => "?".to_string(),
                             }))
@@ -200,14 +214,7 @@ impl From<JsonSchemaRejection> for JsonSchemaErrorResponse {
             JsonSchemaRejection::Schema(s) => Self {
                 error: "request schema validation failed".to_string(),
                 extra: AdditionalError::Schema(SchemaResponse {
-                    schema_validation: s
-                        .into_iter()
-                        .map(|v| PathError {
-                            instance_location: v.instance_location().to_string(),
-                            keyword_location: Some(v.keyword_location().to_string()),
-                            error: v.error_description().to_string(),
-                        })
-                        .collect(),
+                    schema_validation: s.into_iter().collect(),
                 }),
             },
         }
