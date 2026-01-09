@@ -1,11 +1,12 @@
 use crate::cli::ClapAllArgs;
 
 use super::app_config::{
-    AppConfig, AppConfigInner, Domain, DomainRecord, Domains, GeneralOptions,
+    AppConfig, AppConfigInner, Domain, DomainRecord, Domains, GeneralOptionsApp,
     GeneralOptionsDefaults, SimpleModeDomainConfig,
 };
 use super::consts::*;
 use super::early::EarlyConfig;
+use super::provider_config::ProviderType;
 
 use clap::ArgMatches;
 use color_eyre::eyre::{bail, eyre, Result, WrapErr};
@@ -142,10 +143,11 @@ impl AppConfigBuilder {
 
         if let Some(clap_matches) = clap_matches {
             let clap_args = ClapAllArgs::parse_and_process(clap_matches)?;
-            let wrapped_clap_figment = FileAdapter::wrap(Serialized::defaults(clap_args))
-                .with_suffix("_path")
-                .only(&[DIGITAL_OCEAN_TOKEN_PATH]);
-            figment = figment.merge(wrapped_clap_figment);
+            let wrapped_digital_ocean_clap_figment =
+                FileAdapter::wrap(Serialized::defaults(clap_args.clone()))
+                    .with_suffix("_path")
+                    .only(&[DIGITAL_OCEAN_TOKEN_PATH]);
+            figment = figment.merge(wrapped_digital_ocean_clap_figment);
         }
 
         figment = figment.merge(Env::prefixed(ENV_VAR_PREFIX));
@@ -183,6 +185,7 @@ impl AppConfigBuilder {
                 records: vec![DomainRecord {
                     record_type: "A".to_owned(),
                     name: config.1,
+                    providers: None, // None means update on all providers
                 }],
             }],
         };
@@ -211,13 +214,44 @@ impl AppConfigBuilder {
         Ok(domains)
     }
 
-    fn build_general_options(&self) -> Result<GeneralOptions> {
-        let general_options: GeneralOptions = self.figment.extract()?;
+    fn build_general_options(&self) -> Result<GeneralOptionsApp> {
+        let general_options: GeneralOptionsApp = self.figment.extract()?;
+
+        // Check if new provider configuration is present
+        let has_new_config = !general_options.providers_config.providers.is_empty();
+
+        let has_legacy_config = general_options.digital_ocean_token.is_some();
+
+        // Validate based on which configuration method is used
+        if has_new_config {
+            // New configuration present - validate it
+            general_options.providers_config.validate()?;
+
+            // Warn if legacy config would create duplicate DigitalOcean provider
+            if has_legacy_config
+                && general_options
+                    .providers_config
+                    .has_provider(ProviderType::DigitalOcean)
+            {
+                tracing::warn!(
+                    "Both [[providers]] DigitalOcean configuration and legacy digital_ocean_token found. \
+                     Both will be used, creating two separate DigitalOcean provider instances. \
+                     Consider removing the legacy digital_ocean_token field to avoid duplication."
+                );
+            }
+        } else if has_legacy_config {
+            // Only legacy configuration present - this is fine, no warning
+        } else {
+            // No configuration present - error
+            bail!(
+                "At least one DNS provider must be configured either via [[providers]] \
+                  or legacy digital_ocean_token field."
+            );
+        }
 
         if !general_options.ipv4 && !general_options.ipv6 {
             bail!("At least one kind of ip family support needs to be enabled, both are disabled.");
         }
-
         Ok(general_options)
     }
 

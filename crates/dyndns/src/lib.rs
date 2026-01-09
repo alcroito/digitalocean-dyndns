@@ -8,15 +8,16 @@ pub mod daemon;
 extern crate diesel;
 #[cfg(feature = "stats")]
 pub mod db;
+pub mod digital_ocean_token;
 pub mod domain_record_api;
 pub mod global_state;
+pub mod hetzner_token;
 pub mod ip_fetcher;
 pub mod logger;
 pub mod signal_handlers;
 pub mod stats_handler;
 #[cfg(feature = "stats")]
 pub mod stats_handler_db;
-pub mod token;
 pub mod types;
 pub mod updater;
 
