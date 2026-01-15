@@ -55,13 +55,13 @@ run = "cargo run --features web"
 # Test
 [tasks."test:backend"]
 description = "Test the binary"
-run = "cargo test --features web"
+run = "cargo test --features web --all-targets"
 
 
 # Lint
 [tasks."lint:backend"]
 description = "Lint the backend code"
-run = "cargo clippy --features web"
+run = "cargo clippy --features web --all-targets"
 
 [tasks."lint:web"]
 description = "Lint the web frontend code"
