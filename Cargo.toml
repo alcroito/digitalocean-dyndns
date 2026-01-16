@@ -65,7 +65,7 @@ tokio = { version = "1", features = ["full"] }
 # regular dependencies)
 # Keep anyhow, because vergen depends on it.
 anyhow = "1"
-vergen-gitcl = { version = "1", features = [
+vergen-gitcl = { version = "9", features = [
     "build",
     "cargo",
     "rustc",
