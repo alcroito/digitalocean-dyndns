@@ -71,15 +71,15 @@ jobs:
             release: true
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
-      - uses: actions/cache@v4
+      - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
@@ -145,15 +145,15 @@ jobs:
             release: true
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
-      - uses: actions/cache@v4
+      - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-test-${{ hashFiles('**/Cargo.lock') }}
@@ -228,15 +228,15 @@ jobs:
             release: true
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
-      - uses: actions/cache@v4
+      - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
@@ -261,10 +261,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: Setup node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: 24
           cache: npm
@@ -283,10 +283,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: Setup node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version: 24
           cache: npm
@@ -386,10 +386,10 @@ jobs:
             features: web
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: Cache cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         if: matrix.cross == true
         with:
           path: |
@@ -398,7 +398,7 @@ jobs:
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
 
       - name: Cache target folder
-        uses: actions/cache@v4
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
         if: matrix.cross == true
         with:
           path: target
@@ -423,7 +423,7 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Setup node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         if: matrix.features == 'web'
         with:
           node-version: 24

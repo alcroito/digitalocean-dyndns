@@ -32,7 +32,7 @@ jobs:
             os: ubuntu-latest
             docker_architecture: "linux/arm/v7"
     steps:
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
     # https://stackoverflow.com/a/73783567/603646
     # https://github.com/docker/buildx/issues/495#issuecomment-918925854
     - name: Set up QEMU
@@ -44,7 +44,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -142,7 +142,7 @@ jobs:
     needs: [build_containers]
     steps:
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       - name: Login to DockerHub
         if: matrix.registry == 'docker.io'
         uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
