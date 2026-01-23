@@ -36,13 +36,13 @@ tracing-subscriber = "0.3"
 
 # Stats feature dependencies
 cfg-if = "1"
-diesel = { version = "=2.2.12", features = ["sqlite", "chrono"]}
-diesel_migrations = { version = "=2.2.0", features = ["sqlite"]}
+diesel = { version = "=2.3.6", features = ["sqlite", "chrono"]}
+diesel_migrations = { version = "=2.3.1", features = ["sqlite"]}
 directories = "6"
-libsqlite3-sys = { version = "0.35", features = ["bundled"]}
+libsqlite3-sys = { version = "0.36", features = ["bundled"]}
 
 # Web server dependencies
-aide = { git = "https://github.com/tamasfe/aide", rev = "985cfa5d78a2f9503324eaa7a62aba9859072d8d", features = [
+aide = { git = "https://github.com/tamasfe/aide", rev = "14fff1ec711ed80d6e2b0867ce980d6ab7367bb1", features = [
     "redoc",
     "axum",
     "axum-extra",
@@ -75,7 +75,7 @@ vergen-gitcl = { version = "9", features = [
 # workspace.dev-dependencies (not actually a valid key, so needs to be part of
 # regular dependencies)
 tempfile = "3"
-toml = "0.8"
+toml = "0.9"
 
 # An opinionated list of extra clippy lints. Can be overridden where necessary.
 # Taken from
