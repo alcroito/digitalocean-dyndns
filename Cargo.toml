@@ -75,7 +75,7 @@ vergen-gitcl = { version = "9", features = [
 # workspace.dev-dependencies (not actually a valid key, so needs to be part of
 # regular dependencies)
 tempfile = "3"
-toml = "0.8"
+toml = "1.0"
 
 # An opinionated list of extra clippy lints. Can be overridden where necessary.
 # Taken from
