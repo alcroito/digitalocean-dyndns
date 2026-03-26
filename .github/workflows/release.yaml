@@ -68,6 +68,10 @@ jobs:
   build-release:
     name: Build release
     needs: ['create-release']
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -180,3 +184,8 @@ jobs:
           asset_path: ${{ steps.create_staging_archive.outputs.archive_name }}
           asset_name: ${{ steps.create_staging_archive.outputs.archive_name }}
           asset_content_type: application/octet-stream
+
+      - name: Generate artifact attestation
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: ${{ steps.create_staging_archive.outputs.archive_name }}
