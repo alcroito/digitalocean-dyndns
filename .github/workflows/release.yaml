@@ -65,9 +65,78 @@ jobs:
           name: artifacts
           path: artifacts
 
+  sbom:
+    name: Generate SBOMs
+    needs: ['create-release']
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: .
+          artifact-name: dyndns-sbom.spdx.json
+          format: spdx-json
+          upload-artifact: true
+          upload-release-assets: false
+          output-file: dyndns-sbom.spdx.json
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: .
+          artifact-name: dyndns-sbom.cdx.json
+          format: cyclonedx-json
+          upload-artifact: true
+          upload-release-assets: false
+          output-file: dyndns-sbom.cdx.json
+
+      - name: Attest SPDX SBOM
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: dyndns-sbom.spdx.json
+
+      - name: Attest CycloneDX SBOM
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: dyndns-sbom.cdx.json
+
+      - name: Get release upload URL
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: artifacts
+          path: artifacts
+
+      - name: Set release upload URL
+        run: |
+          release_upload_url="$(cat artifacts/release-upload-url)"
+          echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
+
+      - name: Upload SPDX SBOM to release
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: dyndns-sbom.spdx.json
+          asset_name: dyndns-sbom.spdx.json
+          asset_content_type: application/json
+
+      - name: Upload CycloneDX SBOM to release
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: dyndns-sbom.cdx.json
+          asset_name: dyndns-sbom.cdx.json
+          asset_content_type: application/json
+
   build-release:
     name: Build release
-    needs: ['create-release']
+    needs: ['create-release', 'sbom']
     permissions:
       id-token: write
       contents: read
@@ -163,6 +232,12 @@ jobs:
           name: artifacts
           path: artifacts
 
+      - name: Download SPDX SBOM
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: dyndns-sbom.spdx.json
+          path: sbom
+
       - name: Set release upload URL and release version
         shell: bash
         run: |
@@ -189,3 +264,9 @@ jobs:
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
           subject-path: ${{ steps.create_staging_archive.outputs.archive_name }}
+
+      - name: Generate SBOM attestation
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+        with:
+          subject-path: ${{ steps.create_staging_archive.outputs.archive_name }}
+          sbom-path: sbom/dyndns-sbom.spdx.json
