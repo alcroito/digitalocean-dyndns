@@ -16,7 +16,7 @@
 	},
 	"devDependencies": {
 		"@eslint/compat": "2.0.3",
-		"@eslint/js": "^10.0.1",
+		"@eslint/js": "10.0.1",
 		"@fortawesome/fontawesome-free": "7.2.0",
 		"@sveltejs/adapter-auto": "7.0.1",
 		"@sveltejs/adapter-static": "3.0.10",
