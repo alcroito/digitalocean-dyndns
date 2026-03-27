@@ -414,10 +414,10 @@ mod tests {
         let toml = r#"
         type = "A"
         name = "test"
-        providers = ["digitalocean", "cloudflare"]
+        providers = ["digitalocean", "nonexistent"]
     "#;
 
-        // Should fail parsing because cloudflare is not a valid provider (yet)
+        // Should fail parsing because nonexistent is not a valid provider
         let result: Result<DomainRecord, _> = toml::from_str(toml);
         assert!(result.is_err());
     }
@@ -472,11 +472,11 @@ mod tests {
     fn test_provider_config_invalid_provider_type() {
         let toml = r#"
         [[providers]]
-        provider = "cloudflare"
+        provider = "nonexistent"
         token = "test_token"
     "#;
 
-        // Should fail because cloudflare is not a valid ProviderType (yet)
+        // Should fail because nonexistent is not a valid ProviderType
         let result: Result<ProvidersConfig, _> = toml::from_str(toml);
         assert!(result.is_err());
     }
