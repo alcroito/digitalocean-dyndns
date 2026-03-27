@@ -13,7 +13,7 @@ export class VersionStore {
 	public query;
 
 	constructor(public queryClient: QueryClient) {
-		this.query = createQuery<VersionResponse, VersionError>({
+		this.query = createQuery<VersionResponse, VersionError>(() => ({
 			queryKey: ['version'],
 			queryFn: this.queryFn,
 			retry: 1,
@@ -22,7 +22,7 @@ export class VersionStore {
 			// Cache for a longer time since version rarely changes
 			staleTime: 5 * 60 * 1000, // 5 minutes
 			gcTime: 30 * 60 * 1000 // 30 minutes
-		});
+		}));
 	}
 
 	private queryFn() {

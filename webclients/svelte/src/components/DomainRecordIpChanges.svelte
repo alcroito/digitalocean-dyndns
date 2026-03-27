@@ -17,13 +17,13 @@
 			<p class="subtitle has-text-weight-normal is-6">in descending order</p>
 		</div>
 
-		<div class="card-header-icon" class:is-hidden={!$query.isFetching}>
+		<div class="card-header-icon" class:is-hidden={!query.isFetching}>
 			<div class="loader mr-1"></div>
 		</div>
 		<button
 			aria-label="Refresh"
 			class="refresh button m-3"
-			class:is-hidden={$query.isFetching}
+			class:is-hidden={query.isFetching}
 			on:click={() => store.reset()}
 		>
 			<div class="icon">
@@ -32,19 +32,19 @@
 		</button>
 	</header>
 	<div class="card-content px-0 pt-0">
-		{#if $query.isLoading}
+		{#if query.isLoading}
 			<div class="section">
 				<div class="has-text-centered">
 					<p>fetching data...</p>
 				</div>
 			</div>
-		{:else if $query.isError}
+		{:else if query.isError}
 			<div class="section">
 				<div class="has-text-centered">
-					<p style="color: red">{store.handleError($query.error)}</p>
+					<p style="color: red">{store.handleError(query.error)}</p>
 				</div>
 			</div>
-		{:else if $query.isSuccess}
+		{:else if query.isSuccess}
 			<div class="table-container">
 				<table class="table is-fullwidth">
 					<thead>
@@ -55,7 +55,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each $query.data.changes as entry (entry.id)}
+						{#each query.data.changes as entry (entry.id)}
 							<tr>
 								<td class="has-text-centered">{entry.name}</td>
 								<td class="has-text-centered">{entry.set_ip}</td>
