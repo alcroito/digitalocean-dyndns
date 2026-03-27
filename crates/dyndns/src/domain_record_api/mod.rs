@@ -59,6 +59,25 @@ pub fn create_provider(config: &ProviderConfig) -> Result<Box<dyn DomainRecordAp
     }
 }
 
+/// Format a record value for the given record type.
+/// TXT records require the value to be wrapped in double quotes.
+pub fn format_record_value(value: &str, record_type: &str) -> String {
+    if record_type.eq_ignore_ascii_case("TXT") {
+        format!("\"{}\"", value)
+    } else {
+        value.to_string()
+    }
+}
+
+/// Strip surrounding double quotes from a record value.
+/// TXT records are typically stored with surrounding quotes in DNS.
+pub fn strip_record_value(value: &str) -> &str {
+    value
+        .strip_prefix('"')
+        .and_then(|v| v.strip_suffix('"'))
+        .unwrap_or(value)
+}
+
 pub mod cloudflare_api;
 pub mod desec_api;
 pub mod digital_ocean_api;

@@ -6,7 +6,7 @@ use std::net::IpAddr;
 use tracing::{debug, info};
 
 use crate::config::provider_config::{ProviderType, SecretProviderToken};
-use crate::domain_record_api::DomainRecordApi;
+use crate::domain_record_api::{format_record_value, strip_record_value, DomainRecordApi};
 use crate::types::DomainRecordToUpdate;
 
 const DESEC_API_BASE_URL: &str = "https://desec.io/api/v1";
@@ -57,17 +57,14 @@ impl TryFrom<DesecRRSet> for crate::types::DomainRecordCommon {
     type Error = Error;
 
     fn try_from(rrset: DesecRRSet) -> Result<Self, Self::Error> {
-        let ip_value = rrset
-            .records
-            .first()
-            .ok_or_else(|| {
-                eyre!(
-                    "RRSet '{}' (type: {}) has no records",
-                    rrset.subname,
-                    rrset.record_type
-                )
-            })?
-            .clone();
+        let ip_value = strip_record_value(rrset.records.first().ok_or_else(|| {
+            eyre!(
+                "RRSet '{}' (type: {}) has no records",
+                rrset.subname,
+                rrset.record_type
+            )
+        })?)
+        .to_string();
 
         // Normalize subname: deSEC uses "" for apex, we use "@"
         let hostname_part = if rrset.subname.is_empty() {
@@ -179,7 +176,10 @@ impl DomainRecordApi for DesecApi {
         debug!("Updating deSEC RRset at: {}", url);
 
         let payload = DesecPatchRRSetRequest {
-            records: vec![new_ip.to_string()],
+            records: vec![format_record_value(
+                &new_ip.to_string(),
+                &record_to_update.record_type,
+            )],
         };
 
         let response = self

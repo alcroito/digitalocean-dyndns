@@ -8,7 +8,7 @@ use std::sync::RwLock;
 use tracing::{debug, info, trace};
 
 use crate::config::provider_config::{ProviderType, SecretProviderToken};
-use crate::domain_record_api::DomainRecordApi;
+use crate::domain_record_api::{format_record_value, strip_record_value, DomainRecordApi};
 use crate::types::DomainRecordToUpdate;
 
 const HETZNER_API_BASE_URL: &str = "https://api.hetzner.cloud/v1";
@@ -90,18 +90,20 @@ impl<'a> TryFrom<HetznerRRSetWithZone<'a>> for crate::types::DomainRecordCommon 
         let zone_name = wrapper.zone_name;
 
         // Extract first record value (typical for A/AAAA single-IP records)
-        let ip_value = rrset
-            .records
-            .first()
-            .ok_or_else(|| {
-                eyre!(
-                    "RRSet '{}' (type: {}) has no records",
-                    rrset.name,
-                    rrset.record_type
-                )
-            })?
-            .value
-            .clone();
+        let ip_value = strip_record_value(
+            &rrset
+                .records
+                .first()
+                .ok_or_else(|| {
+                    eyre!(
+                        "RRSet '{}' (type: {}) has no records",
+                        rrset.name,
+                        rrset.record_type
+                    )
+                })?
+                .value,
+        )
+        .to_string();
 
         // Normalize the name field to contain only the hostname part
         // Hetzner returns full FQDNs like "subdomain.domain.com" or "@"
@@ -336,9 +338,10 @@ impl DomainRecordApi for HetznerApi {
         );
         debug!("Updating RRSet at: {}", url);
 
+        let value = format_record_value(&new_ip.to_string(), &record_to_update.record_type);
         let payload = SetRecordsRequest {
             records: vec![HetznerRecordInput {
-                value: new_ip.to_string(),
+                value,
                 comment: None,
             }],
         };

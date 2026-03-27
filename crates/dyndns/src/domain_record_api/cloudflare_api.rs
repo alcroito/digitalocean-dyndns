@@ -8,7 +8,7 @@ use std::sync::RwLock;
 use tracing::{debug, info};
 
 use crate::config::provider_config::{ProviderType, SecretProviderToken};
-use crate::domain_record_api::DomainRecordApi;
+use crate::domain_record_api::{format_record_value, strip_record_value, DomainRecordApi};
 use crate::types::DomainRecordToUpdate;
 
 const CLOUDFLARE_API_BASE_URL: &str = "https://api.cloudflare.com/client/v4";
@@ -100,7 +100,7 @@ impl<'a> TryFrom<CloudflareDnsRecordWithZone<'a>> for crate::types::DomainRecord
             id: composite_id,
             record_type: record.record_type,
             name: hostname_part,
-            ip_value: record.content,
+            ip_value: strip_record_value(&record.content).to_string(),
         })
     }
 }
@@ -310,7 +310,7 @@ impl DomainRecordApi for CloudflareApi {
         let payload = CloudflareUpdateRecordRequest {
             record_type: record_to_update.record_type.clone(),
             name: fqdn.clone(),
-            content: new_ip.to_string(),
+            content: format_record_value(&new_ip.to_string(), &record_to_update.record_type),
             ttl,
             proxied,
         };
