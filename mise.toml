@@ -13,16 +13,16 @@ run = "cargo build "
 [tasks."build:backend"]
 description = "Build the web-enabled binary"
 run = "cargo build --features web"
-wait_for = ["build:web"]
+wait_for = ["build:frontend"]
 
-[tasks."build:web"]
+[tasks."build:frontend"]
 description = "Build the web frontend"
 run = "npm run build"
 dir = "{{config_root}}/webclients/svelte"
 
 [tasks."build:all"]
 description = "Build the binary and web frontend"
-depends = ["build:backend", "build:web"]
+depends = ["build:backend", "build:frontend"]
 
 
 # Gen
@@ -63,14 +63,14 @@ run = "cargo test --features web --all-targets"
 description = "Lint the backend code"
 run = "cargo clippy --features web --all-targets"
 
-[tasks."lint:web"]
+[tasks."lint:frontend"]
 description = "Lint the web frontend code"
 run = "npm run lint && npm run check"
 dir = "{{config_root}}/webclients/svelte"
 
 [tasks."lint:all"]
 description = "Lint the backend and web frontend code"
-depends = ["lint:backend", "lint:web"]
+depends = ["lint:backend", "lint:frontend"]
 
 [tasks."format:backend"]
 description = "Format the backend"
@@ -92,8 +92,8 @@ run = [
     { task = "test:backend" },
     { task = "format:backend:check" },
     { task = "lint:backend" },
-    { task = "build:web" },
-    { task = "lint:web" },
+    { task = "build:frontend" },
+    { task = "lint:frontend" },
 ]
 
 # Update deps
