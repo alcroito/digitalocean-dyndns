@@ -25,6 +25,7 @@ jobs:
     outputs:
       web: ${{ steps.filter.outputs.web }}
       rust: ${{ steps.filter.outputs.rust }}
+      build_matrix: ${{ steps.matrix.outputs.build_matrix }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -43,6 +44,29 @@ jobs:
               - 'build.rs'
               - 'diesel.toml'
               - '.config/nextest.toml'
+
+      # Full matrix when rust files changed, only one main platform otherwise
+      - name: Determine build matrix
+        id: matrix
+        run: |
+          builds=("linux_x64_stats")
+          if [[ "${{ steps.filter.outputs.rust }}" == "true" ]]; then
+            builds+=(
+              "linux_x64"
+              "linux_x64_web"
+              "linux_armv7"
+              "linux_aarch64"
+              "linux_aarch64_stats"
+              "linux_aarch64_web"
+              "mac_x64"
+              "mac_x64_stats"
+              "mac_x64_web"
+              "mac_arm64_web"
+            )
+          fi
+          # Convert bash array to JSON array, e.g. ["linux_x64_stats", "linux_x64", ...]
+          json=$(printf '%s\n' "${builds[@]}" | jq --raw-input . | jq --slurp --compact-output .)
+          echo "build_matrix=${json}" >> "$GITHUB_OUTPUT"
 
   check:
     name: Check
@@ -370,30 +394,20 @@ jobs:
 
   build:
     needs:
+      - changes
       - check
       - test
       - lints
       - web_check
       - web_lints
-    # Run even when web jobs are skipped (no webclients/ changes), but still block if any dependency failed or was cancelled
+    # Run even when rust/web jobs are skipped (no changes), but still block if any dependency failed or was cancelled
     if: always() && !failure() && !cancelled()
     name: Build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        build:
-          - linux_x64
-          - linux_x64_stats
-          - linux_x64_web
-          - linux_armv7
-          - linux_aarch64
-          - linux_aarch64_stats
-          - linux_aarch64_web
-          - mac_x64
-          - mac_x64_stats
-          - mac_x64_web
-          - mac_arm64_web
+        build: ${{ fromJSON(needs.changes.outputs.build_matrix) }}
         include:
           - build: linux_x64
             # building x86_64-unknown-linux-musl fails with not finding musl-gcc
