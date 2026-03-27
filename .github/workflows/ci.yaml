@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       web: ${{ steps.filter.outputs.web }}
+      rust: ${{ steps.filter.outputs.rust }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -35,9 +36,18 @@ jobs:
           filters: |
             web:
               - 'webclients/**'
+            rust:
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'build.rs'
+              - 'diesel.toml'
+              - '.config/nextest.toml'
 
   check:
     name: Check
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -114,6 +124,8 @@ jobs:
 
   test:
     name: Test Suite
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -201,6 +213,8 @@ jobs:
 
   lints:
     name: Lints
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
