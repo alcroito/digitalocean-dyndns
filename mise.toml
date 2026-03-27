@@ -104,12 +104,14 @@ run = "cargo upgrade --incompatible"
 description = "Update backend lockfile"
 run = "cargo update"
 
-[tasks."bump:web:semver"]
-description = "Update web dependencies according to semver compatibility"
-run = 'npm-check-updates --target semver --upgrade && npm install'
+# ncu updates the values in package.json, whereas npm update will update the lock file, but
+# also the transitive deps in the lock file.
+[tasks."bump:frontend:minor"]
+description = "Update web dependencies to latest minor versions (semver)"
+run = 'npm-check-updates --target minor --upgrade && npm update && npm install'
 dir = "{{config_root}}/webclients/svelte"
 
-[tasks."bump:web:breaking"]
-description = "Update web dependencies according to latest versions, ignoring semver"
-run = 'npm-check-updates --upgrade && npm install'
+[tasks."bump:frontend:breaking"]
+description = "Update web dependencies to latest versions, may be breaking"
+run = 'npm-check-updates --upgrade && npm update && npm install'
 dir = "{{config_root}}/webclients/svelte"
