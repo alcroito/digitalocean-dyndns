@@ -4,7 +4,7 @@
 version: "3"
 services:
   do_ddns:
-    image: alcroito/digitalocean-dyndns
+    image: alcroito/digitalocean-dyndns@sha256:462b198bc66d97cc3fb07c768bf0d0ca96b9db2a972a49b43e434a5c5834be59
     container_name: do_ddns
     environment:
       - DO_DYNDNS_DOMAIN_ROOT=mydomain.com
