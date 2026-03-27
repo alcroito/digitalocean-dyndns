@@ -23,20 +23,23 @@ jobs:
     name: Detect changes
     runs-on: ubuntu-latest
     outputs:
-      web: ${{ steps.filter.outputs.web }}
-      rust: ${{ steps.filter.outputs.rust }}
+      web: ${{ steps.changes.outputs.web }}
+      rust: ${{ steps.changes.outputs.rust }}
       build_matrix: ${{ steps.matrix.outputs.build_matrix }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Detect changed paths
+        # Skip path filtering for tag pushes and manual dispatches — always run everything
+        if: github.event_name == 'pull_request' || github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
         id: filter
         with:
           filters: |
             web:
               - 'webclients/**'
+              - '.github/workflows/ci.yaml'
             rust:
               - 'crates/**'
               - 'Cargo.toml'
@@ -44,13 +47,26 @@ jobs:
               - 'build.rs'
               - 'diesel.toml'
               - '.config/nextest.toml'
+              - '.github/workflows/ci.yaml'
+
+      - name: Determine change flags
+        id: changes
+        run: |
+          # When paths-filter was skipped (tag push, workflow_dispatch), default to true
+          if [[ -z "${{ steps.filter.outputs.rust }}" ]]; then
+            echo "rust=true" >> "$GITHUB_OUTPUT"
+            echo "web=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "rust=${{ steps.filter.outputs.rust }}" >> "$GITHUB_OUTPUT"
+            echo "web=${{ steps.filter.outputs.web }}" >> "$GITHUB_OUTPUT"
+          fi
 
       # Full matrix when rust files changed, only one main platform otherwise
       - name: Determine build matrix
         id: matrix
         run: |
           builds=("linux_x64_stats")
-          if [[ "${{ steps.filter.outputs.rust }}" == "true" ]]; then
+          if [[ "${{ steps.changes.outputs.rust }}" == "true" ]]; then
             builds+=(
               "linux_x64"
               "linux_x64_web"
