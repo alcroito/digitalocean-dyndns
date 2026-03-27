@@ -9,6 +9,7 @@ pub enum ProviderType {
     DigitalOcean,
     Hetzner,
     Cloudflare,
+    Desec,
 }
 
 impl ProviderType {
@@ -17,6 +18,7 @@ impl ProviderType {
             ProviderType::DigitalOcean => "digitalocean",
             ProviderType::Hetzner => "hetzner",
             ProviderType::Cloudflare => "cloudflare",
+            ProviderType::Desec => "desec",
         }
     }
 }
