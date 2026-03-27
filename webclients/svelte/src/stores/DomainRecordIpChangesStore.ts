@@ -16,13 +16,13 @@ export class DomainRecordIpChangesStore {
 	public query;
 
 	constructor(public queryClient: QueryClient) {
-		this.query = createQuery<DomainRecordIpChanges, DomainRecordIpChangesError>({
+		this.query = createQuery<DomainRecordIpChanges, DomainRecordIpChangesError>(() => ({
 			queryKey: ['domain_record_ip_changes'],
 			queryFn: this.queryFn,
 			retry: 1,
 			// Avoid macOS + Chrome offline bug https://github.com/TanStack/query/issues/5679
 			networkMode: 'offlineFirst'
-		});
+		}));
 	}
 
 	private queryFn() {

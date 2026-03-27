@@ -2,10 +2,6 @@
 	import { VersionStore } from '../stores/VersionStore';
 	import { getContext } from 'svelte';
 	import type { QueryClient } from '@tanstack/svelte-query';
-	import type { z } from 'zod';
-	import type { schemas } from '../generated/zodiosClient';
-
-	type VersionResponse = z.infer<typeof schemas.VersionResponse>;
 
 	// GitHub repository base URL
 	const GITHUB_REPO = 'https://github.com/alcroito/digitalocean-dyndns';
@@ -13,63 +9,61 @@
 	const queryClient: QueryClient = getContext('queryClient');
 	const versionStore = new VersionStore(queryClient);
 	const versionQuery = versionStore.query;
-
-	$: version = $versionQuery.data as VersionResponse;
 </script>
 
 <div class="version-display">
-	{#if $versionQuery.isLoading}
+	{#if versionQuery.isLoading}
 		<div class="is-loading">
 			<span class="loader"></span>
 		</div>
-	{:else if $versionQuery.error}
+	{:else if versionQuery.error}
 		<div class="notification is-danger is-light">
 			<p class="has-text-danger">
-				Failed to load version: {versionStore.handleError($versionQuery.error)}
+				Failed to load version: {versionStore.handleError(versionQuery.error)}
 			</p>
 		</div>
-	{:else if version}
+	{:else if versionQuery.data}
 		<div class="version-info">
 			<div class="version-main">
 				<span class="version-label">Version:</span>
 				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
 					class="version-value version-link"
-					href="{GITHUB_REPO}/releases/tag/v{version.version}"
+					href="{GITHUB_REPO}/releases/tag/v{versionQuery.data.version}"
 					target="_blank"
 					rel="external noopener noreferrer"
 					data-sveltekit-reload
 				>
-					{version.version}
+					{versionQuery.data.version}
 				</a>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
-			{#if version.git_sha}
+			{#if versionQuery.data.git_sha}
 				<div class="version-detail">
 					<span class="version-label">Commit:</span>
 					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a
 						class="version-value git-sha commit-link"
-						href="{GITHUB_REPO}/commit/{version.git_sha}"
+						href="{GITHUB_REPO}/commit/{versionQuery.data.git_sha}"
 						target="_blank"
 						rel="external noopener noreferrer"
 						data-sveltekit-reload
 					>
-						{version.git_sha.slice(0, 8)}
+						{versionQuery.data.git_sha.slice(0, 8)}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			{/if}
-			{#if version.git_branch}
+			{#if versionQuery.data.git_branch}
 				<div class="version-detail">
 					<span class="version-label">Branch:</span>
-					<span class="version-value">{version.git_branch}</span>
+					<span class="version-value">{versionQuery.data.git_branch}</span>
 				</div>
 			{/if}
 			<div class="version-detail">
 				<span class="version-label">Built:</span>
-				<span class="version-value build-date" title={version.build_timestamp}>
-					{new Date(version.build_timestamp).toLocaleDateString()}
+				<span class="version-value build-date" title={versionQuery.data.build_timestamp}>
+					{new Date(versionQuery.data.build_timestamp).toLocaleDateString()}
 				</span>
 			</div>
 		</div>
