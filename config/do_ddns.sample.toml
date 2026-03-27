@@ -19,6 +19,10 @@ token = "hetzner_token"
 provider = "cloudflare"
 token = "cloudflare_api_token"
 
+[[providers]]
+provider = "desec"
+token = "desec_api_token"
+
 # The legacy digital_ocean_token field is still supported for DigitalOcean.
 digital_ocean_token = "digitalocean_token"
 
@@ -94,6 +98,12 @@ providers = ["digitalocean", "hetzner"]
 type = "A"
 name = "home"
 providers = ["cloudflare"]
+
+# Updates home.mysite.com only on deSEC
+[[domains.records]]
+type = "A"
+name = "home"
+providers = ["desec"]
 
 # Does NOT update staging.mysite.com on any provider (explicitly disabled)
 [[domains.records]]

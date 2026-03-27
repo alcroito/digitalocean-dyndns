@@ -1,0 +1,8 @@
+[
+  {
+    "subname": "home",
+    "type": "A",
+    "records": ["1.2.3.4"],
+    "ttl": 3600
+  }
+]
