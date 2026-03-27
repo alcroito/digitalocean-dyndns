@@ -119,7 +119,7 @@ jobs:
           echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
 
       - name: Upload SPDX SBOM to release
-        uses: shogo82148/actions-upload-release-asset@v1
+        uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: dyndns-sbom.spdx.json
@@ -127,7 +127,7 @@ jobs:
           asset_content_type: application/json
 
       - name: Upload CycloneDX SBOM to release
-        uses: shogo82148/actions-upload-release-asset@v1
+        uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: dyndns-sbom.cdx.json
@@ -194,7 +194,7 @@ jobs:
           targets: ${{ matrix.rust_target_arch }}
 
       - name: Use smart rust cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         if: matrix.cross == false
         with:
           key: ${{ matrix.build }}
@@ -253,7 +253,7 @@ jobs:
           rust_target_arch: ${{ matrix.rust_target_arch }}
 
       - name: Upload release archive
-        uses: shogo82148/actions-upload-release-asset@v1
+        uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ steps.create_staging_archive.outputs.archive_name }}
