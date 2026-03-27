@@ -174,7 +174,7 @@ jobs:
 
       - name: Setup tmate session
         if: ${{ failure() && github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@c0afd6f790e3a5564914980036ebf83216678101 # v3
 
   lints:
     name: Lints
@@ -435,7 +435,7 @@ jobs:
           targets: ${{ matrix.rust_target_arch }}
 
       - name: Use smart rust cache
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
         if: matrix.cross == false
         with:
           key: ${{ matrix.build }}
