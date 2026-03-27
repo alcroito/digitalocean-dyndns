@@ -6,7 +6,7 @@ use std::net::IpAddr;
 use tracing::{info, trace};
 
 use crate::config::provider_config::{ProviderType, SecretProviderToken};
-use crate::domain_record_api::DomainRecordApi;
+use crate::domain_record_api::{format_record_value, strip_record_value, DomainRecordApi};
 use crate::types::{DomainRecordCommon, DomainRecordToUpdate, DomainRecordsCommon};
 
 #[derive(Deserialize, Debug)]
@@ -37,7 +37,7 @@ impl TryFrom<DomainRecordDigitalOcean> for DomainRecordCommon {
             id: record.id.to_string(),
             record_type: record.record_type,
             name: record.name,
-            ip_value: record.data,
+            ip_value: strip_record_value(&record.data).to_string(),
         })
     }
 }
@@ -118,7 +118,8 @@ impl DomainRecordApi for DigitalOceanApi {
         let request_url = format!("{DIGITAL_OCEAN_API_HOST_NAME}{endpoint}");
         let client = Client::new();
         let mut body = std::collections::HashMap::new();
-        body.insert("data", new_ip.to_string());
+        let value = format_record_value(&new_ip.to_string(), &record_to_update.record_type);
+        body.insert("data", value);
         let response = client
             .put(request_url)
             .bearer_auth(self.token.expose_secret().as_str())
