@@ -165,7 +165,9 @@ jobs:
         run: mkdir -p webclients/svelte/build
 
       - name: Install latest nextest release
-        uses: taiki-e/install-action@nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
 
       - name: Run cargo nextest
         run: cargo nextest run --profile ci ${{ matrix.features && '--features' }} ${{ matrix.features }} ${{ matrix.release && '--release' || '' }} ${{ matrix.no_default_features && '--no-default-features' || '' }} ${{ matrix.all_features && '--all-features' || '' }}
@@ -494,7 +496,7 @@ jobs:
           archive_suffix: "-${{ github.run_id }}"
 
       - name: Upload archive
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}-${{ env.RELEASE_VERSION }}-${{ matrix.rust_target_arch }}-feat-${{ matrix.build }}-${{ github.run_id }}.tar.gz
           path: ${{ steps.create_staging_archive.outputs.archive_name }}

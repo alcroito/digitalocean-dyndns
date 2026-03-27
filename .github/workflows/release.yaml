@@ -31,7 +31,7 @@ jobs:
 
       - name: "Build Changelog"
         id: build_changelog
-        uses: orhun/git-cliff-action@main
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: ${{ steps.cliff_args.outputs.args }}
