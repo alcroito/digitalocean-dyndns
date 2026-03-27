@@ -80,6 +80,11 @@ run = "cargo fmt"
 description = "Check that the backend is formatted"
 run = "cargo fmt --check"
 
+[tasks."format:frontend"]
+description = "Format the frontend"
+run = "npm run format"
+dir = "{{config_root}}/webclients/svelte"
+
 [tasks."check:all"]
 description = "Build the backend, run tests, and lint the code"
 run = [
