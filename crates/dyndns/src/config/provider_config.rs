@@ -8,6 +8,7 @@ pub enum ProviderType {
     #[serde(alias = "digitalocean", alias = "digital_ocean")]
     DigitalOcean,
     Hetzner,
+    Cloudflare,
 }
 
 impl ProviderType {
@@ -15,6 +16,7 @@ impl ProviderType {
         match self {
             ProviderType::DigitalOcean => "digitalocean",
             ProviderType::Hetzner => "hetzner",
+            ProviderType::Cloudflare => "cloudflare",
         }
     }
 }

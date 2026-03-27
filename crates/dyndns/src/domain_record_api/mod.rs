@@ -54,8 +54,10 @@ pub fn create_provider(config: &ProviderConfig) -> Result<Box<dyn DomainRecordAp
             secret_token,
         ))),
         ProviderType::Hetzner => Ok(Box::new(hetzner_api::HetznerApi::new(secret_token))),
+        ProviderType::Cloudflare => Ok(Box::new(cloudflare_api::CloudflareApi::new(secret_token))),
     }
 }
 
+pub mod cloudflare_api;
 pub mod digital_ocean_api;
 pub mod hetzner_api;

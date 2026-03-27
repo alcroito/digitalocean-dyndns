@@ -1,0 +1,13 @@
+{
+  "result": [
+    {
+      "id": "rec789id000",
+      "type": "A",
+      "name": "home.site.com",
+      "content": "1.2.3.4",
+      "ttl": 3600,
+      "proxied": false
+    }
+  ],
+  "success": true
+}
