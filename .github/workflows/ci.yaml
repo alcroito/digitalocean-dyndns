@@ -85,7 +85,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
+        with:
+          toolchain: 1.94.1
 
       - name: Create dummy web artifacts
         run: mkdir -p webclients/svelte/build
@@ -159,7 +161,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-test-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
+        with:
+          toolchain: 1.94.1
 
       - name: Create dummy web artifacts
         run: mkdir -p webclients/svelte/build
@@ -244,8 +248,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-checks-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
         with:
+          toolchain: 1.94.1
           components: rustfmt, clippy
 
       - name: Create dummy web artifacts
@@ -432,8 +437,9 @@ jobs:
           key: ${{ runner.os }}-cargo-build-target-builds-${{ matrix.build }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
         with:
+          toolchain: 1.94.1
           targets: ${{ matrix.rust_target_arch }}
 
       - name: Use smart rust cache
