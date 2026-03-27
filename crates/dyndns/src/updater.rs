@@ -463,10 +463,14 @@ pub fn should_update_domain_ip(
     domain_record: &crate::types::DomainRecordCommon,
 ) -> bool {
     let prev_ip = domain_record.ip_value.as_str();
-    let prev_ip = prev_ip
-        .parse::<IpAddr>()
-        .unwrap_or_else(|_|
-            panic!("Failed parsing string '{}' to IP address in domain record, make sure your domain record has an initial valid ip", prev_ip));
-
-    curr_ip != &prev_ip
+    if let Ok(prev_ip) = prev_ip.parse::<IpAddr>() {
+        curr_ip != &prev_ip
+    } else {
+        tracing::warn!(
+            "Domain record '{}' has a non-IP value '{}', will update to current IP",
+            domain_record.name,
+            prev_ip
+        );
+        true
+    }
 }
