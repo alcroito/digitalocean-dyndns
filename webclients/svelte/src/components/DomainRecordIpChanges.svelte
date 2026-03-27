@@ -24,7 +24,7 @@
 			aria-label="Refresh"
 			class="refresh button m-3"
 			class:is-hidden={query.isFetching}
-			on:click={() => store.reset()}
+			onclick={() => store.reset()}
 		>
 			<div class="icon">
 				<i class="fa-solid fa-arrows-rotate"></i>

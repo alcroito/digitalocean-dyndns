@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import VersionDisplay from './VersionDisplay.svelte';
 
 	import logo from '$lib/images/logo.png';
 
-	let burgerIsActive = false;
+	let burgerIsActive = $state(false);
 
 	// Navbar centering use in CSS https://github.com/jgthms/bulma/issues/1604
 </script>
@@ -20,7 +20,7 @@
 			aria-expanded="false"
 			data-target="mainNavMenu"
 			class:is-active={burgerIsActive}
-			on:click={() => (burgerIsActive = !burgerIsActive)}
+			onclick={() => (burgerIsActive = !burgerIsActive)}
 		>
 			<span aria-hidden="true"></span>
 			<span aria-hidden="true"></span>
@@ -37,7 +37,7 @@
 	<div id="mainNavMenu" class="navbar-menu" class:is-active={burgerIsActive}>
 		<div class="navbar-start is-justify-content-center is-flex-grow-1">
 			<div class="navbar-item-wrapper">
-				<a class="navbar-item" href={resolve('/')} class:active={$page.url.pathname == '/'}>
+				<a class="navbar-item" href={resolve('/')} class:active={page.url.pathname == '/'}>
 					<div class="icon-text">
 						<span class="icon">
 							<i class="fa-solid fa-house"></i>
