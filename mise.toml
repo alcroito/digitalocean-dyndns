@@ -1,3 +1,6 @@
+[tools]
+node = "latest"
+
 [task_config]
 includes = ["tasks"]
 
@@ -113,10 +116,10 @@ run = "cargo update"
 # also the transitive deps in the lock file.
 [tasks."bump:frontend:minor"]
 description = "Update web dependencies to latest minor versions (semver)"
-run = 'npm-check-updates --target minor --upgrade && npm update && npm install'
+run = 'npm-check-updates --target minor --cooldown 14 --upgrade && npm update && npm install'
 dir = "{{config_root}}/webclients/svelte"
 
 [tasks."bump:frontend:breaking"]
 description = "Update web dependencies to latest versions, may be breaking"
-run = 'npm-check-updates --upgrade && npm update && npm install'
+run = 'npm-check-updates --cooldown 14 --upgrade && npm update && npm install'
 dir = "{{config_root}}/webclients/svelte"
