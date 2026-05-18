@@ -1,2 +1,2 @@
-FROM mcr.microsoft.com/devcontainers/rust:2-1-bookworm@sha256:39ad1c7264794d60e3bc449d9d8877a8e486d19ad8fba80f5369def6a2408392
+FROM mcr.microsoft.com/devcontainers/rust:2-1-bookworm@sha256:f5b84c5f3411a4366dc562ea9fdbb82cc90e5fd7332c8d523e342bbd8ad763d8
 RUN apt-get update && apt-get install -y nodejs

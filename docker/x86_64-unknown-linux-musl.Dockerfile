@@ -1,8 +1,8 @@
 # -*- mode: dockerfile -*-
 #
-ARG BASE_IMAGE=messense/rust-musl-cross:x86_64-musl@sha256:bcf6a66615f9d5bae659e38ab4311260e0488d1c34ad0ab9f9147f4cd5ef64ed
+ARG BASE_IMAGE=messense/rust-musl-cross:x86_64-musl@sha256:6c3c52df33dbd3fa999455c56db5be6fe2a9df5af63e00388194d936fd5cd003
 
-FROM --platform=$BUILDPLATFORM node:24-alpine@sha256:01743339035a5c3c11a373cd7c83aeab6ed1457b55da6a69e014a95ac4e4700b AS web-builder
+FROM --platform=$BUILDPLATFORM node:24-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f AS web-builder
 WORKDIR /web
 COPY ./webclients/svelte .
 RUN apk add --no-cache --virtual .gyp \
@@ -27,7 +27,7 @@ COPY --from=web-builder /web/build webclients/svelte/build
 FROM --platform=$BUILDPLATFORM builder-prep AS builder-final
 RUN cargo build --release --features web
 
-FROM alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659
+FROM alpine:latest@sha256:5b10f432ef3da1b8d4c7eb6c487f2f5a8f096bc91145e68878dd4a5019afde11
 RUN apk --no-cache add ca-certificates
 
 ARG FILE_TO_COPY=do_ddns
