@@ -17,7 +17,7 @@ clap = { version = "4", features = ["cargo", "derive"] }
 color-eyre = "0.6"
 figment = { version = "0.10", features = ["env", "toml", "test"] }
 figment_file_provider_adapter = "0.1"
-hickory-resolver = "0.25"
+hickory-resolver = "0.26"
 humantime = "2"
 humantime-serde = "1"
 itertools = "0.14"
@@ -42,7 +42,7 @@ directories = "6"
 libsqlite3-sys = { version = "0", features = ["bundled"]}
 
 # Web server dependencies
-aide = { git = "https://github.com/tamasfe/aide", rev = "985cfa5d78a2f9503324eaa7a62aba9859072d8d", features = [
+aide = { git = "https://github.com/tamasfe/aide", rev = "20b303cf6e4a73b4530d1c77179c1114325686f2", features = [
     "redoc",
     "axum",
     "axum-extra",
