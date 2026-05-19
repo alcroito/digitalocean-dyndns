@@ -31,7 +31,7 @@ jobs:
 
       - name: "Build Changelog"
         id: build_changelog
-        uses: orhun/git-cliff-action@c93ef52f3d0ddcdcc9bd5447d98d458a11cd4f72 # v4
+        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4
         with:
           config: cliff.toml
           args: ${{ steps.cliff_args.outputs.args }}
@@ -49,7 +49,7 @@ jobs:
 
       - name: Create GitHub release
         id: release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ steps.tag_name.outputs.tag }}
           prerelease: ${{ github.ref_type == 'branch' }}
@@ -60,7 +60,7 @@ jobs:
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: artifacts
           path: artifacts
@@ -119,7 +119,7 @@ jobs:
           echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
 
       - name: Upload SPDX SBOM to release
-        uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1
+        uses: shogo82148/actions-upload-release-asset@ee2ae851dc5d938b90075b3ef12c540abfd1ee72 # v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: dyndns-sbom.spdx.json
@@ -127,7 +127,7 @@ jobs:
           asset_content_type: application/json
 
       - name: Upload CycloneDX SBOM to release
-        uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1
+        uses: shogo82148/actions-upload-release-asset@ee2ae851dc5d938b90075b3ef12c540abfd1ee72 # v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: dyndns-sbom.cdx.json
@@ -173,7 +173,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Cache cargo registry
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         if: matrix.cross == true
         with:
           path: |
@@ -182,14 +182,14 @@ jobs:
           key: '${{ runner.os }}-cargo-registry-v2-${{ hashFiles(''**/Cargo.lock'') }}'
 
       - name: Cache target folder
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         if: matrix.cross == true
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-builds-${{ matrix.build }}-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9 # stable
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           toolchain: 1.94.1
           targets: ${{ matrix.rust_target_arch }}
@@ -205,7 +205,7 @@ jobs:
         run: cargo install cross --git https://github.com/cross-rs/cross
 
       - name: Setup node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
           cache: npm
@@ -254,7 +254,7 @@ jobs:
           rust_target_arch: ${{ matrix.rust_target_arch }}
 
       - name: Upload release archive
-        uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1
+        uses: shogo82148/actions-upload-release-asset@ee2ae851dc5d938b90075b3ef12c540abfd1ee72 # v1
         with:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: ${{ steps.create_staging_archive.outputs.archive_name }}
