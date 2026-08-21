@@ -1,8 +1,9 @@
 use color_eyre::eyre::{bail, Result, WrapErr};
 use hickory_resolver::config::{
-    LookupIpStrategy, NameServerConfigGroup, ResolveHosts, ResolverConfig, ResolverOpts,
+    LookupIpStrategy, NameServerConfig, ResolveHosts, ResolverConfig, ResolverOpts,
 };
-use hickory_resolver::{name_server::TokioConnectionProvider, Resolver};
+use hickory_resolver::net::runtime::TokioRuntimeProvider;
+use hickory_resolver::Resolver;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use tracing::info;
 
@@ -39,11 +40,11 @@ impl PublicIpFetcher for DnsIpFetcher {
 
         if lookup_ipv4 {
             let ipv4_dns_ips = OPEN_DNS_IPS.get(..2).expect("No IPv4 addresses");
-            let resolver_config = ResolverConfig::from_parts(
-                None,
-                vec![],
-                NameServerConfigGroup::from_ips_clear(ipv4_dns_ips, 53, true),
-            );
+            let name_servers = ipv4_dns_ips
+                .iter()
+                .map(|&ip| NameServerConfig::udp_and_tcp(ip))
+                .collect();
+            let resolver_config = ResolverConfig::from_parts(None, vec![], name_servers);
 
             let mut resolver_options = ResolverOpts::default();
             resolver_options.use_hosts_file = ResolveHosts::Never;
@@ -52,9 +53,11 @@ impl PublicIpFetcher for DnsIpFetcher {
             resolver_options.num_concurrent_reqs = 1;
 
             let mut builder =
-                Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default());
+                Resolver::builder_with_config(resolver_config, TokioRuntimeProvider::default());
             *builder.options_mut() = resolver_options;
-            let resolver = builder.build();
+            let resolver = builder
+                .build()
+                .wrap_err("Failed to build IPv4 DNS resolver")?;
 
             let response = tokio::task::block_in_place(|| {
                 tokio::runtime::Handle::current().block_on(resolver.lookup_ip(hostname_to_lookup))
@@ -71,11 +74,11 @@ impl PublicIpFetcher for DnsIpFetcher {
 
         if lookup_ipv6 {
             let ipv6_dns_ips = OPEN_DNS_IPS.get(2..).expect("No IPv6 addresses");
-            let resolver_config = ResolverConfig::from_parts(
-                None,
-                vec![],
-                NameServerConfigGroup::from_ips_clear(ipv6_dns_ips, 53, true),
-            );
+            let name_servers = ipv6_dns_ips
+                .iter()
+                .map(|&ip| NameServerConfig::udp_and_tcp(ip))
+                .collect();
+            let resolver_config = ResolverConfig::from_parts(None, vec![], name_servers);
 
             let mut resolver_options = ResolverOpts::default();
             resolver_options.use_hosts_file = ResolveHosts::Never;
@@ -84,9 +87,11 @@ impl PublicIpFetcher for DnsIpFetcher {
             resolver_options.num_concurrent_reqs = 1;
 
             let mut builder =
-                Resolver::builder_with_config(resolver_config, TokioConnectionProvider::default());
+                Resolver::builder_with_config(resolver_config, TokioRuntimeProvider::default());
             *builder.options_mut() = resolver_options;
-            let resolver = builder.build();
+            let resolver = builder
+                .build()
+                .wrap_err("Failed to build IPv6 DNS resolver")?;
 
             let response = tokio::task::block_in_place(|| {
                 tokio::runtime::Handle::current().block_on(resolver.lookup_ip(hostname_to_lookup))
