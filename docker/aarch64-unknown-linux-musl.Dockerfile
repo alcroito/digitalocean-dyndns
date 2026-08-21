@@ -17,6 +17,15 @@ RUN apk add --no-cache --virtual .gyp \
 # regardless of the specified target platform in the final stage.
 FROM --platform=$BUILDPLATFORM ${BASE_IMAGE} AS builder-prep
 
+# Pin the toolchain instead of relying on whatever the base image ships. A
+# separate toolchain is installed because `rustup update` fails on these images:
+# stripped docs break rustup's removal of the old clippy component.
+ARG RUST_VERSION=1.98.0
+RUN rustup toolchain install ${RUST_VERSION} \
+        --profile minimal \
+        --target aarch64-unknown-linux-musl \
+    && rustup default ${RUST_VERSION}
+
 COPY --chown=rust:rust . ./
 
 # Install no-op to cache registry index update
