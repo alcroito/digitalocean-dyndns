@@ -460,7 +460,7 @@ mod tests {
     fn test_basic() {
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        figment::Jail::expect_with(|jail| {
+        figment::Jail::expect_with(#[allow(clippy::result_large_err)] |jail| {
             jail.create_file(
                 "config.toml",
                 r#"

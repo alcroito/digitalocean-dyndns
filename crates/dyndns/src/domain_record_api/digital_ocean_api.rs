@@ -98,7 +98,7 @@ impl DomainRecordApi for DigitalOceanApi {
         let records: DomainRecordsDigitalOcean =
             serde_json::from_str(&response_text).wrap_err(format!(
                 "Failed to parse domain records JSON data. Response text: {}",
-                &response_text
+                response_text
             ))?;
         records.try_into()
     }
@@ -216,7 +216,7 @@ mod tests {
     fn test_basic() {
         use crate::updater::{get_record_to_update, should_update_domain_ip};
 
-        figment::Jail::expect_with(|jail| {
+        figment::Jail::expect_with(#[allow(clippy::result_large_err)] |jail| {
             jail.create_file(
                 "config.toml",
                 r#"
