@@ -42,7 +42,7 @@ directories = "6"
 libsqlite3-sys = { version = "0", features = ["bundled"]}
 
 # Web server dependencies
-aide = { git = "https://github.com/tamasfe/aide", rev = "985cfa5d78a2f9503324eaa7a62aba9859072d8d", features = [
+aide = { git = "https://github.com/tamasfe/aide", rev = "7bce6fe35c37a5a9aa8952fb94a137d7985f15bb", features = [
     "redoc",
     "axum",
     "axum-extra",
