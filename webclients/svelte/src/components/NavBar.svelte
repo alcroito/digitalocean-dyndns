@@ -3,7 +3,7 @@
 	import { page } from '$app/state';
 	import VersionDisplay from './VersionDisplay.svelte';
 
-	import logo from '$lib/images/logo.png';
+	import logo from '#lib/images/logo.png';
 
 	let burgerIsActive = $state(false);
 
